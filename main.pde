@@ -11,15 +11,15 @@ class Life{
     ellipse(position.x, position.y, radius, radius);
   }
   void update(){
-//    position.x += random(-10, 10);
-//    position.y += random(-10, 10);
+    position.x += random(-10, 10);
+    position.y += random(-10, 10);
   }
 }
 
 //壁に衝突も
 bool isCollision(Life l1, Life l2){
-  float distance = (PVector.sub(l1.position.sub, l2.position)).mag();
-  return (abs(distance) <= l1.radius + l2.radius);
+  float distance = (PVector.sub(l1.position, l2.position)).mag();
+  return (abs(distance) <= (l1.radius + l2.radius)/2);
 }
 
 Life[] lifes;
