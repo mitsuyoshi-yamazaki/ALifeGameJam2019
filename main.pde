@@ -1,3 +1,6 @@
+float fieldWidth = 1200;
+float fieldHeight = 800;
+
 class Life{
   PVector position;
   int radius;
@@ -26,9 +29,9 @@ Life[] lifes;
 
 void setup()
 {
-  size(600,400);
-  background(125);
-  fill(255);
+  size(fieldWidth,fieldHeight);
+  background(0xff);
+
   //noLoop();
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
@@ -38,9 +41,9 @@ void setup()
 
 
 void draw(){
-  fill(255);
-  noStroke();
-  rect(0, 0, 600, 400);
+
+  background(0xff);
+
   for (int i = 0; i < lifes.length; i++){
     lifes[i].update();
     stroke(0, 0, 0);
