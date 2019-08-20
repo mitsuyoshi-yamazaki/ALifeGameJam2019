@@ -1,26 +1,35 @@
 // -- Parameters
 
+// System
+boolean DEBUG = false;
+
+// Population
 Life[] lifes;
 int populationSize = 200;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
+// Field
 float fieldWidth = 1200;
 float fieldHeight = 800;
 float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
 
+// Color
+float backgroundTransparency = 50;
+
+// Life Parameter
 float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
 float defaultMoveDistance = lifeRadius / 2;
 
+// Gene Parameter
 int geneLength = 4;
 int geneMaxValue = 0xf + 1;
 
+// Fight
 float eatProbability = 0.5;
-
-boolean DEBUG = false;
 
 // --
 
@@ -224,7 +233,9 @@ void setup()
 
 void draw(){
 
-  background(0xff);
+  fill(0xff, backgroundTransparency);
+  rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
+
   Life[] killed = [];
   Life[] born = [];
 
