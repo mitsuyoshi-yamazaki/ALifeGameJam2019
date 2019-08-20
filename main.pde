@@ -252,11 +252,13 @@ void setup()
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize * 2), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
+  Gene initialGene = Gene.randomGene();
+
   for(int i=0; i < populationSize;i++){
-    lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene())
+    lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene())
+    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
   }
   Gene g = Gene.fromWholeGene(0xff);
   Gene g2 = g.childGene();
