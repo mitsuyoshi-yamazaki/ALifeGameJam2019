@@ -2,6 +2,7 @@
 
 Life[] lifes;
 int populationSize = 200;
+int initialResourceSize = 600;
 int resourceGrowth = 2;
 
 float fieldWidth = 1200;
@@ -10,11 +11,13 @@ float fieldHeight = 800;
 float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 20);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 100);
 float defaultMoveDistance = lifeRadius / 2;
 
 int geneLength = 4;
 int geneMaxValue = 0xf + 1;
+
+float eatProbability = 0.5;
 
 boolean DEBUG = false;
 
@@ -209,6 +212,9 @@ void setup()
   for(int i=0; i < populationSize;i++){
     lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
   }
+  for (int i = 0; i < initialResourceSize; i++) {
+    lifes[lifes.length] = Life.makeResource(random(100,fieldWidth - 100),random(100, fieldHeight - 100), resourceSize, Gene.randomGene())
+  }
 }
 
 
@@ -226,7 +232,7 @@ void draw(){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])) {
           Life predator, prey;
-          float threshold = random(0.3, 1.0);
+          float threshold = random(eatProbability, 1.0);
           if (lifes[i].gene.canEat(lifes[j].gene) > threshold) {
             predator = lifes[i];
             prey = lifes[j];
