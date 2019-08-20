@@ -59,7 +59,6 @@ class Gene {
         diff += 1;
       }
     }
-    console.log(float(geneLength));
 
     return float(diff) / float(geneLength)
   }
@@ -80,14 +79,62 @@ class Gene {
   }
 }
 
-class Life{
+class Resource {
 
   PVector position;
   float size;
-  float energy;
   float bodyEnergy;
-  Gene gene;
   bool isEaten = false;
+
+  Resource(float x, float y, float _size){
+    position = new PVector(x, y);
+    size=_size;
+    bodyEnergy = size * size;
+  }
+
+  String show(){
+    String s = ("size: " + size + ".   \n")
+               +("position_x: "+ position.x + ".  \n")
+               +("position_y: "+ position.y + ".  \n")
+               ;
+    return s;
+  }
+
+  bool alive() {
+    return false;
+  }
+
+  void eaten() {
+    isEaten = true;
+  }
+
+  void draw(){
+    if (isEaten) {
+      noStroke();
+      fill(255, 0, 0);
+
+    } else if (alive() == false) {
+      stroke(150);
+      noFill();
+
+    } else {  
+      // Alive
+      noStroke();
+      fill(81, 145, 198);
+    }
+
+    rect(position.x, position.y, size, size);
+  }
+
+  Resource[] update(){
+    // 何もしない
+  }
+}
+
+class Life extends Resource {
+
+  float energy;
+  Gene gene;
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
@@ -116,10 +163,6 @@ class Life{
     other.energy = 0;
     other.bodyEnergy = 0;
     other.eaten();
-  }
-
-  void eaten() {
-    isEaten = true;
   }
 
   void draw(){
