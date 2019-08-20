@@ -5,7 +5,7 @@ boolean DEBUG = false;
 
 // Population
 Life[] lifes;
-int populationSize = 2000;
+int populationSize = 200;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
@@ -152,6 +152,7 @@ class Life {
                +("position_y: "+ position.y + ".  \n")
                +("gene(predator|prey): "+ gene.description() + ".  \n")
                +("gene(binary)" + gene.showBinary() +".   \n")
+               +("Type:" + this.type +".   \n")
                ;
     return s;
   }
@@ -378,7 +379,10 @@ void mouseClicked(){
     console.log(found.show());
   }
   else{
-    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+    //lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+    for(int i=0; i!=10;i++){
+     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
+    }
   }
 }
 
