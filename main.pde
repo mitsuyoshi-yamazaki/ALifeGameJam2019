@@ -1,22 +1,37 @@
 // -- Parameters
 
+// System
+boolean DEBUG = false;
+
+// Population
 Life[] lifes;
 int populationSize = 200;
+int initialResourceSize = 600;
+int resourceGrowth = 4;
 
-float fieldWidth = 800;
-float fieldHeight = 600;
+// Field
+float fieldWidth = 1200;
+float fieldHeight = 800;
+float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
 
-float lifeRadius = 10;
+// Color
+float backgroundTransparency = 0xff;
+
+// Life Parameter
+float lifeRadius = 6;
+float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 20);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
 float defaultMoveDistance = lifeRadius / 2;
 
+// Gene Parameter
 int geneLength = 4;
 int geneMaxValue = 0xf + 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
-boolean DEBUG = false;
+// Fight
+float eatProbability = 0.5;
 
 // --
 
@@ -79,20 +94,7 @@ class Gene {
     return g;
   }
 
-  float isPreyOf(Gene other) {
-    int diff = 0;
-
-    for (int i = 0; i < geneLength; i++) {
-      if (((preyGene >> i) & 0x01) == ((other.predatorGene >> i) & 0x01)) {
-        diff += 1;
-      }
-    }
-    //console.log(float(geneLength));
-
-    return float(diff) / float(geneLength)
-  }
-
-  float isPredatorOf(Gene other) {
+  float canEat(Gene other) {
     int diff = 0;
 
     for (int i = 0; i < geneLength; i++) {
@@ -108,14 +110,15 @@ class Gene {
   }
 }
 
-class Life{
+class Life {
 
   PVector position;
   float size;
-  float energy;
   float bodyEnergy;
-  Gene gene;
   bool isEaten = false;
+  Gene gene;
+  float energy;
+  String type = 'Life';
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
@@ -123,6 +126,14 @@ class Life{
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
+  }
+
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new Life(x, y, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
   }
 
   String show(){
@@ -152,21 +163,35 @@ class Life{
   }
 
   void draw(){
-    if (isEaten) {
-      noStroke();
-      fill(255, 0, 0);
-    } else if (alive() == false) {
-      stroke(150);
-      noFill();
+    if (type == 'Life') {
+     if (isEaten) {
+        noStroke();
+        fill(255, 0, 0);
+        ellipse(position.x, position.y, size, size);
+
+      } else {  
+        noStroke();
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+    
+        if (alive()) {
+          ellipse(position.x, position.y, size, size);
+        } else {
+          rect(position.x, position.y, size * 0.5, size * 0.5);
+        }
+      }
 
     } else {
-      // Alive
-      noStroke();
-      fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-      // fill(255, 0, 0);
-    }
+      if (isEaten) {
+        noStroke();
+        fill(255, 0, 0);
 
-    ellipse(position.x, position.y, size, size);
+      } else {  
+        // Alive
+        noStroke();
+        fill(81, 145, 198);
+      }
+      rect(position.x, position.y, size, size);
+    }
   }
 
   Life[] update(){
@@ -176,9 +201,14 @@ class Life{
 
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
+      float radian = random(0, 2.0 * PI);
+
+      float x = position.x + sin(radian) * size * 3.0;
+      float y = position.y + cos(radian) * size * 3.0;
 
       Gene newGene = gene.childGene();
-      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, newGene);
+
+      Life child = new Life(x, y, size, energyAfterBirth, newGene);
 
       energy = energyAfterBirth;
 
@@ -219,8 +249,16 @@ void setup()
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
   lifes = [];
+  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize * 2), 20) / 2;
+  int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
+
+  Gene initialGene = Gene.randomGene();
+
   for(int i=0; i < populationSize;i++){
-    lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
+    lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
+  }
+  for (int i = 0; i < initialResourceSize; i++) {
+    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
   }
   Gene g = Gene.fromWholeGene(0xff);
   Gene g2 = g.childGene();
@@ -235,7 +273,9 @@ void setup()
 
 void draw(){
 
-  background(0xff);
+  fill(0xff, backgroundTransparency);
+  rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
+
   Life[] killed = [];
   Life[] born = [];
 
@@ -247,14 +287,10 @@ void draw(){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])) {
           Life predator, prey;
-          float threshold = random(0.3, 1.0);
-          if (lifes[i].gene.isPredatorOf(lifes[j].gene) > threshold) {
+          float threshold = random(eatProbability, 1.0);
+          if (lifes[i].gene.canEat(lifes[j].gene) > threshold) {
             predator = lifes[i];
             prey = lifes[j];
-
-          } else if (lifes[i].gene.isPreyOf(lifes[j].gene) > threshold) {
-            predator = lifes[j];
-            prey = lifes[i];
 
           } else {
             continue;
@@ -274,6 +310,16 @@ void draw(){
   } );
 
   lifes = lifes.concat(born);
+
+  addResources();
+}
+
+void addResources() {
+  int numberOfResources = int(random(0, resourceGrowth));
+
+  for (int i = 0; i < numberOfResources; i++) {
+    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+  }
 }
 
 void mouseClicked(){
