@@ -3,7 +3,7 @@
 Life[] lifes;
 int populationSize = 200;
 int initialResourceSize = 600;
-int resourceGrowth = 2;
+int resourceGrowth = 4;
 
 float fieldWidth = 1200;
 float fieldHeight = 800;
@@ -12,7 +12,7 @@ float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置か
 float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 80);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
 float defaultMoveDistance = lifeRadius / 2;
 
 int geneLength = 4;
@@ -210,8 +210,8 @@ void setup()
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
   lifes = [];
-  int paddingWidth = max(fieldWidth - initialPopulationFieldSize, 20) / 2;
-  int paddingHeight = max(fieldHeight - initialPopulationFieldSize, 20) / 2;
+  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize * 2), 20) / 2;
+  int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   for(int i=0; i < populationSize;i++){
     lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene())
