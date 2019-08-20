@@ -17,7 +17,7 @@ boolean DEBUG = false;
 
 void log(String data) {
   if (DEBUG == false) return;
-  println(data);
+  console.log(data);
 }
 
 class Color {
@@ -237,7 +237,7 @@ void mouseClicked(){
     return ((PVector.sub(m_pos, l.position)).mag() <= l.size)
     });
   if(found != undefined){
-    println(found.show());
+    console.log(found.show());
   }
   else{
     lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
