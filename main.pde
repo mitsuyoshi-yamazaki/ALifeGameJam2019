@@ -7,11 +7,12 @@ int resourceGrowth = 2;
 
 float fieldWidth = 1200;
 float fieldHeight = 800;
+float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
 
 float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 100);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 80);
 float defaultMoveDistance = lifeRadius / 2;
 
 int geneLength = 4;
@@ -209,11 +210,14 @@ void setup()
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
   lifes = [];
+  int paddingWidth = max(fieldWidth - initialPopulationFieldSize, 20) / 2;
+  int paddingHeight = max(fieldHeight - initialPopulationFieldSize, 20) / 2;
+
   for(int i=0; i < populationSize;i++){
-    lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
+    lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene())
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    lifes[lifes.length] = Life.makeResource(random(100,fieldWidth - 100),random(100, fieldHeight - 100), resourceSize, Gene.randomGene())
+    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene())
   }
 }
 
@@ -263,7 +267,7 @@ void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
 
   for (int i = 0; i < numberOfResources; i++) {
-    lifes[lifes.length] = Life.makeResource(random(200,fieldWidth - 100),random(200, fieldHeight - 100), resourceSize, Gene.randomGene());
+    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
   }
 }
 
