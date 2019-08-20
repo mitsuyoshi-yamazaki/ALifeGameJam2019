@@ -10,7 +10,7 @@ float defaultMoveDistance = lifeRadius / 2;
 
 boolean DEBUG = false;
 
-// -- 
+// --
 
 void log(string data) {
   if (DEBUG == false) return;
@@ -32,6 +32,16 @@ class Life{
     position = new PVector(x, y);
     size=_size;
     energy=_energy;
+  }
+
+  String show(){
+    String s = ("size: " + size + ".   \n")
+               +("energy: "+ energy + ".   \n")
+               +("position_x: "+ position.x + ".  \n")
+               +("position_y: "+ position.y + ".  \n")
+               
+               ;
+    return s;
   }
 
   bool alive() {
@@ -138,5 +148,14 @@ void draw(){
 }
 
 void mouseClicked(){
-  lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy);
+  PVector m_pos = new PVector(mouseX, mouseY);
+  Life found = lifes.find(function(l){
+    return ((PVector.sub(m_pos, l.position)).mag() <= l.size)
+    });
+  if(found != undefined){
+    println(found.show());
+  }
+  else{
+    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy);
+  }
 }
