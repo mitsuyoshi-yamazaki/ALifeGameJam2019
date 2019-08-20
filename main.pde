@@ -12,14 +12,36 @@ boolean DEBUG = false;
 
 // --
 
-void log(string data) {
+void log(String data) {
   if (DEBUG == false) return;
   println(data);
 }
 
-void log(int data) {
-  if (DEBUG == false) return;
-  println(data);
+class Gene {
+  int predatorGene;
+  int preyGene;
+  static int max = 0x1 + 1;
+
+  Gene(int _predatorGene, int _preyGene) {
+    predatorGene = _predatorGene;
+    preyGene = _preyGene;
+  }
+
+  static Gene randomGene() {
+    return new Gene(int(random(0, Gene.max)), int(random(0, Gene.max)));
+  }
+
+  bool isPreyOf(Gene other) {
+    return preyGene == other.predatorGene
+  }
+
+  bool isPredatorOf(Gene other) {
+    return predatorGene == other.preyGene
+  }
+
+  String description() {
+    return '' + predatorGene + ' | ' + preyGene
+  }
 }
 
 class Life{
@@ -27,11 +49,13 @@ class Life{
   PVector position;
   float size;
   float energy;
+  Gene gene;
 
-  Life(float x, float y, float _size, float _energy){
+  Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
     size=_size;
     energy=_energy;
+    gene = _gene;
   }
 
   String show(){
@@ -64,7 +88,7 @@ class Life{
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
 
-      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth);
+      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, gene);
 
       energy = energyAfterBirth;
 
@@ -109,7 +133,7 @@ void setup()
   println("Hello, ErrorLog!");
   lifes = [];
   for(int i=0; i!=population_size;i++){
-    lifes[i]=new Life(random(0,fieldWidth),random(0, fieldHeight),lifeRadius,defaultEnergy)
+    lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
   }
 }
 
@@ -127,11 +151,24 @@ void draw(){
 
       for (int j = 0; j < lifes.length; j++){
         if(i==j) continue;
-        if(isCollision(lifes[i], lifes[j])){
-          Life pray = lifes[j];
-          lifes[i].energy += pray.energy + pray.size * pray.size;
-          pray.energy = 0;
-          killed[killed.length] = pray;
+        if(isCollision(lifes[i], lifes[j])) {
+          Life predator, prey;
+          if (lifes[i].gene.isPredatorOf(lifes[j].gene)) {
+            predator = lifes[i];
+            prey = lifes[j];
+
+          } else if (lifes[i].gene.isPreyOf(lifes[j].gene)) {
+            predator = lifes[j];
+            prey = lifes[i];
+
+          } else {
+            continue;
+          }
+
+
+          predator.energy += prey.energy + prey.size * prey.size;
+          prey.energy = 0;
+          killed[killed.length] = prey;
           break;
         }
       }
@@ -155,7 +192,7 @@ void mouseClicked(){
     println(found.show());
   }
   else{
-    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy);
+    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
   }
 }
 
