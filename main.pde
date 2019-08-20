@@ -10,7 +10,7 @@ float defaultMoveDistance = lifeRadius / 2;
 
 boolean DEBUG = false;
 
-// -- 
+// --
 
 void log(String data) {
   if (DEBUG == false) return;
@@ -56,6 +56,15 @@ class Life{
     size=_size;
     energy=_energy;
     gene = _gene;
+  }
+
+  String show(){
+    String s = ("size: " + size + ".   \n")
+               +("energy: "+ energy + ".   \n")
+               +("position_x: "+ position.x + ".  \n")
+               +("position_y: "+ position.y + ".  \n")
+               ;
+    return s;
   }
 
   bool alive() {
@@ -175,5 +184,44 @@ void draw(){
 }
 
 void mouseClicked(){
-  lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+  PVector m_pos = new PVector(mouseX, mouseY);
+  Life found = lifes.find(function(l){
+    return ((PVector.sub(m_pos, l.position)).mag() <= l.size)
+    });
+  if(found != undefined){
+    println(found.show());
+  }
+  else{
+    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+  }
+}
+
+
+/*var keyPressed = (function (){
+  var isStopping = false;
+
+  return (function(){
+  if(key == 32){
+    noLoop();
+    if(!isStopping){
+      noLoop();
+      print("noloop");
+    } else {
+      loop();
+      print("loop");
+    }
+    isStopping = !isStopping;
+  }
+  });
+})();*/
+
+void keyPressed (){
+  if(key == 32){
+    noLoop();
+  }
+}
+void keyReleased (){
+  if(key == 32){
+    loop();
+  }
 }
