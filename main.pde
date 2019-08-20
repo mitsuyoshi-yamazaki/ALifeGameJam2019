@@ -33,6 +33,7 @@ class Color {
 }
 
 class Gene {
+  static int length = 1;
   static int max = 0x1 + 1;
 
   int predatorGene;
@@ -63,12 +64,20 @@ class Gene {
     return new Gene(int(random(0, Gene.max)), int(random(0, Gene.max)));
   }
 
-  bool isPreyOf(Gene other) {
-    return preyGene == other.predatorGene
+  float isPreyOf(Gene other) {
+    int diff = 0;
+
+    for (int i = 0; i < Gene.length; i++) {
+      if (((preyGene >> i) & 0x01) == ((other.predatorGene >> i) & 0x01)) {
+        diff += 1;
+      }
+    }
+    return float(diff) / float(Gene.length)
   }
 
-  bool isPredatorOf(Gene other) {
-    return predatorGene == other.preyGene
+  float isPredatorOf(Gene other) {
+    // return predatorGene == other.preyGene
+    return 0.0;
   }
 
   String description() {
@@ -203,11 +212,12 @@ void draw(){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])) {
           Life predator, prey;
-          if (lifes[i].gene.isPredatorOf(lifes[j].gene)) {
+          float threshold = 0.5;
+          if (lifes[i].gene.isPredatorOf(lifes[j].gene) > threshold) {
             predator = lifes[i];
             prey = lifes[j];
 
-          } else if (lifes[i].gene.isPreyOf(lifes[j].gene)) {
+          } else if (lifes[i].gene.isPreyOf(lifes[j].gene) > threshold) {
             predator = lifes[j];
             prey = lifes[i];
 
