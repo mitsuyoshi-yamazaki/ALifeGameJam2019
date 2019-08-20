@@ -1,12 +1,14 @@
 // -- Parameters
 
 Life[] lifes;
-int populationSize = 200;
+int populationSize = 100;
+int resourceGrowth = 2;
 
 float fieldWidth = 800;
 float fieldHeight = 600;
 
 float lifeRadius = 10;
+float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 20);
 float defaultMoveDistance = lifeRadius / 2;
@@ -51,19 +53,7 @@ class Gene {
     return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
   }
 
-  float isPreyOf(Gene other) {
-    int diff = 0;
-
-    for (int i = 0; i < geneLength; i++) {
-      if (((preyGene >> i) & 0x01) == ((other.predatorGene >> i) & 0x01)) {
-        diff += 1;
-      }
-    }
-
-    return float(diff) / float(geneLength)
-  }
-
-  float isPredatorOf(Gene other) {
+  float canEat(Gene other) {
     int diff = 0;
 
     for (int i = 0; i < geneLength; i++) {
@@ -79,62 +69,15 @@ class Gene {
   }
 }
 
-class Resource {
+class Life {
 
   PVector position;
   float size;
   float bodyEnergy;
   bool isEaten = false;
-
-  Resource(float x, float y, float _size){
-    position = new PVector(x, y);
-    size=_size;
-    bodyEnergy = size * size;
-  }
-
-  String show(){
-    String s = ("size: " + size + ".   \n")
-               +("position_x: "+ position.x + ".  \n")
-               +("position_y: "+ position.y + ".  \n")
-               ;
-    return s;
-  }
-
-  bool alive() {
-    return false;
-  }
-
-  void eaten() {
-    isEaten = true;
-  }
-
-  void draw(){
-    if (isEaten) {
-      noStroke();
-      fill(255, 0, 0);
-
-    } else if (alive() == false) {
-      stroke(150);
-      noFill();
-
-    } else {  
-      // Alive
-      noStroke();
-      fill(81, 145, 198);
-    }
-
-    rect(position.x, position.y, size, size);
-  }
-
-  Resource[] update(){
-    // 何もしない
-  }
-}
-
-class Life extends Resource {
-
-  float energy;
   Gene gene;
+  float energy;
+  String type = 'Life';
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
@@ -142,6 +85,14 @@ class Life extends Resource {
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
+  }
+
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new Life(x, y, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
   }
 
   String show(){
@@ -165,23 +116,41 @@ class Life extends Resource {
     other.eaten();
   }
 
+  void eaten() {
+    isEaten = true;
+  }
+
   void draw(){
-    if (isEaten) {
-      noStroke();
-      fill(255, 0, 0);
+    if (type == 'Life') {
+     if (isEaten) {
+        noStroke();
+        fill(255, 0, 0);
 
-    } else if (alive() == false) {
-      stroke(150);
-      noFill();
+      } else if (alive() == false) {
+        stroke(150);
+        noFill();
 
-    } else {  
-      // Alive
-      noStroke();
-      fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-      // fill(255, 0, 0);
+      } else {  
+        // Alive
+        noStroke();
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+        // fill(255, 0, 0);
+      }
+
+      ellipse(position.x, position.y, size, size);
+
+    } else {
+      if (isEaten) {
+        noStroke();
+        fill(255, 0, 0);
+
+      } else {  
+        // Alive
+        noStroke();
+        fill(81, 145, 198);
+      }
+      rect(position.x, position.y, size, size);
     }
-
-    ellipse(position.x, position.y, size, size);
   }
 
   Life[] update(){
@@ -254,13 +223,9 @@ void draw(){
         if(isCollision(lifes[i], lifes[j])) {
           Life predator, prey;
           float threshold = random(0.3, 1.0);
-          if (lifes[i].gene.isPredatorOf(lifes[j].gene) > threshold) {
+          if (lifes[i].gene.canEat(lifes[j].gene) > threshold) {
             predator = lifes[i];
             prey = lifes[j];
-
-          } else if (lifes[i].gene.isPreyOf(lifes[j].gene) > threshold) {
-            predator = lifes[j];
-            prey = lifes[i];
 
           } else {
             continue;
@@ -280,6 +245,16 @@ void draw(){
   } );
 
   lifes = lifes.concat(born);
+
+  addResources();
+}
+
+void addResources() {
+  int numberOfResources = int(random(0, resourceGrowth));
+
+  for (int i = 0; i < numberOfResources; i++) {
+    lifes[lifes.length] = Life.makeResource(random(200,fieldWidth - 100),random(200, fieldHeight - 100), resourceSize, Gene.randomGene());
+  }
 }
 
 void mouseClicked(){
