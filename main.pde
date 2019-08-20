@@ -13,6 +13,7 @@ int resourceGrowth = 4;
 float fieldWidth = 1200;
 float fieldHeight = 800;
 float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
+bool useSingleGene = false;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -22,7 +23,7 @@ float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
-float defaultMoveDistance = lifeRadius / 2;
+float defaultMoveDistance = lifeRadius / 1;
 
 // Gene Parameter
 int geneLength = 4;
@@ -33,7 +34,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 // Fight
 float eatProbability = 0.5;
 
-float mutationRate = 0.01;
+float mutationRate = 0.03;
 
 // --
 
@@ -231,6 +232,8 @@ class Life {
       return [child];
     }
 
+    
+
     float dx = customizedRandom(-defaultMoveDistance, defaultMoveDistance);
     float dy = customizedRandom(-defaultMoveDistance, defaultMoveDistance);
     float energyConsumption = (new PVector(dx, dy)).mag() * size * size * energyConsumptionRate
@@ -271,7 +274,11 @@ void setup()
   Gene initialGene = Gene.randomGene();
 
   for(int i=0; i < populationSize;i++){
-    lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
+    if (useSingleGene) {
+      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
+    } else {
+      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+    }
   }
   for (int i = 0; i < initialResourceSize; i++) {
     lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
