@@ -3,9 +3,9 @@
 float fieldWidth = 1200;
 float fieldHeight = 800;
 
-float lifeRadius = 2;
+float lifeRadius = 10;
 float defaultEnergy = 100;
-float energyConsumptionRate = 0.1;
+float energyConsumptionRate= 2/(lifeRadius*lifeRadius);
 
 boolean DEBUG = false;
 
@@ -92,14 +92,15 @@ void draw(){
 
   for (int i = 0; i < lifes.length; i++){
     lifes[i].update();
-    stroke(0, 0, 0);
-    for (int j = 0; j < lifes.length; j++){
-      if(i==j) continue;
-      log(i);
-      log(j);
-      if(isCollision(lifes[i], lifes[j])){
-        stroke(255, 0, 0);
-        break;
+    stroke(255, 0, 0);
+    if(lifes[i].alive()){
+      for (int j = 0; j < lifes.length; j++){
+        if(i==j) continue;
+        if(isCollision(lifes[i], lifes[j])){
+          lifes[i].energy += lifes[j].energy;
+          lifes[j].energy = 0;
+          break;
+        }
       }
     }
     lifes[i].draw();
