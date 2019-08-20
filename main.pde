@@ -67,8 +67,7 @@ void draw(){
     stroke(0, 0, 0);
     for (int j = 0; j < lifes.length; j++){
       if(i==j) continue;
-      log(i);
-      log(j);
+
       if(isCollision(lifes[i], lifes[j])){
         stroke(255, 0, 0);
         break;
