@@ -3,7 +3,8 @@
 float fieldWidth = 1200;
 float fieldHeight = 800;
 
-float lifeRadius = 8;
+float lifeRadius = 2;
+float defaultEnergy = 100;
 
 boolean DEBUG = false;
 
@@ -20,27 +21,48 @@ void log(int data) {
 }
 
 class Life{
-  PVector position;
-  int radius;
 
-  Life(float x, float y){
+  PVector position;
+  float size;
+  float energy;
+
+  Life(float x, float y, float _size, float _energy){
     position = new PVector(x, y);
-    radius=lifeRadius;
+    size=_size;
+    energy=_energy;
   }
+
+  bool alive() {
+    return energy > 0.0;
+  }
+
   void draw(){
+    if (alive() == false) {
+      stroke(150)
+    }
+
     noFill();
-    ellipse(position.x, position.y, radius, radius);
+    ellipse(position.x, position.y, size, size);
   }
+
   void update(){
-    position.x += random(-10, 10);
-    position.y += random(-10, 10);
+    if (!alive()) return;
+
+    float dx = random(-1, 1);
+    float dy = random(-1, 1);
+    float energyConsumption = (new PVector(dx, dy)).mag();
+
+    position.x += dx;
+    position.y += dy;
+
+    energy -= energyConsumption;
   }
 }
 
 //壁に衝突も
 bool isCollision(Life l1, Life l2){
   float distance = (PVector.sub(l1.position, l2.position)).mag();
-  return (abs(distance) <= (l1.radius + l2.radius)/2);
+  return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
 Life[] lifes;
@@ -54,7 +76,7 @@ void setup()
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
-  lifes = [new Life(40,50), new Life(120, 120)];
+  lifes = [new Life(40,50,lifeRadius,defaultEnergy), new Life(120, 120,lifeRadius,defaultEnergy)];
 }
 
 
@@ -79,5 +101,5 @@ void draw(){
 }
 
 void mouseClicked(){
-  lifes[lifes.length] = new Life(mouseX, mouseY);
+  lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy);
 }
