@@ -13,6 +13,8 @@ float defaultMoveDistance = lifeRadius / 2;
 
 int geneLength = 4;
 int geneMaxValue = 0xf + 1;
+int wholeLength = geneLength*2;
+int wholeMax = Math.pow(2, wholeLength) - 1;
 
 boolean DEBUG = false;
 
@@ -20,7 +22,7 @@ boolean DEBUG = false;
 
 void log(String data) {
   if (DEBUG == false) return;
-  println(data);
+  console.log(data);
 }
 
 class Color {
@@ -51,6 +53,32 @@ class Gene {
     return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
   }
 
+  Gene childGene(){
+    int mutation = (1 << (random(0, wholeLength)));
+    int childwholegene = (this.getWholeGene()) ^ mutation;
+    return fromWholeGene(childwholegene);
+  }
+  string showBinary(){
+    String str = "";
+    for(int i=0; i!=wholeLength;i++){
+      console.log(((getWholeGene() >> i) & 0x01));
+      str+=((getWholeGene() >> i) & 0x01);
+    }
+    return str;
+  }
+  int getWholeGene(){
+    return ((predatorGene << geneLength) | (preyGene));
+  }
+  int setWholeGene(int w){
+    this.predatorGene = w >> geneLength;
+    this.preyGene = w & (wholeMax >> geneLength);
+  }
+  static Gene fromWholeGene(int w){
+    Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
+    g.setWholeGene(w);
+    return g;
+  }
+
   float isPreyOf(Gene other) {
     int diff = 0;
 
@@ -59,7 +87,7 @@ class Gene {
         diff += 1;
       }
     }
-    console.log(float(geneLength));
+    //console.log(float(geneLength));
 
     return float(diff) / float(geneLength)
   }
@@ -103,6 +131,7 @@ class Life{
                +("position_x: "+ position.x + ".  \n")
                +("position_y: "+ position.y + ".  \n")
                +("gene(predator|prey): "+ gene.description() + ".  \n")
+               +("gene(binary)" + gene.showBinary() +".   \n")
                ;
     return s;
   }
@@ -126,12 +155,11 @@ class Life{
     if (isEaten) {
       noStroke();
       fill(255, 0, 0);
-
     } else if (alive() == false) {
       stroke(150);
       noFill();
 
-    } else {  
+    } else {
       // Alive
       noStroke();
       fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
@@ -149,7 +177,8 @@ class Life{
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
 
-      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, gene);
+      Gene newGene = gene.childGene();
+      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, newGene);
 
       energy = energyAfterBirth;
 
@@ -193,6 +222,14 @@ void setup()
   for(int i=0; i < populationSize;i++){
     lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
   }
+  Gene g = Gene.fromWholeGene(0xff);
+  Gene g2 = g.childGene();
+  console.log("getWhole:" + g.getWholeGene());
+  console.log("desc:" + g.description());
+  console.log("binary:" + g.showBinary());
+  console.log("getWhole g2:" + g2.getWholeGene());
+  console.log("desc:" + g2.description());
+  console.log("binary:" + g2.showBinary());
 }
 
 
@@ -245,7 +282,7 @@ void mouseClicked(){
     return ((PVector.sub(m_pos, l.position)).mag() <= l.size)
     });
   if(found != undefined){
-    println(found.show());
+    console.log(found.show());
   }
   else{
     lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
