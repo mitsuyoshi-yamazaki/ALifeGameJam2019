@@ -15,7 +15,7 @@ float fieldHeight = 800;
 float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
 
 // Color
-float backgroundTransparency = 50;
+float backgroundTransparency = 0xff;
 
 // Life Parameter
 float lifeRadius = 6;
@@ -138,19 +138,18 @@ class Life {
      if (isEaten) {
         noStroke();
         fill(255, 0, 0);
-
-      } else if (alive() == false) {
-        stroke(150);
-        noFill();
+        ellipse(position.x, position.y, size, size);
 
       } else {  
-        // Alive
         noStroke();
         fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-        // fill(255, 0, 0);
+    
+        if (alive()) {
+          ellipse(position.x, position.y, size, size);
+        } else {
+          rect(position.x, position.y, size * 0.5, size * 0.5);
+        }
       }
-
-      ellipse(position.x, position.y, size, size);
 
     } else {
       if (isEaten) {
