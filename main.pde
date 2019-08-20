@@ -1,15 +1,18 @@
 // -- Parameters
 
 Life[] lifes;
-int populationSize = 100;
+int populationSize = 200;
 
-float fieldWidth = 1200;
-float fieldHeight = 800;
+float fieldWidth = 800;
+float fieldHeight = 600;
 
 float lifeRadius = 10;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 4);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 20);
 float defaultMoveDistance = lifeRadius / 2;
+
+int geneLength = 4;
+int geneMaxValue = 0xf + 1;
 
 boolean DEBUG = false;
 
@@ -33,8 +36,6 @@ class Color {
 }
 
 class Gene {
-  static int max = 0x1 + 1;
-
   int predatorGene;
   int preyGene;
   Color geneColor;
@@ -43,32 +44,35 @@ class Gene {
     predatorGene = _predatorGene;
     preyGene = _preyGene;
 
-    // 1bit遺伝子にのみ一次対応
-    if (predatorGene == 1) {
-      if (preyGene == 1) {
-        geneColor = new Color(86, 156, 214);
-      } else {
-        geneColor = new Color(226, 121, 56);
-      }
-    } else {
-      if (preyGene == 1) {
-        geneColor = new Color(88, 224, 12);
-      } else {
-        geneColor = new Color(175, 121, 171);
-      }
-    }
+    geneColor = new Color(predatorGene << 4, preyGene << 4, 0xff);
   }
 
   static Gene randomGene() {
-    return new Gene(int(random(0, Gene.max)), int(random(0, Gene.max)));
+    return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
   }
 
-  bool isPreyOf(Gene other) {
-    return preyGene == other.predatorGene
+  float isPreyOf(Gene other) {
+    int diff = 0;
+
+    for (int i = 0; i < geneLength; i++) {
+      if (((preyGene >> i) & 0x01) == ((other.predatorGene >> i) & 0x01)) {
+        diff += 1;
+      }
+    }
+    console.log(float(geneLength));
+
+    return float(diff) / float(geneLength)
   }
 
-  bool isPredatorOf(Gene other) {
-    return predatorGene == other.preyGene
+  float isPredatorOf(Gene other) {
+    int diff = 0;
+
+    for (int i = 0; i < geneLength; i++) {
+      if (((predatorGene >> i) & 0x01) == ((other.preyGene >> i) & 0x01)) {
+        diff += 1;
+      }
+    }
+    return float(diff) / float(geneLength)
   }
 
   String description() {
@@ -206,11 +210,12 @@ void draw(){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])) {
           Life predator, prey;
-          if (lifes[i].gene.isPredatorOf(lifes[j].gene)) {
+          float threshold = random(0.3, 1.0);
+          if (lifes[i].gene.isPredatorOf(lifes[j].gene) > threshold) {
             predator = lifes[i];
             prey = lifes[j];
 
-          } else if (lifes[i].gene.isPreyOf(lifes[j].gene)) {
+          } else if (lifes[i].gene.isPreyOf(lifes[j].gene) > threshold) {
             predator = lifes[j];
             prey = lifes[i];
 
