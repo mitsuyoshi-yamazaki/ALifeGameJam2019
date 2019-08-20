@@ -10,16 +10,17 @@ int initialResourceSize = 600;
 int resourceGrowth = 4;
 
 // Field
-float fieldWidth = 1400;
-float fieldHeight = 500;
+float fieldWidth = 1600;
+float fieldHeight = 700;
 float initialPopulationFieldSize = 1200; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
 // Color
 float backgroundTransparency = 0xff;
+bool enableEatColor = true;
 
 // Life Parameter
-float lifeRadius = 3;
+float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
@@ -185,7 +186,7 @@ class Life {
 
   void draw(){
     if (type == 'Life') {
-     if (isEaten) {
+     if (enableEatColor && isEaten) {
         noStroke();
         fill(255, 0, 0);
         ellipse(position.x, position.y, size, size);
