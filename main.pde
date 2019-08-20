@@ -3,12 +3,12 @@
 Life[] lifes;
 int populationSize = 200;
 
-float fieldWidth = 1200;
-float fieldHeight = 800;
+float fieldWidth = 800;
+float fieldHeight = 600;
 
 float lifeRadius = 10;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 4);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 20);
 float defaultMoveDistance = lifeRadius / 2;
 
 int geneLength = 4;
