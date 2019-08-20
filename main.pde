@@ -13,6 +13,8 @@ float defaultMoveDistance = lifeRadius / 2;
 
 int geneLength = 4;
 int geneMaxValue = 0xf + 1;
+int wholeLength = geneLength*2;
+int wholeMax = Math.pow(2, wholeLength) - 1;
 
 boolean DEBUG = false;
 
@@ -51,6 +53,32 @@ class Gene {
     return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
   }
 
+  Gene childGene(){
+    int mutation = (1 << (random(0, wholeLength)));
+    int childwholegene = (this.getWholeGene()) ^ mutation;
+    return fromWholeGene(childwholegene);
+  }
+  string showBinary(){
+    String str = "";
+    for(int i=0; i!=wholeLength;i++){
+      console.log(((getWholeGene() >> i) & 0x01));
+      str[i] += ("" + ((getWholeGene() >> i) & 0x01));
+    }
+    return str;
+  }
+  int getWholeGene(){
+    return ((predatorGene << geneLength) | (preyGene));
+  }
+  int setWholeGene(int w){
+    this.predatorGene = w >> geneLength;
+    this.preyGene = w & (wholeMax >> geneLength);
+  }
+  static Gene fromWholeGene(int w){
+    Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
+    g.setWholeGene(w);
+    return g;
+  }
+
   float isPreyOf(Gene other) {
     int diff = 0;
 
@@ -59,7 +87,7 @@ class Gene {
         diff += 1;
       }
     }
-    console.log(float(geneLength));
+    //console.log(float(geneLength));
 
     return float(diff) / float(geneLength)
   }
@@ -193,6 +221,14 @@ void setup()
   for(int i=0; i < populationSize;i++){
     lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
   }
+  Gene g = Gene.fromWholeGene(0xff);
+  Gene g2 = g.childGene();
+  console.log("getWhole:" + g.getWholeGene());
+  console.log("desc:" + g.description());
+  console.log("binary:" + g.showBinary());
+  console.log("getWhole g2:" + g2.getWholeGene());
+  console.log("desc:" + g2.description());
+  console.log("binary:" + g2.showBinary());
 }
 
 
