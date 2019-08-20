@@ -55,6 +55,11 @@ class Life{
     position.x += dx;
     position.y += dy;
 
+    position.x = min(position.x, fieldWidth)
+    position.x = max(position.x, 0)
+    position.y = min(position.y, fieldHeight)
+    position.y = max(position.y, 0)
+
     energy -= energyConsumption;
   }
 }
