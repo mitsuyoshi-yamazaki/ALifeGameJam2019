@@ -81,6 +81,7 @@ class Life{
   PVector position;
   float size;
   float energy;
+  float bodyEnergy;
   Gene gene;
   bool isEaten = false;
 
@@ -89,6 +90,7 @@ class Life{
     size=_size;
     energy=_energy;
     gene = _gene;
+    bodyEnergy = size * size;
   }
 
   String show(){
@@ -106,8 +108,9 @@ class Life{
   }
 
   void eat(Life other) {
-    energy += other.energy + other.size * other.size;
+    energy += other.energy + other.bodyEnergy;
     other.energy = 0;
+    other.bodyEnergy = 0;
     other.eaten();
   }
 
