@@ -22,8 +22,8 @@ float backgroundTransparency = 0xff;
 float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
-float defaultMoveDistance = lifeRadius / 1;
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
+float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
 int geneLength = 4;
@@ -130,6 +130,7 @@ class Gene {
 class Life {
 
   PVector position;
+  float v, r;
   float size;
   float bodyEnergy;
   bool isEaten = false;
@@ -143,6 +144,9 @@ class Life {
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
+
+    v = 0.0;
+    r = 0.0;
   }
 
   static Life makeResource(float x, float y, float size, Gene gene) {
@@ -232,14 +236,20 @@ class Life {
       return [child];
     }
 
+    // v += 2;
+    // v *= customizedRandom(-5, 5);
+    // r += customizedRandom(-6, 6);
     
+    // float vx = Math.cos(r) * v;
+    // float vy = Math.sin(r) * v;
 
-    float dx = customizedRandom(-defaultMoveDistance, defaultMoveDistance);
-    float dy = customizedRandom(-defaultMoveDistance, defaultMoveDistance);
-    float energyConsumption = (new PVector(dx, dy)).mag() * size * size * energyConsumptionRate
+    float vx = random(-defaultMoveDistance, defaultMoveDistance);
+    float vy = random(-defaultMoveDistance, defaultMoveDistance);
 
-    position.x += dx;
-    position.y += dy;
+    position.x += vx;
+    position.y += vy;
+
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate
 
     position.x = min(position.x, fieldWidth)
     position.x = max(position.x, 0)
