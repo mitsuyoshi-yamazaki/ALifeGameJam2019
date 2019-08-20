@@ -284,6 +284,7 @@ void setup()
 
 
 int[] populationPerSpecies = [];
+float graphSize = 0.5;
 void draw(){
   fill(0xff, backgroundTransparency);
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
@@ -292,7 +293,7 @@ void draw(){
   for(int i=0; i!=populationPerSpecies.length; i++){
     Gene g = Gene.fromWholeGene(i);
     stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    point(millis()/100, fieldHeight-(populationPerSpecies[i]/5));
+    point(millis()/100, fieldHeight-(populationPerSpecies[i] * graphSize));
   }
   Lifes[] lifes_sorted_by_x = lifes.sort(function(l1, l2){
     if(l1.position.x < l2.position.x){
