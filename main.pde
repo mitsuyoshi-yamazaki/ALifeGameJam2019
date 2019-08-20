@@ -39,7 +39,6 @@ class Life{
                +("energy: "+ energy + ".   \n")
                +("position_x: "+ position.x + ".  \n")
                +("position_y: "+ position.y + ".  \n")
-               
                ;
     return s;
   }
@@ -157,5 +156,35 @@ void mouseClicked(){
   }
   else{
     lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy);
+  }
+}
+
+
+/*var keyPressed = (function (){
+  var isStopping = false;
+
+  return (function(){
+  if(key == 32){
+    noLoop();
+    if(!isStopping){
+      noLoop();
+      print("noloop");
+    } else {
+      loop();
+      print("loop");
+    }
+    isStopping = !isStopping;
+  }
+  });
+})();*/
+
+void keyPressed (){
+  if(key == 32){
+    noLoop();
+  }
+}
+void keyReleased (){
+  if(key == 32){
+    loop();
   }
 }
