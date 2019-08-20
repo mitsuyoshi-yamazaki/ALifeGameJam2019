@@ -88,6 +88,7 @@ bool isCollision(Life l1, Life l2){
 
 Life[] lifes;
 
+int population_size=30;
 void setup()
 {
   size(fieldWidth,fieldHeight);
@@ -97,7 +98,10 @@ void setup()
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
-  lifes = [new Life(40,50,lifeRadius,defaultEnergy), new Life(120, 120,lifeRadius,defaultEnergy)];
+  lifes = [];
+  for(int i=0; i!=population_size;i++){
+    lifes[i]=new Life(random(0,fieldWidth),random(0, fieldHeight),lifeRadius,defaultEnergy)
+  }
 }
 
 
