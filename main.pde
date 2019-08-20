@@ -5,23 +5,23 @@ boolean DEBUG = false;
 
 // Population
 Life[] lifes;
-int populationSize = 200;
+int populationSize = 4000;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
 // Field
-float fieldWidth = 1200;
-float fieldHeight = 800;
-float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = false;
+float fieldWidth = 1400;
+float fieldHeight = 500;
+float initialPopulationFieldSize = 1200; // 起動時に生まれるLifeの置かれる場所の大きさ
+bool useSingleGene = true;
 
 // Color
 float backgroundTransparency = 0xff;
 
 // Life Parameter
-float lifeRadius = 6;
+float lifeRadius = 3;
 float resourceSize = lifeRadius * 0.3;
-float defaultEnergy = 100;
+float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
@@ -278,7 +278,7 @@ void setup()
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
   lifes = [];
-  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize * 2), 20) / 2;
+  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   Gene initialGene = Gene.randomGene();
@@ -312,18 +312,68 @@ void draw(){
   Life[] killed = [];
   Life[] born = [];
 
+  Life[] sortedX = lifes.slice(0, lifes.length);
+  sortedX.sort(function(lhs, rhs) {
+    return lhs.position.x - rhs.position.x;
+  });
+
+  Life[] sortedY = lifes.slice(0, lifes.length);
+  sortedY.sort(function(lhs, rhs) {
+    return lhs.position.y - rhs.position.y;
+  });
+
+
   for (int i = 0; i < lifes.length; i++){
     if(lifes[i].alive()){
       born = born.concat(lifes[i].update());
 
-      for (int j = 0; j < lifes.length; j++){
+      Life life = lifes[i];
+      Life[] compareTo = [];
+
+      int xIndex = sortedX.indexOf(life);
+
+      float maxX = life.position.x + life.size / 2;
+      float minX = life.position.x - life.size / 2;
+
+      for (int k = xIndex + 1; k < sortedX.length; k++) {
+        if (sortedX[k].position.x > maxX) {
+          break;
+        }
+        compareTo[compareTo.length] = sortedX[k];
+      }
+      for (int k = xIndex - 1; k >= 0; k--) {
+        if (sortedX[k].position.x < minX) {
+          break;
+        }
+        compareTo[compareTo.length] = sortedX[k];
+      }
+
+      int yIndex = sortedY.indexOf(life);
+
+      float maxY = life.position.y + life.size / 2;
+      float minY = life.position.y - life.size / 2;
+
+      for (int k = yIndex + 1; k < sortedY.length; k++) {
+        if (sortedY[k].position.x > maxY) {
+          break;
+        }
+        compareTo[compareTo.length] = sortedY[k];
+      }
+      for (int k = yIndex - 1; k >= 0; k--) {
+        if (sortedY[k].position.x < minY) {
+          break;
+        }
+        compareTo[compareTo.length] = sortedY[k];
+      }
+
+      for (int j = 0; j < compareTo.length; j++){
         if(i==j) continue;
-        if(isCollision(lifes[i], lifes[j])) {
+        if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
-          if (lifes[i].gene.canEat(lifes[j].gene) > threshold) {
+          if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
             predator = lifes[i];
-            prey = lifes[j];
+            prey = compareTo[j];
 
           } else {
             continue;
