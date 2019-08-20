@@ -47,8 +47,20 @@ class Life{
     ellipse(position.x, position.y, size, size);
   }
 
-  void update(){
-    if (!alive()) return;
+  Life[] update(){
+    if (!alive()) return[];
+
+    float birthEnergy = size * size;
+
+    if (energy > birthEnergy) {
+      float energyAfterBirth = (energy - birthEnergy) / 2;
+
+      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth);
+
+      energy = energyAfterBirth;
+
+      return [child];
+    }
 
     float dx = random(-defaultMoveDistance, defaultMoveDistance);
     float dy = random(-defaultMoveDistance, defaultMoveDistance);
@@ -63,6 +75,8 @@ class Life{
     position.y = max(position.y, 0)
 
     energy -= energyConsumption;
+
+    return [];
   }
 }
 
@@ -91,11 +105,13 @@ void draw(){
 
   background(0xff);
   Life[] killed = [];
+  Life[] born = [];
 
   for (int i = 0; i < lifes.length; i++){
-    lifes[i].update();
     stroke(255, 0, 0);
     if(lifes[i].alive()){
+      born = born.concat(lifes[i].update());
+
       for (int j = 0; j < lifes.length; j++){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])){
@@ -113,6 +129,8 @@ void draw(){
   lifes = lifes.filter( function( el ) {
     return killed.indexOf( el ) < 0;
   } );
+
+  lifes = lifes.concat(born);
 }
 
 void mouseClicked(){
