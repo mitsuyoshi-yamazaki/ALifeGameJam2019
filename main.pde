@@ -40,6 +40,10 @@ void log(String data) {
   console.log(data);
 }
 
+float customizedRandom(float lower, float upper) {
+  return (random(lower, upper), random(lower, upper), random(lower, upper), random(lower, upper), random(lower, upper)) / 5.0;
+}
+
 class Color {
   int r;
   int g;
@@ -81,13 +85,16 @@ class Gene {
     }
     return str;
   }
+
   int getWholeGene(){
     return ((predatorGene << geneLength) | (preyGene));
   }
+
   int setWholeGene(int w){
     this.predatorGene = w >> geneLength;
     this.preyGene = w & (wholeMax >> geneLength);
   }
+
   static Gene fromWholeGene(int w){
     Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
     g.setWholeGene(w);
@@ -215,8 +222,8 @@ class Life {
       return [child];
     }
 
-    float dx = random(-defaultMoveDistance, defaultMoveDistance);
-    float dy = random(-defaultMoveDistance, defaultMoveDistance);
+    float dx = customizedRandom(-defaultMoveDistance, defaultMoveDistance);
+    float dy = customizedRandom(-defaultMoveDistance, defaultMoveDistance);
     float energyConsumption = (new PVector(dx, dy)).mag() * size * size * energyConsumptionRate
 
     position.x += dx;
