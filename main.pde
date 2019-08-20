@@ -5,7 +5,8 @@ float fieldHeight = 800;
 
 float lifeRadius = 10;
 float defaultEnergy = 100;
-float energyConsumptionRate= 2/(lifeRadius*lifeRadius);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 4);
+float defaultMoveDistance = lifeRadius / 2;
 
 boolean DEBUG = false;
 
@@ -49,8 +50,8 @@ class Life{
   void update(){
     if (!alive()) return;
 
-    float dx = random(-1, 1);
-    float dy = random(-1, 1);
+    float dx = random(-defaultMoveDistance, defaultMoveDistance);
+    float dy = random(-defaultMoveDistance, defaultMoveDistance);
     float energyConsumption = (new PVector(dx, dy)).mag() * size * size * energyConsumptionRate
 
     position.x += dx;
