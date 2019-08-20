@@ -1,13 +1,13 @@
 // -- Parameters
 
 Life[] lifes;
-int populationSize = 100;
+int populationSize = 200;
 int resourceGrowth = 2;
 
-float fieldWidth = 800;
-float fieldHeight = 600;
+float fieldWidth = 1200;
+float fieldHeight = 800;
 
-float lifeRadius = 10;
+float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 100;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 20);
@@ -160,8 +160,12 @@ class Life {
 
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
+      float radian = random(0, 2.0 * PI);
 
-      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, gene);
+      float x = position.x + sin(radian) * size * 3.0;
+      float y = position.y + cos(radian) * size * 3.0;
+
+      Life child = new Life(x, y, size, energyAfterBirth, gene);
 
       energy = energyAfterBirth;
 
