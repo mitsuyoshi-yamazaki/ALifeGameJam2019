@@ -25,7 +25,7 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 4;
 int geneMaxValue = Math.pow(2, geneLength) + 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -292,7 +292,7 @@ void draw(){
   for(int i=0; i!=populationPerSpecies.length; i++){
     Gene g = Gene.fromWholeGene(i);
     stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    point(millis()/100, 600-(populationPerSpecies[i]));
+    point(millis()/100, fieldHeight-(populationPerSpecies[i]/5));
   }
   Lifes[] lifes_sorted_by_x = lifes.sort(function(l1, l2){
     if(l1.position.x < l2.position.x){
