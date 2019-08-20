@@ -3,6 +3,8 @@
 float fieldWidth = 1200;
 float fieldHeight = 800;
 
+float lifeRadius = 8;
+
 boolean DEBUG = false;
 
 // -- 
@@ -23,7 +25,7 @@ class Life{
 
   Life(float x, float y){
     position = new PVector(x, y);
-    radius=80;
+    radius=lifeRadius;
   }
   void draw(){
     noFill();
