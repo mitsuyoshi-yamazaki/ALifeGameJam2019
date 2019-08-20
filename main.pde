@@ -1,5 +1,21 @@
+// -- Parameters
+
 float fieldWidth = 1200;
 float fieldHeight = 800;
+
+boolean DEBUG = false;
+
+// -- 
+
+void log(string data) {
+  if (DEBUG == false) return;
+  println(data);
+}
+
+void log(int data) {
+  if (DEBUG == false) return;
+  println(data);
+}
 
 class Life{
   PVector position;
@@ -49,8 +65,8 @@ void draw(){
     stroke(0, 0, 0);
     for (int j = 0; j < lifes.length; j++){
       if(i==j) continue;
-      println(i);
-      println(j);
+      log(i);
+      log(j);
       if(isCollision(lifes[i], lifes[j])){
         stroke(255, 0, 0);
         break;
