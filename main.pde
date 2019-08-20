@@ -5,7 +5,8 @@ float fieldHeight = 800;
 
 float lifeRadius = 10;
 float defaultEnergy = 100;
-float energyConsumptionRate= 2/(lifeRadius*lifeRadius);
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 4);
+float defaultMoveDistance = lifeRadius / 2;
 
 boolean DEBUG = false;
 
@@ -46,11 +47,23 @@ class Life{
     ellipse(position.x, position.y, size, size);
   }
 
-  void update(){
-    if (!alive()) return;
+  Life[] update(){
+    if (!alive()) return[];
 
-    float dx = random(-1, 1);
-    float dy = random(-1, 1);
+    float birthEnergy = size * size;
+
+    if (energy > birthEnergy) {
+      float energyAfterBirth = (energy - birthEnergy) / 2;
+
+      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth);
+
+      energy = energyAfterBirth;
+
+      return [child];
+    }
+
+    float dx = random(-defaultMoveDistance, defaultMoveDistance);
+    float dy = random(-defaultMoveDistance, defaultMoveDistance);
     float energyConsumption = (new PVector(dx, dy)).mag() * size * size * energyConsumptionRate
 
     position.x += dx;
@@ -62,6 +75,8 @@ class Life{
     position.y = max(position.y, 0)
 
     energy -= energyConsumption;
+
+    return [];
   }
 }
 
@@ -89,22 +104,33 @@ void setup()
 void draw(){
 
   background(0xff);
+  Life[] killed = [];
+  Life[] born = [];
 
   for (int i = 0; i < lifes.length; i++){
-    lifes[i].update();
     stroke(255, 0, 0);
     if(lifes[i].alive()){
+      born = born.concat(lifes[i].update());
+
       for (int j = 0; j < lifes.length; j++){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])){
-          lifes[i].energy += lifes[j].energy;
-          lifes[j].energy = 0;
+          Life pray = lifes[j];
+          lifes[i].energy += pray.energy + pray.size * pray.size;
+          pray.energy = 0;
+          killed[killed.length] = pray;
           break;
         }
       }
     }
     lifes[i].draw();
   }
+
+  lifes = lifes.filter( function( el ) {
+    return killed.indexOf( el ) < 0;
+  } );
+
+  lifes = lifes.concat(born);
 }
 
 void mouseClicked(){
