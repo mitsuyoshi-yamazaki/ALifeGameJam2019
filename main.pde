@@ -5,7 +5,7 @@ boolean DEBUG = false;
 
 // Population
 Life[] lifes;
-int populationSize = 200;
+int populationSize = 2000;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
@@ -280,36 +280,74 @@ void setup()
 }
 
 
+
+
 void draw(){
 
   fill(0xff, backgroundTransparency);
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
+  Lifes[] lifes_sorted_by_x = lifes.sort(function(l1, l2){
+    if(l1.position.x < l2.position.x){
+      return -1;
+    }
+    else if(l2.position.x < l1.position.x){
+      return 1;
+    }
+    else{
+      return 0;
+      }
+    });
+
+  Lifes[] lifes_sorted_by_y = lifes.sort(function(l1,l2){
+    if(l1.position.y < l2.position.y){
+      return (-1);
+    }
+    else if(l2.position.y < l1.position.y){
+      return 1;
+    }
+    else{return 0;}
+    });
+
+
+
   Life[] killed = [];
   Life[] born = [];
 
   for (int i = 0; i < lifes.length; i++){
+    Life focus = lifes[i];
+    var neighbors_in_x = lifes.filter(function(Life l){
+      return (abs(l.position.x - focus.position.x) < focus.size/2);
+      });
+    var neighbors_in_y = lifes.filter(function(Life l){
+      return (abs(l.position.y - focus.position.y) < focus.size/2);
+      });
+
     if(lifes[i].alive()){
       born = born.concat(lifes[i].update());
 
-      for (int j = 0; j < lifes.length; j++){
-        if(i==j) continue;
-        if(isCollision(lifes[i], lifes[j])) {
-          Life predator, prey;
-          float threshold = random(eatProbability, 1.0);
-          if (lifes[i].gene.canEat(lifes[j].gene) > threshold) {
-            predator = lifes[i];
-            prey = lifes[j];
+      var eating_process = (function(neighbors_in_){
+        for(int j=0; j!=neighbors_in_.length;j++){
+          if(lifes[i]==neighbors_in_[j]) continue;
+          if(isCollision(lifes[i], neighbors_in_[j])) {
+            Life predator, prey;
+            float threshold = random(eatProbability, 1.0);
+            if (lifes[i].gene.canEat(neighbors_in_[j].gene) > threshold) {
+              predator = lifes[i];
+              prey = neighbors_in_[j];
+            } else {
+              continue;
+            }
 
-          } else {
-            continue;
+            predator.eat(prey);
+            killed[killed.length] = prey;
+            break;
           }
-
-          predator.eat(prey);
-          killed[killed.length] = prey;
-          break;
         }
-      }
+      });
+
+      eating_process(neighbors_in_x);
+      eating_process(neighbors_in_y);
     }
     lifes[i].draw();
   }
