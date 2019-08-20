@@ -1,7 +1,8 @@
 // -- Parameters
 
 // System
-boolean DEBUG = false;
+bool DEBUG = false;
+bool artMode = true;
 
 // Population
 Life[] lifes;
@@ -18,6 +19,7 @@ bool useSingleGene = true;
 // Color
 float backgroundTransparency = 0xff;
 bool enableEatColor = true;
+bool disableResourceColor = false;
 
 // Life Parameter
 float lifeRadius = 6;
@@ -36,6 +38,12 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.5;
 
 float mutationRate = 0.03;
+
+if (artMode) {
+  backgroundTransparency = 0;
+  enableEatColor = false;
+  disableResourceColor = true;
+}
 
 // --
 
@@ -198,11 +206,14 @@ class Life {
         if (alive()) {
           ellipse(position.x, position.y, size, size);
         } else {
+          if (disableResourceColor) return;
           rect(position.x, position.y, size * 0.5, size * 0.5);
         }
       }
 
     } else {
+      if (disableResourceColor) return;
+
       if (isEaten) {
         noStroke();
         fill(255, 0, 0);
@@ -277,7 +288,7 @@ void setup()
   //noLoop();
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
-  println("Hello, ErrorLog!");
+
   lifes = [];
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
