@@ -90,6 +90,7 @@ void setup()
 void draw(){
 
   background(0xff);
+  Life[] killed = [];
 
   for (int i = 0; i < lifes.length; i++){
     lifes[i].update();
@@ -98,14 +99,20 @@ void draw(){
       for (int j = 0; j < lifes.length; j++){
         if(i==j) continue;
         if(isCollision(lifes[i], lifes[j])){
-          lifes[i].energy += lifes[j].energy;
-          lifes[j].energy = 0;
+          Life pray = lifes[j];
+          lifes[i].energy += pray.energy + pray.size * pray.size;
+          pray.energy = 0;
+          killed[killed.length] = pray;
           break;
         }
       }
     }
     lifes[i].draw();
   }
+
+  lifes = lifes.filter( function( el ) {
+    return killed.indexOf( el ) < 0;
+  } );
 }
 
 void mouseClicked(){
