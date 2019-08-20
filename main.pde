@@ -6,15 +6,17 @@ bool artMode = true;
 
 // Population
 Life[] lifes;
-int populationSize = 4000;
+int populationSize = 1000;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
 // Field
 float fieldWidth = 1600;
 float fieldHeight = 700;
-float initialPopulationFieldSize = 1200; // 起動時に生まれるLifeの置かれる場所の大きさ
+float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
+// Gene initialGene = new Gene(0, 0);  
+Gene initialGene = Gene.randomGene();  
 
 // Color
 float backgroundTransparency = 0xff;
@@ -292,8 +294,6 @@ void setup()
   lifes = [];
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
-
-  Gene initialGene = Gene.randomGene();
 
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
