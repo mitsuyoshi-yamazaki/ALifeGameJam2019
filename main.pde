@@ -295,6 +295,8 @@ void setup()
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
+  Gene initialGene = Gene.randomGene();
+
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
