@@ -1,5 +1,8 @@
 // -- Parameters
 
+Life[] lifes;
+int populationSize = 100;
+
 float fieldWidth = 1200;
 float fieldHeight = 800;
 
@@ -22,7 +25,7 @@ class Color {
   int g;
   int b;
 
-  Color() {
+  Color(int _r, int _g, int _b) {
     r = _r;
     g = _g;
     b = _b;
@@ -30,13 +33,30 @@ class Color {
 }
 
 class Gene {
+  static int max = 0x1 + 1;
+
   int predatorGene;
   int preyGene;
-  static int max = 0x1 + 1;
+  Color geneColor;
 
   Gene(int _predatorGene, int _preyGene) {
     predatorGene = _predatorGene;
     preyGene = _preyGene;
+
+    // 1bit遺伝子にのみ一次対応
+    if (predatorGene == 1) {
+      if (preyGene == 1) {
+        geneColor = new Color(86, 156, 214);
+      } else {
+        geneColor = new Color(226, 121, 56);
+      }
+    } else {
+      if (preyGene == 1) {
+        geneColor = new Color(88, 224, 12);
+      } else {
+        geneColor = new Color(175, 121, 171);
+      }
+    }
   }
 
   static Gene randomGene() {
@@ -54,8 +74,6 @@ class Gene {
   String description() {
     return '' + predatorGene + ' | ' + preyGene
   }
-
-  
 }
 
 class Life{
@@ -106,9 +124,11 @@ class Life{
       stroke(150);
       noFill();
 
-    } else {
-      stroke(52);
-      noFill();
+    } else {  
+      // Alive
+      noStroke();
+      fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+      // fill(255, 0, 0);
     }
 
     ellipse(position.x, position.y, size, size);
@@ -153,9 +173,6 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-Life[] lifes;
-
-int population_size=30;
 void setup()
 {
   size(fieldWidth,fieldHeight);
@@ -166,7 +183,7 @@ void setup()
   textFont(fontA, 14);
   println("Hello, ErrorLog!");
   lifes = [];
-  for(int i=0; i!=population_size;i++){
+  for(int i=0; i < populationSize;i++){
     lifes[i]=new Life(random(100,fieldWidth - 100),random(100, fieldHeight - 100),lifeRadius,defaultEnergy,Gene.randomGene())
   }
 }
