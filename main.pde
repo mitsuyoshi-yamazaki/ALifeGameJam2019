@@ -17,6 +17,18 @@ void log(String data) {
   println(data);
 }
 
+class Color {
+  int r;
+  int g;
+  int b;
+
+  Color() {
+    r = _r;
+    g = _g;
+    b = _b;
+  }
+}
+
 class Gene {
   int predatorGene;
   int preyGene;
@@ -42,6 +54,8 @@ class Gene {
   String description() {
     return '' + predatorGene + ' | ' + preyGene
   }
+
+  
 }
 
 class Life{
@@ -50,6 +64,7 @@ class Life{
   float size;
   float energy;
   Gene gene;
+  bool isEaten = false;
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
@@ -71,12 +86,30 @@ class Life{
     return energy > 0.0;
   }
 
+  void eat(Life other) {
+    energy += other.energy + other.size * other.size;
+    other.energy = 0;
+    other.eaten();
+  }
+
+  void eaten() {
+    isEaten = true;
+  }
+
   void draw(){
-    if (alive() == false) {
-      stroke(150)
+    if (isEaten) {
+      noStroke();
+      fill(255, 0, 0);
+
+    } else if (alive() == false) {
+      stroke(150);
+      noFill();
+
+    } else {
+      stroke(52);
+      noFill();
     }
 
-    noFill();
     ellipse(position.x, position.y, size, size);
   }
 
@@ -145,7 +178,6 @@ void draw(){
   Life[] born = [];
 
   for (int i = 0; i < lifes.length; i++){
-    stroke(255, 0, 0);
     if(lifes[i].alive()){
       born = born.concat(lifes[i].update());
 
@@ -165,9 +197,7 @@ void draw(){
             continue;
           }
 
-
-          predator.energy += prey.energy + prey.size * prey.size;
-          prey.energy = 0;
+          predator.eat(prey);
           killed[killed.length] = prey;
           break;
         }
