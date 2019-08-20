@@ -22,16 +22,33 @@ void log(int data) {
   println(data);
 }
 
+class Gene {
+  int predatorGene;
+  int preyGene;
+  static int max = 0x3;
+
+  Gene(int _predatorGene, int _preyGene) {
+    predatorGene = _predatorGene;
+    preyGene = _preyGene;
+  }
+
+  static Gene randomGene() {
+    return new Gene(random(0, Gene.max), random(0, Gene.max));
+  }
+}
+
 class Life{
 
   PVector position;
   float size;
   float energy;
+  Gene gene;
 
-  Life(float x, float y, float _size, float _energy){
+  Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
     size=_size;
     energy=_energy;
+    gene = _gene;
   }
 
   bool alive() {
@@ -55,7 +72,7 @@ class Life{
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
 
-      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth);
+      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, Gene.randomGene());
 
       energy = energyAfterBirth;
 
@@ -100,7 +117,7 @@ void setup()
   println("Hello, ErrorLog!");
   lifes = [];
   for(int i=0; i!=population_size;i++){
-    lifes[i]=new Life(random(0,fieldWidth),random(0, fieldHeight),lifeRadius,defaultEnergy)
+    lifes[i]=new Life(random(0,fieldWidth),random(0, fieldHeight),lifeRadius,defaultEnergy,Gene.randomGene())
   }
 }
 
@@ -138,5 +155,5 @@ void draw(){
 }
 
 void mouseClicked(){
-  lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy);
+  lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
 }
