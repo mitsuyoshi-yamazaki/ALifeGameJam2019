@@ -33,6 +33,8 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 // Fight
 float eatProbability = 0.5;
 
+float mutationRate = 0.01;
+
 // --
 
 void log(String data) {
@@ -68,10 +70,17 @@ class Gene {
     return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
   }
 
-  Gene childGene(){
+  Gene mutantGene(){
     int mutation = (1 << (random(0, wholeLength)));
     int childwholegene = (this.getWholeGene()) ^ mutation;
     return fromWholeGene(childwholegene);
+  }
+  Gene childGene(){
+    if (mutationRate > random(0.0, 1.0)){
+      return mutantGene();
+    } else {
+      return new Gene(predatorGene, preyGene);
+    }
   }
   string showBinary(){
     String str = "";
