@@ -63,6 +63,7 @@ class Life{
                +("energy: "+ energy + ".   \n")
                +("position_x: "+ position.x + ".  \n")
                +("position_y: "+ position.y + ".  \n")
+               +("gene(predator|prey): "+ gene.description() + ".  \n")
                ;
     return s;
   }
