@@ -62,7 +62,7 @@ class Gene {
     String str = "";
     for(int i=0; i!=wholeLength;i++){
       console.log(((getWholeGene() >> i) & 0x01));
-      str[i] += ("" + ((getWholeGene() >> i) & 0x01));
+      str+=((getWholeGene() >> i) & 0x01);
     }
     return str;
   }
@@ -131,6 +131,7 @@ class Life{
                +("position_x: "+ position.x + ".  \n")
                +("position_y: "+ position.y + ".  \n")
                +("gene(predator|prey): "+ gene.description() + ".  \n")
+               +("gene(binary)" + gene.showBinary() +".   \n")
                ;
     return s;
   }
@@ -154,12 +155,11 @@ class Life{
     if (isEaten) {
       noStroke();
       fill(255, 0, 0);
-
     } else if (alive() == false) {
       stroke(150);
       noFill();
 
-    } else {  
+    } else {
       // Alive
       noStroke();
       fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
@@ -177,7 +177,8 @@ class Life{
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
 
-      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, gene);
+      Gene newGene = gene.childGene();
+      Life child = new Life(position.x + size * 5.0, position.y + size, size, energyAfterBirth, newGene);
 
       energy = energyAfterBirth;
 
