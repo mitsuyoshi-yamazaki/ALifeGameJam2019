@@ -71,6 +71,10 @@ if (parameters['single_gene'] != null) {
   useSingleGene = int(parameters['single_gene']);
 }
 
+if (param('art-mode') != null) {
+  artMode = int(param('art-mode'));
+}
+
 // Artistics Mode
 if (artMode) {
   backgroundTransparency = 0;
