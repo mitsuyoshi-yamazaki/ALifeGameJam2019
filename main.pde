@@ -2,7 +2,7 @@
 
 // System
 bool DEBUG = false;
-bool artMode = false;
+bool artMode = true;
 
 // Population
 Life[] lifes;
@@ -13,7 +13,7 @@ int resourceGrowth = 4;
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
-float graphHeight = 200;
+float graphHeight = 400;
 
 // Field
 float fieldWidth = 900;
@@ -27,7 +27,7 @@ float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
 // Color
-float backgroundTransparency = 0x04;
+float backgroundTransparency = 0xff;
 bool enableEatColor = true;
 bool disableResourceColor = false;
 
@@ -48,7 +48,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.9;
 
 // Evolution
-float mutationRate = 0.00;
+float mutationRate = 0.2;
 
 // Artistics Mode
 if (artMode) {
@@ -89,7 +89,7 @@ class Gene {
     predatorGene = _predatorGene;
     preyGene = _preyGene;
 
-    geneColor = new Color(predatorGene << 4, preyGene << 4, 0xff);
+    geneColor = new Color((predatorGene << (8 - geneLength)) + 0x44, (preyGene << (8 - geneLength)) + 0x44, 0xbb);
   }
 
   static Gene randomGene() {
@@ -308,7 +308,7 @@ void setup()
 
   Gene initialGene = new Gene(0x0, 0xf);
 
-  Gene[] initialGenesArray = [initialGene, new Gene(0x8,0x0), new Gene(0xf,0x8)];
+  Gene[] initialGenesArray = [new Gene(0x8,0x0), new Gene(0x0,0x8)];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -418,12 +418,13 @@ void draw(){
 
 void drawGraph(){
   strokeWeight(3);
-  for(int i=0; i!=populationPerSpecies.length; i++){
-    Gene g = Gene.fromWholeGene(i);
-    stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    var t = timer();
-    point((t/300)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
-  }
+  var t=0;
+  populationPerSpecies.forEach(function(Life life){
+    Gene g = Gene.fromWholeGene(life.getWholeGene);
+    stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
+    t=timer();
+    point((t/300)%appFieldWidth, appFieldHeight-(life * graphSize));
+  });
   if((Math.floor(t/300))%fieldWidth < 4) {
     clearGraph();
   }
@@ -445,7 +446,7 @@ var timer = (function(){
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
   Gene g = new Gene(0x0, 0x0);
-  Gene g2 = new Gene(0xf, 0xf);
+  Gene g2 = new Gene(0x0, 0x0);
   for (int i = 0; i < numberOfResources; i++) {
     lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, (random(0, 1) < 0.5) ? g : g2);
   }
@@ -462,7 +463,8 @@ void mouseClicked(){
   else{
 //    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
     for(int i=0; i!=10;i++){
-     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, new Gene(0x8, 0));
+     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, new Gene(0x8, 0x8));
+     //TODO:クリック後、その場所に継続的にエサを与え続ける
     }
   }
 }
@@ -490,7 +492,6 @@ void keyPressed (){
   if(key == 32){
     noLoop();
     fill(0xff);
-    rect(0,fieldHeight,fieldWidth,fieldHeight); // background() だと動作しない
   }
 }
 
