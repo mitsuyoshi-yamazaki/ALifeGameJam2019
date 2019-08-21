@@ -48,7 +48,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.5;
 
 // Evolution
-float mutationRate = 0.03;
+float mutationRate = 0.00;
 
 // Artistics Mode
 if (artMode) {
@@ -334,7 +334,12 @@ void draw(){
   for(int i=0; i!=populationPerSpecies.length; i++){
     Gene g = Gene.fromWholeGene(i);
     stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    point(millis()/100, appFieldHeight-(populationPerSpecies[i] * graphSize));
+    var t = timer();
+    point((t/100)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
+  }
+  if(t%fieldWidth==0) {
+    fill(0xff, backgroundTransparency);
+    rect(0,appFieldHeight,appFieldWidth,graphHeight); // background() だと動作しない
   }
 
   // Refresh Game Field
@@ -410,18 +415,7 @@ void draw(){
 
   addResources();
 
-  for(int i=0; i!=populationPerSpecies.length; i++){
-    strokeWeight(3);
-    Gene g = Gene.fromWholeGene(i);
-    stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    int point_x = (timer()/100)%fieldWidth;
-    int point_y = fieldHeight-(populationPerSpecies[i] * graphSize);
-    point(point_x, point_y);
-    strokeWeight(2);
-    stroke(0x00, 0x00, 0x00);
-    point(point_x+1, point_y+1);
-    point(point_x-2, point_y-3);
-  }
+
 }
 
 var timer = (function(){
@@ -434,7 +428,7 @@ var timer = (function(){
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0x00, 0x00);
+  Gene g = new Gene(0xf, 0xf);
   for (int i = 0; i < numberOfResources; i++) {
     lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
   }
@@ -480,7 +474,16 @@ void keyPressed (){
   if(key == 32){
     noLoop();
   }
+  else if (key == 16){
+   graphHeight += 5;
+   appFieldHeight = fieldHeight + graphHeight;
+  }
+  else if (key == 17){
+   graphHeight -= 5;
+   appFieldHeight = fieldHeight + graphHeight;
+  }
 }
+
 void keyReleased (){
   if(key == 32){
     loop();
