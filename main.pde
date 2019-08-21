@@ -12,13 +12,13 @@ int resourceGrowth = 4;
 
 // Inspector
 int[] populationPerSpecies = [];
-float graphSize = 0.5;
+float graphSize = 0.1;
 float graphHeight = 200;
 
 // Field
-float fieldWidth = 1600;
-float fieldHeight = 700;
-float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
+float fieldWidth = 900;
+float fieldHeight = 900;
+float initialPopulationFieldSize = 1000; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 // Gene initialGene = new Gene(0, 0);  
 Gene initialGene = Gene.randomGene();  
@@ -303,14 +303,14 @@ void setup()
   textFont(fontA, 14);
 
   lifes = [];
-  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
+  int paddingWidth = 20;//max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
+  int paddingHeight = 20;//max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene initialGene = new Gene(0xf, 0x0);
+  Gene initialGene = new Gene(0x0, 0xf);
 
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
-      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
+      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, (random(0, 1) < 0.9) ? initialGene : new Gene(0xf, 0x5));
     } else {
       lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
     }
@@ -377,6 +377,7 @@ void draw(){
         if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
+          if(compareTo[j].type == "Life" && !compareTo[j].alive()) continue;// もし死体なら食べない
           if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
             predator = lifes[i];
             prey = compareTo[j];
@@ -394,11 +395,11 @@ void draw(){
     lifes[i].draw();
   }
 
-  lifes = lifes.filter( function( el ) {
+  lifes = lifes.filter( function( el ) { //死
     return killed.indexOf( el ) < 0;
   } );
 
-  lifes = lifes.concat(born);
+  lifes = lifes.concat(born); //生
 
   addResources();
 
@@ -414,10 +415,14 @@ void drawGraph(){
     var t = timer();
     point((t/100)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
   }
-  if(t%fieldWidth==1) {
-    fill(0xff);
-    rect(0,appFieldHeight,appFieldWidth,graphHeight); // background() だと動作しない
+  if((Math.floor(t/100))%fieldWidth < 4) {
+    clearGraph();
   }
+}
+
+void clearGraph(){
+  fill(0xff);
+  rect(0,fieldHeight,appFieldWidth,graphHeight);
 }
 
 var timer = (function(){
@@ -430,7 +435,7 @@ var timer = (function(){
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0xf, 0xf);
+  Gene g = new Gene(0x0, 0x0);
   for (int i = 0; i < numberOfResources; i++) {
     lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
   }
@@ -445,10 +450,10 @@ void mouseClicked(){
     console.log(found.show());
   }
   else{
-    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0x2, 0xf));
-    //for(int i=0; i!=10;i++){
-    // lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
-    //}
+//    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
+    for(int i=0; i!=10;i++){
+     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, new Gene(0, 0));
+    }
   }
 }
 
@@ -474,14 +479,8 @@ void mouseClicked(){
 void keyPressed (){
   if(key == 32){
     noLoop();
-  }
-  else if (key == 16){
-   graphHeight += 5;
-   appFieldHeight = fieldHeight + graphHeight;
-  }
-  else if (key == 17){
-   graphHeight -= 5;
-   appFieldHeight = fieldHeight + graphHeight;
+    fill(0xff);
+    rect(0,fieldHeight,fieldWidth,fieldHeight); // background() だと動作しない
   }
 }
 
