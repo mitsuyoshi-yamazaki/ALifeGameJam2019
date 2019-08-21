@@ -12,12 +12,12 @@ int resourceGrowth = 4;
 
 // Inspector
 int[] populationPerSpecies = [];
-float graphSize = 0.1;
+float graphSize = 0.4;
 float graphHeight = 200;
 
 // Field
-float fieldWidth = 900;
-float fieldHeight = 900;
+float fieldWidth = 1000;
+float fieldHeight = 700;
 float initialPopulationFieldSize = 1000; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 // Gene initialGene = new Gene(0, 0);  
@@ -27,7 +27,7 @@ float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
 // Color
-float backgroundTransparency = 0xff;
+float backgroundTransparency = 0x04;
 bool enableEatColor = true;
 bool disableResourceColor = false;
 
@@ -413,9 +413,9 @@ void drawGraph(){
     Gene g = Gene.fromWholeGene(i);
     stroke(g.geneColor.r, g.geneColor.g, 0xff);
     var t = timer();
-    point((t/100)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
+    point((t/1000)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
   }
-  if((Math.floor(t/100))%fieldWidth < 4) {
+  if((Math.floor(t/1000))%fieldWidth < 4) {
     clearGraph();
   }
 }
