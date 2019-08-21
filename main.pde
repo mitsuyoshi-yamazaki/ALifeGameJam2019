@@ -2,7 +2,7 @@
 
 // System
 bool DEBUG = false;
-bool artMode = true;
+bool artMode = false;
 
 // Population
 Life[] lifes;
@@ -32,7 +32,7 @@ float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
 int geneLength = 4;
-int geneMaxValue = 0xf + 1;
+int geneMaxValue = Math.pow(2, geneLength) + 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
@@ -175,6 +175,7 @@ class Life {
                +("position_y: "+ position.y + ".  \n")
                +("gene(predator|prey): "+ gene.description() + ".  \n")
                +("gene(binary)" + gene.showBinary() +".   \n")
+               +("Type:" + this.type +".   \n")
                ;
     return s;
   }
@@ -318,10 +319,20 @@ void setup()
 }
 
 
-void draw(){
 
+
+int[] populationPerSpecies = [];
+float graphSize = 0.5;
+void draw(){
   fill(0xff, backgroundTransparency);
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
+
+  strokeWeight(3);
+  for(int i=0; i!=populationPerSpecies.length; i++){
+    Gene g = Gene.fromWholeGene(i);
+    stroke(g.geneColor.r, g.geneColor.g, 0xff);
+    point(millis()/100, fieldHeight-(populationPerSpecies[i] * graphSize));
+  }
 
   Life[] killed = [];
   Life[] born = [];
@@ -336,9 +347,13 @@ void draw(){
     return lhs.position.y - rhs.position.y;
   });
 
+  populationPerSpecies = populationPerSpecies.map(function(){return 0});
 
   for (int i = 0; i < lifes.length; i++){
+    Life focus = lifes[i];
+
     if(lifes[i].alive()){
+      populationPerSpecies[focus.gene.getWholeGene()] += 1;
       born = born.concat(lifes[i].update());
 
       Life life = lifes[i];
@@ -428,7 +443,10 @@ void mouseClicked(){
     console.log(found.show());
   }
   else{
-    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+    //lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+    for(int i=0; i!=10;i++){
+     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
+    }
   }
 }
 
@@ -452,6 +470,7 @@ void mouseClicked(){
 })();*/
 
 void keyPressed (){
+  console.log(populationPerSpecies);
   if(key == 32){
     noLoop();
   }
