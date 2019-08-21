@@ -10,6 +10,11 @@ int populationSize = 1000;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
+// Inspector
+int[] populationPerSpecies = [];
+float graphSize = 0.5;
+float graphHeight = 200;
+
 // Field
 float fieldWidth = 1600;
 float fieldHeight = 700;
@@ -17,6 +22,9 @@ float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置か
 bool useSingleGene = true;
 // Gene initialGene = new Gene(0, 0);  
 Gene initialGene = Gene.randomGene();  
+
+float appFieldWidth = fieldWidth;
+float appFieldHeight = fieldHeight + graphHeight;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -39,8 +47,10 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 // Fight
 float eatProbability = 0.5;
 
+// Evolution
 float mutationRate = 0.03;
 
+// Artistics Mode
 if (artMode) {
   backgroundTransparency = 0;
   enableEatColor = false;
@@ -285,7 +295,7 @@ bool isCollision(Life l1, Life l2){
 
 void setup()
 {
-  size(fieldWidth,fieldHeight);
+  size(appFieldWidth, appFieldHeight);
   background(0xff);
 
   //noLoop();
@@ -318,22 +328,20 @@ void setup()
   console.log("binary:" + g2.showBinary());
 }
 
-
-
-
-int[] populationPerSpecies = [];
-float graphSize = 0.5;
 void draw(){
-  fill(0xff, backgroundTransparency);
-  rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
-
+  // Draw Graph
   strokeWeight(3);
   for(int i=0; i!=populationPerSpecies.length; i++){
     Gene g = Gene.fromWholeGene(i);
     stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    point(millis()/100, fieldHeight-(populationPerSpecies[i] * graphSize));
+    point(millis()/100, appFieldHeight-(populationPerSpecies[i] * graphSize));
   }
 
+  // Refresh Game Field
+  fill(0xff, backgroundTransparency);
+  rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
+
+  // Draw Lives
   Life[] killed = [];
   Life[] born = [];
 
