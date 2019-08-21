@@ -16,8 +16,8 @@ float graphSize = 0.4;
 float graphHeight = 200;
 
 // Field
-float fieldWidth = 1000;
-float fieldHeight = 700;
+float fieldWidth = 900;
+float fieldHeight = 600;
 float initialPopulationFieldSize = 1000; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 // Gene initialGene = new Gene(0, 0);  
@@ -308,10 +308,19 @@ void setup()
 
   Gene initialGene = new Gene(0x0, 0xf);
 
+  Gene[] initialGenesArray = [initialGene, new Gene(0x8,0x0), new Gene(0xf,0x8)];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
-      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, (random(0, 1) < 0.9) ? initialGene : new Gene(0xf, 0x5));
-    } else {
+      float dice;
+      dice = Math.floor(random(0, initialGenesArray.length));
+      for(int g_i = 0; g_i != initialGenesArray.length;g_i++){
+        if(dice == g_i)
+        {
+        lifes[i] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+        }
+      }
+    }
+    else {
       lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
     }
   }
@@ -413,9 +422,9 @@ void drawGraph(){
     Gene g = Gene.fromWholeGene(i);
     stroke(g.geneColor.r, g.geneColor.g, 0xff);
     var t = timer();
-    point((t/1000)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
+    point((t/300)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
   }
-  if((Math.floor(t/1000))%fieldWidth < 4) {
+  if((Math.floor(t/300))%fieldWidth < 4) {
     clearGraph();
   }
 }
@@ -436,8 +445,9 @@ var timer = (function(){
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
   Gene g = new Gene(0x0, 0x0);
+  Gene g2 = new Gene(0xf, 0xf);
   for (int i = 0; i < numberOfResources; i++) {
-    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, (random(0, 1) < 0.5) ? g : g2);
   }
 }
 
@@ -452,7 +462,7 @@ void mouseClicked(){
   else{
 //    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
     for(int i=0; i!=10;i++){
-     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, new Gene(0, 0));
+     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, new Gene(0x8, 0));
     }
   }
 }
