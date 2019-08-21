@@ -419,11 +419,11 @@ void draw(){
 void drawGraph(){
   strokeWeight(3);
   var t=0;
-  populationPerSpecies.forEach(function(Life life){
-    Gene g = Gene.fromWholeGene(life.getWholeGene);
+  populationPerSpecies.forEach(function(int pop, int gene){
+    Gene g = Gene.fromWholeGene(gene);
     stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
     t=timer();
-    point((t/300)%appFieldWidth, appFieldHeight-(life * graphSize));
+    point((t/300)%appFieldWidth, appFieldHeight-(pop * graphSize));
   });
   if((Math.floor(t/300))%fieldWidth < 4) {
     clearGraph();
