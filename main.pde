@@ -45,7 +45,7 @@ int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.5;
+float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.00;
@@ -306,7 +306,7 @@ void setup()
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene initialGene = new Gene(0xf, 0x2);
+  Gene initialGene = new Gene(0xf, 0x0);
 
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
@@ -329,20 +329,7 @@ void setup()
 }
 
 void draw(){
-  // Draw Graph
-  strokeWeight(3);
-  for(int i=0; i!=populationPerSpecies.length; i++){
-    Gene g = Gene.fromWholeGene(i);
-    stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    var t = timer();
-    point((t/100)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
-  }
-  if(t%fieldWidth==0) {
-    fill(0xff, backgroundTransparency);
-    rect(0,appFieldHeight,appFieldWidth,graphHeight); // background() だと動作しない
-  }
-
-  // Refresh Game Field
+    // Refresh Game Field
   fill(0xff, backgroundTransparency);
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
@@ -415,7 +402,22 @@ void draw(){
 
   addResources();
 
+// Draw Graph
+  drawGraph();
+}
 
+void drawGraph(){
+  strokeWeight(3);
+  for(int i=0; i!=populationPerSpecies.length; i++){
+    Gene g = Gene.fromWholeGene(i);
+    stroke(g.geneColor.r, g.geneColor.g, 0xff);
+    var t = timer();
+    point((t/100)%appFieldWidth, appFieldHeight-(populationPerSpecies[i] * graphSize));
+  }
+  if(t%fieldWidth==1) {
+    fill(0xff);
+    rect(0,appFieldHeight,appFieldWidth,graphHeight); // background() だと動作しない
+  }
 }
 
 var timer = (function(){
@@ -470,7 +472,6 @@ void mouseClicked(){
 })();*/
 
 void keyPressed (){
-  console.log(populationPerSpecies);
   if(key == 32){
     noLoop();
   }
