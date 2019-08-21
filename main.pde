@@ -1,27 +1,41 @@
 // -- Parameters
 
 // System
-boolean DEBUG = false;
+bool DEBUG = false;
+bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 200;
+int populationSize = 1000;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
+// Inspector
+int[] populationPerSpecies = [];
+float graphSize = 0.5;
+float graphHeight = 200;
+
 // Field
-float fieldWidth = 1200;
-float fieldHeight = 800;
-float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
+float fieldWidth = 1600;
+float fieldHeight = 700;
+float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
+bool useSingleGene = true;
+// Gene initialGene = new Gene(0, 0);  
+Gene initialGene = Gene.randomGene();  
+
+float appFieldWidth = fieldWidth;
+float appFieldHeight = fieldHeight + graphHeight;
 
 // Color
-float backgroundTransparency = 0x01;
+float backgroundTransparency = 0xff;
+bool enableEatColor = true;
+bool disableResourceColor = false;
 
 // Life Parameter
 float lifeRadius = 6;
 float resourceSize = lifeRadius * 0.3;
-float defaultEnergy = 100;
-float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 60);
+float defaultEnergy = 50;
+float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
@@ -33,13 +47,25 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 // Fight
 float eatProbability = 0.5;
 
-float mutationRate = 0.00;
+// Evolution
+float mutationRate = 0.03;
+
+// Artistics Mode
+if (artMode) {
+  backgroundTransparency = 0;
+  enableEatColor = false;
+  disableResourceColor = true;
+}
 
 // --
 
 void log(String data) {
   if (DEBUG == false) return;
   console.log(data);
+}
+
+float customizedRandom(float lower, float upper) {
+  return (random(lower, upper), random(lower, upper), random(lower, upper), random(lower, upper), random(lower, upper)) / 5.0;
 }
 
 class Color {
@@ -90,13 +116,16 @@ class Gene {
     }
     return str;
   }
+
   int getWholeGene(){
     return ((predatorGene << geneLength) | (preyGene));
   }
+
   int setWholeGene(int w){
     this.predatorGene = w >> geneLength;
     this.preyGene = w & (wholeMax >> geneLength);
   }
+
   static Gene fromWholeGene(int w){
     Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
     g.setWholeGene(w);
@@ -122,6 +151,7 @@ class Gene {
 class Life {
 
   PVector position;
+  float v, r;
   float size;
   float bodyEnergy;
   bool isEaten = false;
@@ -135,6 +165,9 @@ class Life {
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
+
+    v = 0.0;
+    r = 0.0;
   }
 
   static Life makeResource(float x, float y, float size, Gene gene) {
@@ -174,7 +207,7 @@ class Life {
 
   void draw(){
     if (type == 'Life') {
-     if (isEaten) {
+     if (enableEatColor && isEaten) {
         noStroke();
         fill(255, 0, 0);
         ellipse(position.x, position.y, size, size);
@@ -186,11 +219,14 @@ class Life {
         if (alive()) {
           ellipse(position.x, position.y, size, size);
         } else {
+          if (disableResourceColor) return;
           rect(position.x, position.y, size * 0.5, size * 0.5);
         }
       }
 
     } else {
+      if (disableResourceColor) return;
+
       if (isEaten) {
         noStroke();
         fill(255, 0, 0);
@@ -225,12 +261,20 @@ class Life {
       return [child];
     }
 
-    float dx = random(-defaultMoveDistance, defaultMoveDistance);
-    float dy = random(-defaultMoveDistance, defaultMoveDistance);
-    float energyConsumption = (new PVector(dx, dy)).mag() * size * size * energyConsumptionRate
+    // v += 2;
+    // v *= customizedRandom(-5, 5);
+    // r += customizedRandom(-6, 6);
+    
+    // float vx = Math.cos(r) * v;
+    // float vy = Math.sin(r) * v;
 
-    position.x += dx;
-    position.y += dy;
+    float vx = random(-defaultMoveDistance, defaultMoveDistance);
+    float vy = random(-defaultMoveDistance, defaultMoveDistance);
+
+    position.x += vx;
+    position.y += vy;
+
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate
 
     position.x = min(position.x, fieldWidth)
     position.x = max(position.x, 0)
@@ -251,21 +295,25 @@ bool isCollision(Life l1, Life l2){
 
 void setup()
 {
-  size(fieldWidth,fieldHeight);
+  size(appFieldWidth, appFieldHeight);
   background(0xff);
 
   //noLoop();
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
-  println("Hello, ErrorLog!");
+
   lifes = [];
-  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize * 2), 20) / 2;
+  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   Gene initialGene = new Gene(0xf, 0x2);
 
   for(int i=0; i < populationSize;i++){
-    lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
+    if (useSingleGene) {
+      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
+    } else {
+      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+    }
   }
   for (int i = 0; i < initialResourceSize; i++) {
     lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, initialGene);
@@ -280,79 +328,76 @@ void setup()
   console.log("binary:" + g2.showBinary());
 }
 
-
-
-
-int[] populationPerSpecies = [];
-float graphSize = 0.5;
 void draw(){
+  // Draw Graph
+  strokeWeight(3);
+  for(int i=0; i!=populationPerSpecies.length; i++){
+    Gene g = Gene.fromWholeGene(i);
+    stroke(g.geneColor.r, g.geneColor.g, 0xff);
+    point(millis()/100, appFieldHeight-(populationPerSpecies[i] * graphSize));
+  }
+
+  // Refresh Game Field
   fill(0xff, backgroundTransparency);
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
-
-  Lifes[] lifes_sorted_by_x = lifes.sort(function(l1, l2){
-    if(l1.position.x < l2.position.x){
-      return -1;
-    }
-    else if(l2.position.x < l1.position.x){
-      return 1;
-    }
-    else{
-      return 0;
-      }
-    });
-
-  Lifes[] lifes_sorted_by_y = lifes.sort(function(l1,l2){
-    if(l1.position.y < l2.position.y){
-      return (-1);
-    }
-    else if(l2.position.y < l1.position.y){
-      return 1;
-    }
-    else{return 0;}
-    });
-
-
+  // Draw Lives
   Life[] killed = [];
   Life[] born = [];
+
+  Life[] sortedX = lifes.slice(0, lifes.length);
+  sortedX.sort(function(lhs, rhs) {
+    return lhs.position.x - rhs.position.x;
+  });
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
 
   for (int i = 0; i < lifes.length; i++){
     Life focus = lifes[i];
-    var neighbors_in_x = lifes.filter(function(Life l){
-      return (abs(l.position.x - focus.position.x) < focus.size/2);
-      });
-    var neighbors_in_y = lifes.filter(function(Life l){
-      return (abs(l.position.y - focus.position.y) < focus.size/2);
-      });
 
     if(lifes[i].alive()){
       populationPerSpecies[focus.gene.getWholeGene()] += 1;
       born = born.concat(lifes[i].update());
 
-      var eating_process = (function(neighbors_in_){
-        for(int j=0; j!=neighbors_in_.length;j++){
-          if(lifes[i]==neighbors_in_[j]) continue;
-          if(isCollision(lifes[i], neighbors_in_[j])) {
-            Life predator, prey;
-            float threshold = random(eatProbability, 1.0);
-            if (lifes[i].gene.canEat(neighbors_in_[j].gene) > threshold) {
-              predator = lifes[i];
-              prey = neighbors_in_[j];
-            } else {
-              continue;
-            }
+      Life life = lifes[i];
+      Life[] compareTo = [];
 
-            predator.eat(prey);
-            killed[killed.length] = prey;
-            break;
-          }
+      int xIndex = sortedX.indexOf(life);
+
+      float maxX = life.position.x + life.size / 2;
+      float minX = life.position.x - life.size / 2;
+
+      for (int k = xIndex + 1; k < sortedX.length; k++) {
+        if (sortedX[k].position.x > maxX) {
+          break;
         }
-      });
+        compareTo[compareTo.length] = sortedX[k];
+      }
+      for (int k = xIndex - 1; k >= 0; k--) {
+        if (sortedX[k].position.x < minX) {
+          break;
+        }
+        compareTo[compareTo.length] = sortedX[k];
+      }
 
-      eating_process(neighbors_in_x);
-      eating_process(neighbors_in_y);
+      for (int j = 0; j < compareTo.length; j++){
+        if(i==j) continue;
+        if(isCollision(lifes[i], compareTo[j])) {
+          Life predator, prey;
+          float threshold = random(eatProbability, 1.0);
+          if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
+            predator = lifes[i];
+            prey = compareTo[j];
+
+          } else {
+            continue;
+          }
+
+          predator.eat(prey);
+          killed[killed.length] = prey;
+          break;
+        }
+      }
     }
     lifes[i].draw();
   }

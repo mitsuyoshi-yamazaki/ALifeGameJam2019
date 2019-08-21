@@ -1,8 +1,11 @@
 # ALifeGameJam2019
 
+This is an artificial life ecosystem created at ALife Game Jam 2019.
+
 https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/
 
-## ローカル環境で実行
+## Gallery
 
-index.html をブラウザで開く
-※ cross origin関連のエラーが出たら以下の記事などを参考にする [chromeのセキュリティを外して起動](https://qiita.com/growsic/items/a919a7e2a665557d9cf4#chromeのセキュリティを外して起動)
+![](resources/docs/image001.png)
+![](resources/docs/image002.gif)
+![](resources/docs/image003.gif)
