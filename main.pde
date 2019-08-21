@@ -342,11 +342,6 @@ void draw(){
     return lhs.position.x - rhs.position.x;
   });
 
-  Life[] sortedY = lifes.slice(0, lifes.length);
-  sortedY.sort(function(lhs, rhs) {
-    return lhs.position.y - rhs.position.y;
-  });
-
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
 
   for (int i = 0; i < lifes.length; i++){
@@ -375,24 +370,6 @@ void draw(){
           break;
         }
         compareTo[compareTo.length] = sortedX[k];
-      }
-
-      int yIndex = sortedY.indexOf(life);
-
-      float maxY = life.position.y + life.size / 2;
-      float minY = life.position.y - life.size / 2;
-
-      for (int k = yIndex + 1; k < sortedY.length; k++) {
-        if (sortedY[k].position.x > maxY) {
-          break;
-        }
-        compareTo[compareTo.length] = sortedY[k];
-      }
-      for (int k = yIndex - 1; k >= 0; k--) {
-        if (sortedY[k].position.x < minY) {
-          break;
-        }
-        compareTo[compareTo.length] = sortedY[k];
       }
 
       for (int j = 0; j < compareTo.length; j++){
