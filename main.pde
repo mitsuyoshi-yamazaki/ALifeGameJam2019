@@ -38,7 +38,7 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 2; // geneLengthを変えると、グラフの色や数がおかしくなる[Color]
+int geneLength = 1; // geneLengthを変えると、グラフの色や数がおかしくなる[Color]
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -48,7 +48,7 @@ float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.02;
-bool isScavenger = true;
+bool isScavenger = false;
 
 // Parse URL Parameter
 String rawQuery = document.location.search;
@@ -474,10 +474,8 @@ var timer = (function(){
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0x0, 0x0);
-  Gene g2 = new Gene(0x0, 0x0);
   for (int i = 0; i < numberOfResources; i++) {
-    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, (random(0, 1) < 0.5) ? g : g2);
+    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
   }
 }
 
