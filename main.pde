@@ -127,6 +127,7 @@ class Gene {
   }
 
   static Gene fromWholeGene(int w){
+    w %= Math.pow(2, geneLength);
     Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
     g.setWholeGene(w);
     return g;
