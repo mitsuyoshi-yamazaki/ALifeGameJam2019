@@ -19,7 +19,7 @@ float graphHeight = 400;
 float fieldWidth = 900;
 float fieldHeight = 600;
 float initialPopulationFieldSize = 1000; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
+bool useSingleGene = false;
 // Gene initialGene = new Gene(0, 0);  
 Gene initialGene = Gene.randomGene();  
 
@@ -39,7 +39,7 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 4;
+int geneLength = 1;
 int geneMaxValue = Math.pow(2, geneLength) + 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -86,8 +86,8 @@ class Gene {
   Color geneColor;
 
   Gene(int _predatorGene, int _preyGene) {
-    predatorGene = _predatorGene;
-    preyGene = _preyGene;
+    predatorGene = _predatorGene % (Math.pow(2, geneLength));
+    preyGene = _preyGene % (Math.pow(2, geneLength));
 
     geneColor = new Color((predatorGene << (8 - geneLength)) + 0x44, (preyGene << (8 - geneLength)) + 0x44, 0xbb);
   }
@@ -127,9 +127,9 @@ class Gene {
   }
 
   static Gene fromWholeGene(int w){
-    w %= Math.pow(2, geneLength);
-    Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
-    g.setWholeGene(w);
+    var good_w = w % (Math.pow(2, geneLength));
+    Gene g = new Gene(good_w >> geneLength, good_w & (wholeMax >> geneLength));
+    g.setWholeGene(good_w);
     return g;
   }
 
@@ -494,6 +494,11 @@ void keyPressed (){
     noLoop();
     fill(0xff);
   }
+  console.log("pop start" );
+  populationPerSpecies.forEach(function(var e, var key){
+    console.log("pop" + Gene.fromWholeGene(key).showBinary() + " " + key + " " + e);
+    });
+  console.log("pop end" );
 }
 
 void keyReleased (){
