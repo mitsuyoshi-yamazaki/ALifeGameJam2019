@@ -3,7 +3,7 @@
 
 // System
 bool DEBUG = false;
-bool artMode = true;
+bool artMode = false;
 
 // Population
 Life[] lifes;
@@ -49,6 +49,7 @@ float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.02;
+bool isScavenger = true;
 
 // Parse URL Parameter
 String rawQuery = document.location.search;
@@ -410,7 +411,9 @@ void draw(){
         if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
-          if(compareTo[j].type == "Life" && !compareTo[j].alive()) continue;// もし死体なら食べない
+          if(!isScavenger){ // スカベンジャーオプションがオフの場合
+            if(compareTo[j].type == "Life" && !compareTo[j].alive()) continue;// もし死体なら食べない
+          }
           if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
             predator = lifes[i];
             prey = compareTo[j];
@@ -446,7 +449,7 @@ void drawGraph(){
   var unit;
 
   t= timer();
-  unit = t;
+  unit = t/2;
   populationPerSpecies.forEach(function(int pop, int gene){
     Gene g = Gene.fromWholeGene(gene);
     stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
