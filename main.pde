@@ -349,7 +349,7 @@ void setup()
     }
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, initialGene);
+    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
   }
   Gene g = Gene.fromWholeGene(0xff);
   Gene g2 = g.childGene();
