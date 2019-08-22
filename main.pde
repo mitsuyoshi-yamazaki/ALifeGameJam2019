@@ -1,5 +1,8 @@
+/* TODO: ドット絵から逆生成
+ 乱数の種をURLで設定できたら再現しやすくなる
+ */
+
 // -- Parameters
-// TODO: ドット絵から逆生成
 
 // System
 bool DEBUG = false;
