@@ -1,4 +1,5 @@
 // -- Parameters
+// TODO: ドット絵から逆生成
 
 // System
 bool DEBUG = false;
@@ -39,8 +40,9 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 1;
-int geneMaxValue = Math.pow(2, geneLength) + 1;
+int geneLength = 1; // geneLengthを変えると、グラフの色や数がおかしくなる[Color]
+int geneMaxValue = Math.pow(2, geneLength) - 1;
+
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
@@ -48,7 +50,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.9;
 
 // Evolution
-float mutationRate = 0.2;
+float mutationRate = 0.02;
 
 // Artistics Mode
 if (artMode) {
@@ -89,7 +91,7 @@ class Gene {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
 
-    geneColor = new Color((predatorGene << (8 - geneLength)) + 0x44, (preyGene << (8 - geneLength)) + 0x44, 0xbb);
+    geneColor = new Color((predatorGene << (8-geneLength)), (preyGene << (8-geneLength)), 0xff);
   }
 
   static Gene randomGene() {
@@ -127,7 +129,7 @@ class Gene {
   }
 
   static Gene fromWholeGene(int w){
-    var good_w = w % (Math.pow(2, geneLength));
+    var good_w = w % (Math.pow(2, wholeLength));
     Gene g = new Gene(good_w >> geneLength, good_w & (wholeMax >> geneLength));
     g.setWholeGene(good_w);
     return g;
@@ -304,8 +306,8 @@ void setup()
   textFont(fontA, 14);
 
   lifes = [];
-  int paddingWidth = 20;//max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight = 20;//max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
+  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
+  int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   Gene initialGene = new Gene(0x0, 0xf);
 
@@ -419,14 +421,17 @@ void draw(){
 
 void drawGraph(){
   strokeWeight(3);
-  var t=0;
+  var t;
+  var unit;
+
+  t= timer();
+  unit = t;
   populationPerSpecies.forEach(function(int pop, int gene){
     Gene g = Gene.fromWholeGene(gene);
     stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
-    t=timer();
-    point((t/300)%appFieldWidth, appFieldHeight-(pop * graphSize));
+    point(unit%appFieldWidth, appFieldHeight-(pop * graphSize));
   });
-  if((Math.floor(t/300))%fieldWidth < 4) {
+  if((Math.floor(unit))%fieldWidth < 4) {
     clearGraph();
   }
 }
@@ -493,12 +498,13 @@ void keyPressed (){
   if(key == 32){
     noLoop();
     fill(0xff);
-  }
-  console.log("pop start" );
-  populationPerSpecies.forEach(function(var e, var key){
-    console.log("pop" + Gene.fromWholeGene(key).showBinary() + " " + key + " " + e);
+      console.log("start");
+      console.log("length:" + populationPerSpecies.length);
+    populationPerSpecies.forEach(function(var e, var key){
+      console.log("gene:" + Gene.fromWholeGene(key).showBinary() + " " + key + " " + e);
     });
-  console.log("pop end" );
+      console.log("end");
+  }
 }
 
 void keyReleased (){
