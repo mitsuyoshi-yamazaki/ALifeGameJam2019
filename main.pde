@@ -17,12 +17,10 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 900;
-float fieldHeight = 600;
-float initialPopulationFieldSize = 1000; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = false;
-// Gene initialGene = new Gene(0, 0);  
-Gene initialGene = Gene.randomGene();  
+float fieldWidth = 1600;
+float fieldHeight = 700;
+float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
+bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
@@ -51,6 +49,29 @@ float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.02;
+
+// Parse URL Parameter
+String rawQuery = document.location.search;
+String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
+Object parameters = {};
+for (int i = 0; i < queries.length; i++) {
+  String[] pair = queries[i].split('=');
+  parameters[pair[0]] = pair[1];
+}
+console.log(parameters);
+
+if (parameters['art_mode'] != null) {
+  artMode = int(parameters['art_mode']);
+}
+if (parameters['population_size'] != null) {
+  populationSize = int(parameters['population_size']);
+}
+if (parameters['mutation_rate'] != null) {
+  mutationRate = float(parameters['mutation_rate']);
+}
+if (parameters['single_gene'] != null) {
+  useSingleGene = int(parameters['single_gene']);
+}
 
 // Artistics Mode
 if (artMode) {
