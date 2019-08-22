@@ -50,7 +50,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.9;
 
 // Evolution
-float mutationRate = 0.02;
+float mutationRate = 0.03;
 bool isScavenger = false;
 
 // Parse URL Parameter
@@ -119,7 +119,7 @@ class Gene {
   }
 
   static Gene randomGene() {
-    return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
+    return new Gene(Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)));
   }
 
   Gene mutantGene(){
