@@ -38,7 +38,7 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 1; // geneLengthを変えると、グラフの色や数がおかしくなる[Color]
+int geneLength = 1;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 
 int wholeLength = geneLength*2;
