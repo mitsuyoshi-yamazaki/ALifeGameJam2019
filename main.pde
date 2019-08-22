@@ -493,7 +493,7 @@ void mouseClicked(){
   else{
 //    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
     for(int i=0; i!=10;i++){
-     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, new Gene(0x8, 0x8));
+     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
      //TODO:クリック後、その場所に継続的にエサを与え続ける
     }
   }
