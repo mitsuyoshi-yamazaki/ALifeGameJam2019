@@ -1,3 +1,7 @@
+/* TODO: ドット絵から逆生成
+ 乱数の種をURLで設定できたら再現しやすくなる
+ */
+
 // -- Parameters
 
 // System
@@ -12,14 +16,14 @@ int resourceGrowth = 4;
 
 // Inspector
 int[] populationPerSpecies = [];
-float graphSize = 0.5;
-float graphHeight = 200;
+float graphSize = 0.4;
+float graphHeight = 400;
 
 // Field
 float fieldWidth = 1600;
 float fieldHeight = 700;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
+bool useSingleGene = false;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
@@ -37,8 +41,8 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 4;
-int geneMaxValue = Math.pow(2, geneLength) + 1;
+int geneLength = 10;
+int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
@@ -47,6 +51,7 @@ float eatProbability = 0.5;
 
 // Evolution
 float mutationRate = 0.03;
+bool isScavenger = false;
 
 // Parse URL Parameter
 String rawQuery = document.location.search;
@@ -107,14 +112,23 @@ class Gene {
   Color geneColor;
 
   Gene(int _predatorGene, int _preyGene) {
-    predatorGene = _predatorGene;
-    preyGene = _preyGene;
+    predatorGene = _predatorGene % (Math.pow(2, geneLength));
+    preyGene = _preyGene % (Math.pow(2, geneLength));
 
-    geneColor = new Color(predatorGene << 4, preyGene << 4, 0xff);
+    var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
+      if(shiftLength > 0){
+        return (shiftee << shiftLength);
+        }
+      else{
+        return (shiftee >> (-shiftLength));
+        }
+      });
+
+    geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
   }
 
   static Gene randomGene() {
-    return new Gene(int(random(0, geneMaxValue)), int(random(0, geneMaxValue)));
+    return new Gene(Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)));
   }
 
   Gene mutantGene(){
@@ -148,8 +162,9 @@ class Gene {
   }
 
   static Gene fromWholeGene(int w){
-    Gene g = new Gene(w >> geneLength, w & (wholeMax >> geneLength));
-    g.setWholeGene(w);
+    var good_w = w % (Math.pow(2, wholeLength));
+    Gene g = new Gene(good_w >> geneLength, good_w & (wholeMax >> geneLength));
+    g.setWholeGene(good_w);
     return g;
   }
 
@@ -327,12 +342,21 @@ void setup()
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene initialGene = Gene.randomGene();
+  Gene initialGene = new Gene(0x0, 0xf);
 
+  Gene[] initialGenesArray = [new Gene(0x8,0x0), new Gene(0x0,0x8)];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
-      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
-    } else {
+      float dice;
+      dice = Math.floor(random(0, initialGenesArray.length));
+      for(int g_i = 0; g_i != initialGenesArray.length;g_i++){
+        if(dice == g_i)
+        {
+        lifes[i] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+        }
+      }
+    }
+    else {
       lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
     }
   }
@@ -350,14 +374,6 @@ void setup()
 }
 
 void draw(){
-  // Draw Graph
-  strokeWeight(3);
-  for(int i=0; i!=populationPerSpecies.length; i++){
-    Gene g = Gene.fromWholeGene(i);
-    stroke(g.geneColor.r, g.geneColor.g, 0xff);
-    point(millis()/100, appFieldHeight-(populationPerSpecies[i] * graphSize));
-  }
-
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
@@ -406,6 +422,9 @@ void draw(){
         if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
+          if(!isScavenger){ // スカベンジャーオプションがオフの場合
+            if(compareTo[j].type == "Life" && !compareTo[j].alive()) continue;// もし死体なら食べない
+          }
           if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
             predator = lifes[i];
             prey = compareTo[j];
@@ -423,18 +442,50 @@ void draw(){
     lifes[i].draw();
   }
 
-  lifes = lifes.filter( function( el ) {
+  lifes = lifes.filter( function( el ) { //死
     return killed.indexOf( el ) < 0;
   } );
 
-  lifes = lifes.concat(born);
+  lifes = lifes.concat(born); //生
 
   addResources();
+
+// Draw Graph
+  drawGraph();
 }
+
+void drawGraph(){
+  strokeWeight(3);
+  var t;
+  var unit;
+
+  t= timer();
+  unit = t/2;
+  populationPerSpecies.forEach(function(int pop, int gene){
+    Gene g = Gene.fromWholeGene(gene);
+    stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
+    point(unit%appFieldWidth, appFieldHeight-(pop * graphSize));
+  });
+  if((Math.floor(unit))%fieldWidth < 4) {
+    clearGraph();
+  }
+}
+
+void clearGraph(){
+  fill(0xff);
+  rect(0,fieldHeight,appFieldWidth,graphHeight);
+}
+
+var timer = (function(){
+  var t = 0;
+  return (function(){
+    t++;
+    return t;
+    });
+})();
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
-
   for (int i = 0; i < numberOfResources; i++) {
     lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
   }
@@ -449,9 +500,10 @@ void mouseClicked(){
     console.log(found.show());
   }
   else{
-    //lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, Gene.randomGene());
+//    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
     for(int i=0; i!=10;i++){
      lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
+     //TODO:クリック後、その場所に継続的にエサを与え続ける
     }
   }
 }
@@ -476,11 +528,18 @@ void mouseClicked(){
 })();*/
 
 void keyPressed (){
-  console.log(populationPerSpecies);
   if(key == 32){
     noLoop();
+    fill(0xff);
+      console.log("start");
+      console.log("length:" + populationPerSpecies.length);
+    populationPerSpecies.forEach(function(var e, var key){
+      console.log("gene:" + Gene.fromWholeGene(key).showBinary() + " " + key + " " + e);
+    });
+      console.log("end");
   }
 }
+
 void keyReleased (){
   if(key == 32){
     loop();
