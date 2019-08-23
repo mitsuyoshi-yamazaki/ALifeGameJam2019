@@ -23,7 +23,7 @@ float graphHeight = 400;
 float fieldWidth = 1600;
 float fieldHeight = 700;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
+bool useSingleGene = false;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
@@ -41,13 +41,13 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 10;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.9;
+float eatProbability = 0.5;
 
 // Evolution
 float mutationRate = 0.03;
@@ -115,7 +115,16 @@ class Gene {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
 
-    geneColor = new Color((predatorGene << (8-geneLength)), (preyGene << (8-geneLength)), 0xff);
+    var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
+      if(shiftLength > 0){
+        return (shiftee << shiftLength);
+        }
+      else{
+        return (shiftee >> (-shiftLength));
+        }
+      });
+
+    geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
   }
 
   static Gene randomGene() {
