@@ -1,6 +1,7 @@
 /* TODO: ドット絵から逆生成
  乱数の種をURLで設定できたら再現しやすくなる
  */
+   /* @pjs preload="https://www.nicepng.com/png/full/23-238375_teenage-bedroom-decorations-free-emoji-printables-emoji-sunglasses.png"; */
 
 // -- Parameters
 
@@ -11,8 +12,11 @@ bool artMode = false;
 // Population
 Life[] lifes;
 int populationSize = 1000;
+
+// Resource
 int initialResourceSize = 600;
 int resourceGrowth = 4;
+String resourceShapeImageURL = null;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -75,6 +79,9 @@ if (parameters['mutation_rate'] != null) {
 if (parameters['single_gene'] != null) {
   useSingleGene = int(parameters['single_gene']);
 }
+if (parameters['resource_image'] != null) {
+  resourceShapeImageURL = parameters['resource_image'];
+}
 
 // Artistics Mode
 if (artMode) {
@@ -126,6 +133,13 @@ class Gene {
 
     geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
   }
+
+		Gene(int color) {
+    predatorGene = (color & 0xff0000) >> 16;
+    preyGene = (color & 0xff00) >> 8;
+
+				geneColor = new Color(predatorGene, preyGene, color & 0xff);
+		}
 
   static Gene randomGene() {
     return new Gene(Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)));
@@ -242,7 +256,8 @@ class Life {
   }
 
   void draw(){
-    if (type == 'Life') {
+    // if (type == 'Life') {
+				if (1) {	
      if (enableEatColor && isEaten) {
         noStroke();
         fill(255, 0, 0);
@@ -500,11 +515,23 @@ void mouseClicked(){
     console.log(found.show());
   }
   else{
-//    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
-    for(int i=0; i!=10;i++){
-     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
-     //TODO:クリック後、その場所に継続的にエサを与え続ける
-    }
+				String url = "https://www.nicepng.com/png/full/23-238375_teenage-bedroom-decorations-free-emoji-printables-emoji-sunglasses.png";
+				PImage imageData = loadImage(url, "jpg");
+
+				int imageWidth = 20;
+				int imageHeight = 20;
+				int resourceSize = 5;
+				imageData.resize(imageWidth, imageHeight);
+
+				for (int x = 0; x < imageWidth; x++) {
+					for (int y = 0; y < imageWidth; y++) {
+						color c = imageData.get(x, y)
+						console.log(c.toString(16));
+
+						Gene gene = new Gene(c);
+						lifes[lifes.length] = Life.makeResource(mouseX+(x * resourceSize) - (imageWidth * 0.5 * resourceSize), mouseY+(y * resourceSize) - (imageHeight * 0.5 * resourceSize), resourceSize * 1.5, gene);
+					}
+				}
   }
 }
 
