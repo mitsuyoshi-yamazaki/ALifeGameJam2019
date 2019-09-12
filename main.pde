@@ -10,7 +10,7 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 1;
+int populationSize = 100;
 int initialResourceSize = 600;
 int resourceGrowth = 4;
 
@@ -32,7 +32,7 @@ bool isLinearMode=true;
 
 // Color
 float backgroundTransparency = 0xff;
-bool enableEatColor = true;
+bool enableEatColor = false;
 bool disableResourceColor = false;
 
 // Life Parameter
@@ -187,9 +187,17 @@ class Gene {
 }
 
 class LinearLife extends Life{
+  static float constant_y(){return fieldHeight/2;}
   LinearLife(float x, float y, float _size, float _energy, Gene _gene){
-    super(x, fieldHeight/2, _size, _energy, _gene)
+    super(x, constant_y(), _size, _energy, _gene)
     }
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new Life(x, constant_y(), size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
   void move(){
     float vx = random(-defaultMoveDistance, defaultMoveDistance);
 
@@ -413,7 +421,11 @@ void setup()
   }
   for (int i = 0; i < initialResourceSize; i++) {
     Gene g1 = new Gene(0, 0);
-    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    if(isLinearMode){
+      lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    } else {
+      lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    }
   }
 }
 
@@ -532,7 +544,11 @@ void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
   Gene g = new Gene(0, 0);
   for (int i = 0; i < numberOfResources; i++) {
-    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+    if(isLinearMode){
+      lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+    } else{
+      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+      }
   }
 }
 
