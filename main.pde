@@ -10,25 +10,26 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 100;
-int initialResourceSize = 600;
+int populationSize = 10;
+int initialResourceSize = 100;
 int resourceGrowth = 4;
 
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
-float graphHeight = 1200;
+float graphHeight = 400;
 
 // Field
-float fieldWidth = 800;
-float fieldHeight = 100;
+float fieldWidth = 900;
+float fieldHeight = 500;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
-bool isLinearMode=true;
+bool isLinearMode=false;
+bool isCircumMode=true;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -43,7 +44,7 @@ float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
 
 // Gene Parameter
-int geneLength = 2;
+int geneLength = 1;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -188,18 +189,19 @@ class Gene {
 
 class LinearLife extends Life{
   static float constant_y(){return fieldHeight/2;}
-  LinearLife(float x, float y, float _size, float _energy, Gene _gene){
-    super(x, constant_y(), _size, _energy, _gene)
-    }
+  LinearLife(float x, float _size, float _energy, Gene _gene){
+    super(x, constant_y(), _size, _energy, _gene);
+    position = new PVector(x, constant_y());
+  }
   static Life makeResource(float x, float y, float size, Gene gene) {
-    Life resource = new Life(x, constant_y(), size, 0, gene);
+    Life resource = new LinearLife(x, size, 0, gene);
     resource.bodyEnergy *= 20;
     resource.type = 'Resource';
 
     return resource;
   }
   void move(){
-    float vx = random(-defaultMoveDistance, defaultMoveDistance);
+    float vx = random(0, 1)<0.5 ? defaultMoveDistance : -defaultMoveDistance;
 
     position.x += vx;
 
@@ -215,14 +217,77 @@ class LinearLife extends Life{
 
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
-      float radian = random(-1, 1);
+      float radian =  random(0, 1)<0.5 ? 1 : (-1);
 
       float x = position.x + radian * size * 3.0;
       float y = position.y;
 
       Gene newGene = gene.childGene();
 
-      Life child = new LinearLife(x, position.y, size, energyAfterBirth, newGene);
+      Life child = new LinearLife(x, size, energyAfterBirth, newGene);
+
+      energy = energyAfterBirth;
+
+      return [child];
+    }
+    return [];
+  }
+}
+
+class CircumLife extends Life{
+  static Vector constant_center(){return new PVector(fieldWidth/2,fieldHeight/2);}
+  static float constant_radius(){return 200;}
+
+  // angle :: radian
+  CircumLife(float angle, float _size, float _energy, Gene _gene){
+    super(constant_center().x + constant_radius() * Math.cos(angle),
+          constant_center().y + constant_radius() * Math.sin(angle),
+          _size, _energy, _gene)
+    position.x = constant_center().x + constant_radius() * Math.cos(angle);
+    position.y = constant_center().y + constant_radius() * Math.sin(angle);
+  }
+  static Life makeResource(float angle, float size, Gene gene) {
+    Life resource = new CircumLife(angle, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  float getAngle(){
+    PVector v = PVector.sub(position, constant_center());
+    //AB = OB - OA
+    //OA : (0,0)→中心
+    //OB : (0,0)→現在
+    //AB : 中心→現在
+    return Math.atan2(v.y,v.x);
+  }
+  void move(){
+    float currentAngle = getAngle();
+    float vangle = random(-0.01, 0.01);
+
+    position.x = constant_center().x + constant_radius() * Math.cos(currentAngle+ vangle);
+    position.y = constant_center().y + constant_radius() * Math.sin(currentAngle+vangle);
+
+    float energyConsumption = vangle * size * size * energyConsumptionRate;
+    //position.x = min(position.x, fieldWidth)
+    //position.x = max(position.x, 0)
+
+    energy -= energyConsumption;
+  }
+
+  Life[] reproduce(){
+    float birthEnergy = size * size;
+
+    if (energy > birthEnergy) {
+      float energyAfterBirth = (energy - birthEnergy) / 2;
+      float radian =  random(0, 1)<0.5 ? 1 : (-1);
+
+      float currentAngle = getAngle();
+      float vangle = random(0, 0.01);
+
+      Gene newGene = gene.childGene();
+
+      Life child = new CircumLife(currentAngle+vangle, size, energyAfterBirth, newGene);
 
       energy = energyAfterBirth;
 
@@ -261,6 +326,13 @@ class Life {
 
     return resource;
   }
+  /*static Life randomPlace(Gene gene){
+    return (new Life(random(paddingWidth,fieldWidth - paddingWidth),
+                    random(paddingHeight, fieldHeight - paddingHeight),
+                    lifeRadius,
+                    defaultEnergy,
+                    gene));
+  }*/
 
   String show(){
     String s = ("size: " + size + ".   \n")
@@ -404,7 +476,12 @@ void setup()
         if(dice == g_i)
         {
           if(isLinearMode){
-            lifes[i] = new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+            lifes[i] = new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          } else if(isCircumMode){
+            lifes[i] = new CircumLife(random(0, Math.PI*2),
+                                      lifeRadius,
+                                      defaultEnergy,
+                                      initialGenesArray[g_i]);
           } else {
             lifes[i] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           }
@@ -413,7 +490,12 @@ void setup()
     }
     else {
       if(isLinearMode){
-        lifes[i]=new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+        lifes[i]=new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy,Gene.randomGene());
+      } else if(isCircumMode){
+        lifes[i]=new CircumLife(random(0, Math.PI*2),
+                                       lifeRadius,
+                                       defaultEnergy,
+                                       Gene.randomGene());
       }else{
         lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }
@@ -422,9 +504,12 @@ void setup()
   for (int i = 0; i < initialResourceSize; i++) {
     Gene g1 = new Gene(0, 0);
     if(isLinearMode){
-      lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+      lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
+    }
+    else if (isCircumMode){
+      lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
     } else {
-      lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+      lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
     }
   }
 }
@@ -546,6 +631,8 @@ void addResources() {
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+    } else if (isCircumMode){
+      lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } else{
       lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
       }
