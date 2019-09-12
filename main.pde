@@ -11,7 +11,7 @@ bool artMode = false;
 // Population
 Life[] lifes;
 int populationSize = 10;
-int initialResourceSize = 100;
+int initialResourceSize = 200;
 int resourceGrowth = 4;
 
 // Inspector
@@ -21,15 +21,16 @@ float graphHeight = 400;
 
 // Field
 float fieldWidth = 900;
-float fieldHeight = 500;
+float fieldHeight = 550;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
+bool useSingleGene = false;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
-bool isLinearMode=false;
+bool isLinearMode=true;
 bool isCircumMode=true;
+bool isNormalMode=false;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -50,7 +51,7 @@ int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.999;
+float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.03;
@@ -187,6 +188,14 @@ class Gene {
   }
 }
 
+var makeTimer = (function(){
+  var t = 0;
+  return (function(){
+    t++;
+    return t;
+    });
+});
+
 class LinearLife extends Life{
   static float constant_y(){return fieldHeight/2;}
   LinearLife(float x, float _size, float _energy, Gene _gene){
@@ -208,6 +217,7 @@ class LinearLife extends Life{
     float energyConsumption = (new PVector(vx)).mag() * size * size * energyConsumptionRate
     position.x = min(position.x, fieldWidth)
     position.x = max(position.x, 0)
+    position.y = constant_y();
 
     energy -= energyConsumption;
   }
@@ -236,7 +246,7 @@ class LinearLife extends Life{
 
 class CircumLife extends Life{
   static Vector constant_center(){return new PVector(fieldWidth/2,fieldHeight/2);}
-  static float constant_radius(){return 200;}
+  static float constant_radius(){return 250;}
 
   // angle :: radian
   CircumLife(float angle, float _size, float _energy, Gene _gene){
@@ -476,28 +486,28 @@ void setup()
         if(dice == g_i)
         {
           if(isLinearMode){
-            lifes[i] = new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
-          } else if(isCircumMode){
-            lifes[i] = new CircumLife(random(0, Math.PI*2),
+            lifes[lifes.length] = new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          } if(isCircumMode){
+            lifes[lifes.length] = new CircumLife(random(0, Math.PI*2),
                                       lifeRadius,
                                       defaultEnergy,
                                       initialGenesArray[g_i]);
-          } else {
-            lifes[i] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          } if(isNormalMode) {
+            lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           }
         }
       }
     }
     else {
       if(isLinearMode){
-        lifes[i]=new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy,Gene.randomGene());
-      } else if(isCircumMode){
-        lifes[i]=new CircumLife(random(0, Math.PI*2),
+        lifes[lifes.length]=new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy,Gene.randomGene());
+      } if(isCircumMode){
+        lifes[lifes.length]=new CircumLife(random(0, Math.PI*2),
                                        lifeRadius,
                                        defaultEnergy,
                                        Gene.randomGene());
-      }else{
-        lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      }if(isNormalMode){
+        lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }
     }
   }
@@ -506,9 +516,9 @@ void setup()
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
     }
-    else if (isCircumMode){
+    if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
-    } else {
+    } if(isNormalMode){
       lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
     }
   }
@@ -617,13 +627,7 @@ void clearGraph(){
   rect(0,fieldHeight,appFieldWidth,graphHeight);
 }
 
-var timer = (function(){
-  var t = 0;
-  return (function(){
-    t++;
-    return t;
-    });
-})();
+var timer = makeTimer();
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
@@ -631,9 +635,9 @@ void addResources() {
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
-    } else if (isCircumMode){
+    } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
-    } else{
+    } if(isNormalMode){
       lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
       }
   }
