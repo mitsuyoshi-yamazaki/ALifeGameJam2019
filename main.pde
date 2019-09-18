@@ -20,7 +20,7 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 900;
+float fieldWidth = 550;
 float fieldHeight = 550;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = false;
@@ -28,9 +28,9 @@ bool useSingleGene = false;
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
-bool isLinearMode=true;
-bool isCircumMode=true;
-bool isNormalMode=false;
+bool isLinearMode=false;
+bool isCircumMode=false;
+bool isNormalMode=true;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -273,7 +273,7 @@ class CircumLife extends Life{
   }
   void move(){
     float currentAngle = getAngle();
-    float vangle = random(-0.01, 0.01);
+    float vangle = random(-0, 0.1);
 
     position.x = constant_center().x + constant_radius() * Math.cos(currentAngle+ vangle);
     position.y = constant_center().y + constant_radius() * Math.sin(currentAngle+vangle);
@@ -524,6 +524,7 @@ void setup()
   }
 }
 
+int populationOfResource = 0;
 void draw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
@@ -539,13 +540,17 @@ void draw(){
   });
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
+  populationOfResource = 0;
 
   for (int i = 0; i < lifes.length; i++){
     Life focus = lifes[i];
 
+    if (lifes[i].type == "Resource"){
+      populationOfResource += 1;
+    }
     if(lifes[i].alive()){
-      populationPerSpecies[focus.gene.getWholeGene()] += 1;
       born = born.concat(lifes[i].update());
+      populationPerSpecies[focus.gene.getWholeGene()] += 1;
 
       Life life = lifes[i];
       Life[] compareTo = [];
@@ -617,6 +622,10 @@ void drawGraph(){
     stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
     point(unit%appFieldWidth, appFieldHeight-(pop * graphSize));
   });
+
+  stroke(0xff, 0xff, 0);
+  point(unit%appFieldWidth, appFieldHeight-(populationOfResource * graphSize));
+
   if((Math.floor(unit))%fieldWidth < 4) {
     clearGraph();
   }
@@ -659,25 +668,6 @@ void mouseClicked(){
     }
   }
 }
-
-
-/*var keyPressed = (function (){
-  var isStopping = false;
-
-  return (function(){
-  if(key == 32){
-    noLoop();
-    if(!isStopping){
-      noLoop();
-      print("noloop");
-    } else {
-      loop();
-      print("loop");
-    }
-    isStopping = !isStopping;
-  }
-  });
-})();*/
 
 void keyPressed (){
   if(key == 32){
