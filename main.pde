@@ -51,7 +51,7 @@ int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.9;
+float eatProbability = 0.8;
 
 // Evolution
 float mutationRate = 0.03;
@@ -316,6 +316,7 @@ class Life {
   bool isEaten = false;
   Gene gene;
   float energy;
+  float previousEnergy; // 分裂前のエネルギー
   String type = 'Life';
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
@@ -403,9 +404,17 @@ class Life {
       } else {  
         noStroke();
         fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-    
         if (alive()) {
-          ellipse(position.x, position.y, size, size);
+          if(previousEnergy == 0)
+          { ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3); 
+          } else if (previousEnergy <= energy) {
+            previousEnergy = 0;
+            ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+          } else if (previousEnergy > energy){
+            previousEnergy-=previousEnergy/2;
+            ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+            console.log(previousEnergy + ":" +energy);
+          }
         } else {
           if (disableResourceColor) return;
           rect(position.x, position.y, size * 0.5, size * 0.5);
@@ -442,6 +451,7 @@ class Life {
 
       Life child = new Life(x, y, size, energyAfterBirth, newGene);
 
+      previousEnergy = energy;
       energy = energyAfterBirth;
 
       return [child];
@@ -608,6 +618,8 @@ void draw(){
 
 // Draw Graph
   drawGraph();
+
+  console.log(frameRate);
 }
 
 void drawGraph(){
