@@ -10,9 +10,9 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 10;
-int initialResourceSize = 200;
-int resourceGrowth = 4;
+int populationSize = 5;
+int initialResourceSize = 300;
+int resourceGrowth = 1 + 0.1;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -20,10 +20,10 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 550;
-float fieldHeight = 550;
-float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = false;
+float fieldWidth = 1000;
+float fieldHeight = 800;
+float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
+bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
@@ -43,6 +43,8 @@ float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
+
+bool enableMeaningfulSize =true;
 
 // Gene Parameter
 int geneLength = 1;
@@ -210,7 +212,7 @@ class LinearLife extends Life{
     return resource;
   }
   void move(){
-    float vx = random(0, 1)<0.5 ? defaultMoveDistance : -defaultMoveDistance;
+    float vx = random(0, 1)<0.5 ? 1*sqrt(defaultMoveDistance) : 1*(-sqrt(defaultMoveDistance));
 
     position.x += vx;
 
@@ -395,28 +397,34 @@ class Life {
     energy -= energyConsumption;
   }
   void draw(){
+    int size = this.size * 4;
     if (type == 'Life') {
      if (enableEatColor && isEaten) {
         noStroke();
         fill(255, 0, 0);
         ellipse(position.x, position.y, size, size);
 
-      } else {  
+      } else {
         noStroke();
         fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
         if (alive()) {
-          if(previousEnergy == 0)
-          { ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3); 
-          } else if (previousEnergy <= energy) {
-            previousEnergy = 0;
-            ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
-          } else if (previousEnergy > energy){
-            previousEnergy-=previousEnergy/2;
-            ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
-            console.log(previousEnergy + ":" +energy);
+          if(enableMeaningfulSize){
+            if(previousEnergy == 0)
+            {
+              ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+            } else if (previousEnergy <= energy) {
+              previousEnergy = 0;
+              ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+            } else if (previousEnergy > energy){
+              previousEnergy-=previousEnergy/2;
+              ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+            }
+          } else {
+            ellipse(position.x, position.y, size, size);
           }
         } else {
           if (disableResourceColor) return;
+          fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
           rect(position.x, position.y, size * 0.5, size * 0.5);
         }
       }
@@ -428,10 +436,11 @@ class Life {
         noStroke();
         fill(255, 0, 0);
 
-      } else {  
+      } else {
         // Alive
         noStroke();
-        fill(81, 145, 198);
+        //fill(81, 145, 198);
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
       }
       rect(position.x, position.y, size, size);
     }
@@ -484,10 +493,10 @@ void setup()
   textFont(fontA, 14);
 
   lifes = [];
-  int paddingWidth = 20; // max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight = 20;// max(fieldHeight - (initialPopulationFieldSize / 1), 20) / 2;
+  int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
+  int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 1), 20) / 2;
 
-  Gene[] initialGenesArray = [new Gene(0x0,0x2), new Gene(0x2,0x3), new Gene(0x3,0x0)];
+  Gene[] initialGenesArray = [new Gene(1, 1)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -538,6 +547,9 @@ int populationOfResource = 0;
 void draw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
+  if(second()%30==0){
+    fill(0xff, 0xff);
+  }
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
   // Draw Lives
@@ -655,11 +667,11 @@ void addResources() {
   Gene g = new Gene(0, 0);
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
-      lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+      lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode){
-      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
       }
   }
 }
