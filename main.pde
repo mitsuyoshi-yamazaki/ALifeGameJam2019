@@ -10,9 +10,9 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 5;
-int initialResourceSize = 300;
-int resourceGrowth = 1 + 0.1;
+int populationSize = 3;
+int initialResourceSize = 500;
+int resourceGrowth = 1 + 0.01;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -21,8 +21,8 @@ float graphHeight = 400;
 
 // Field
 float fieldWidth = 1000;
-float fieldHeight = 800;
-float initialPopulationFieldSize = 400; // 起動時に生まれるLifeの置かれる場所の大きさ
+float fieldHeight = 700;
+float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
@@ -34,7 +34,7 @@ bool isNormalMode=true;
 
 // Color
 float backgroundTransparency = 0xff;
-bool enableEatColor = false;
+bool enableEatColor = true;
 bool disableResourceColor = false;
 
 // Life Parameter
@@ -43,8 +43,10 @@ float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
+float visualSizeCoeff = 4;
 
 bool enableMeaningfulSize =true;
+bool enableReproduction=true;
 
 // Gene Parameter
 int geneLength = 1;
@@ -53,11 +55,11 @@ int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.8;
+float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.03;
-bool isScavenger = false;
+bool isScavenger = true;
 
 // Parse URL Parameter
 String rawQuery = document.location.search;
@@ -365,6 +367,7 @@ class Life {
 
   void eat(Life other) {
     energy += other.energy + other.bodyEnergy;
+    other.previousEnergy = other.energy;
     other.energy = 0;
     other.bodyEnergy = 0;
     other.eaten();
@@ -397,45 +400,62 @@ class Life {
     energy -= energyConsumption;
   }
   void draw(){
-    int size = this.size * 4;
+    int size = this.size * visualSizeCoeff;
     if (type == 'Life') {
      if (enableEatColor && isEaten) {
-        noStroke();
-        fill(255, 0, 0);
+      if(enableMeaningfulSize){
+        stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+        ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+
+        stroke(255, 0, 0,128);
+        fill(255, 0, 0, 100);
+        ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+      } else {
+        stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
         ellipse(position.x, position.y, size, size);
 
-      } else {
-        noStroke();
-        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-        if (alive()) {
-          if(enableMeaningfulSize){
-            if(previousEnergy == 0)
-            {
-              ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
-            } else if (previousEnergy <= energy) {
-              previousEnergy = 0;
-              ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
-            } else if (previousEnergy > energy){
-              previousEnergy-=previousEnergy/2;
-              ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
-            }
-          } else {
-            ellipse(position.x, position.y, size, size);
+        stroke(255, 0, 0,128);
+        fill(255, 0, 0, 100);
+        ellipse(position.x, position.y, size, size);
+      }
+     } else {
+       stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+       fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+     }
+
+      if (alive()) {
+        if(enableMeaningfulSize){
+          if(previousEnergy == 0)
+          {
+            ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+          } else if (previousEnergy <= energy) {
+            previousEnergy = 0;
+            ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+          } else if (previousEnergy > energy){
+            previousEnergy-=previousEnergy/2;
+            ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
           }
+
+          stroke(gene.geneColor.r-50, gene.geneColor.g-50, gene.geneColor.b-50,128);
+          fill(0,0,0,0);
+          ellipse(position.x, position.y, size, size);
+
         } else {
-          if (disableResourceColor) return;
-          fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-          rect(position.x, position.y, size * 0.5, size * 0.5);
+          ellipse(position.x, position.y, size, size);
         }
+      } else {
+        if (disableResourceColor) return;
+        rect(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
       }
 
     } else {
       if (disableResourceColor) return;
 
-      if (isEaten) {
+      if (enableEatColor && isEaten) {
         noStroke();
         fill(255, 0, 0);
-
       } else {
         // Alive
         noStroke();
@@ -449,6 +469,7 @@ class Life {
   Life[] reproduce(){
     float birthEnergy = size * size;
 
+    if(!enableReproduction) return [];
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
       float radian = random(0, 2.0 * PI);
@@ -467,6 +488,7 @@ class Life {
     }
     return [];
   }
+
   Life[] update(){
     if (!alive()) return[];
 
@@ -494,9 +516,9 @@ void setup()
 
   lifes = [];
   int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 1), 20) / 2;
+  int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene[] initialGenesArray = [new Gene(1, 1)]; //[Gene.randomGene()];
+  Gene[] initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -547,9 +569,9 @@ int populationOfResource = 0;
 void draw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
-  if(second()%30==0){
+  /*if(second()%30==0){
     fill(0xff, 0xff);
-  }
+  }*/
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
   // Draw Lives
@@ -631,7 +653,7 @@ void draw(){
 // Draw Graph
   drawGraph();
 
-  console.log(frameRate);
+  console.log("frameRate: " + frameRate);
 }
 
 void drawGraph(){
