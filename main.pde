@@ -10,9 +10,9 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 3;
+int populationSize = 100;
 int initialResourceSize = 500;
-int resourceGrowth = 1 + 0.01;
+int resourceGrowth = 1 + 4.01;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -20,8 +20,8 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 1000;
-float fieldHeight = 700;
+float fieldWidth = 500;
+float fieldHeight = 500;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
@@ -29,8 +29,9 @@ float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
 bool isLinearMode=false;
+bool isTorusMode=true;
 bool isCircumMode=false;
-bool isNormalMode=true;
+bool isNormalMode=false;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -43,19 +44,19 @@ float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
-float visualSizeCoeff = 4;
+float visualSizeCoeff = 1;
 
-bool enableMeaningfulSize =true;
+bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 4;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.9;
+float eatProbability = 0.7;
 
 // Evolution
 float mutationRate = 0.03;
@@ -89,6 +90,18 @@ if (artMode) {
   backgroundTransparency = 0;
   enableEatColor = false;
   disableResourceColor = true;
+}
+
+// Detailed View
+bool detailedView = false;
+if(detailedView){
+  //enableMeaningfulSize = true;
+  visualSizeCoeff = 4;
+  populationSize = 3;
+  initialResourceSize = 400;
+  mutationRate = 0.03;
+  enableReproduction = true;
+  resourceGrowth = 1 + 2.1;
 }
 
 // --
@@ -200,6 +213,51 @@ var makeTimer = (function(){
     });
 });
 
+
+
+class TorusLife extends Life{
+  TorusLife(float x, float y, float _size, float _energy, Gene _gene){
+    super(x, y, _size, _energy, _gene);
+  }
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new TorusLife(x, y, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  void move(){
+    // v += 2;
+    // v *= customizedRandom(-5, 5);
+    // r += customizedRandom(-6, 6);
+    // float vx = Math.cos(r) * v;
+    // float vy = Math.sin(r) * v;
+
+    float vx = random(-defaultMoveDistance, defaultMoveDistance);
+    float vy = random(-defaultMoveDistance, defaultMoveDistance);
+
+    position.x += vx;
+    position.y += vy;
+
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate
+
+    /*position.x = (position.x > (fieldWidth-lifeRadius)) ? 0 : position.x;
+    position.x = (position.x < 0) ? (fieldWidth - lifeRadius) : position.x;
+    position.y = (position.y > (fieldHeight -lifeRadius)) ? 0 : position.y;
+    position.y = (position.y < 0) ? (fieldHeight - lifeRadius): position.y;*/
+
+    position.x = position.x % fieldWidth
+    position.y = position.y % fieldHeight
+
+    energy -= energyConsumption;
+
+  }
+  Life replicate(int x, int y, int size, int energy, Gene g){
+    return (new TorusLife(x, y, size, energy, g));
+  }
+}
+
+
 class LinearLife extends Life{
   static float constant_y(){return fieldHeight/2;}
   LinearLife(float x, float _size, float _energy, Gene _gene){
@@ -225,6 +283,7 @@ class LinearLife extends Life{
 
     energy -= energyConsumption;
   }
+
 
   Life[] reproduce(){
     float birthEnergy = size * size;
@@ -277,7 +336,7 @@ class CircumLife extends Life{
   }
   void move(){
     float currentAngle = getAngle();
-    float vangle = random(-0, 0.1);
+    float vangle = random(-0.01, 0.1);
 
     position.x = constant_center().x + constant_radius() * Math.cos(currentAngle+ vangle);
     position.y = constant_center().y + constant_radius() * Math.sin(currentAngle+vangle);
@@ -406,40 +465,45 @@ class Life {
       if(enableMeaningfulSize){
         stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
         fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
-        ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+        ellipse(position.x, position.y, size+size*sqrt(previousEnergy)/4, size+size*sqrt(previousEnergy)/4);
 
         stroke(255, 0, 0,128);
         fill(255, 0, 0, 100);
-        ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+        ellipse(position.x, position.y, size+size*sqrt(previousEnergy)/4, size+size*sqrt(previousEnergy)/4);
       } else {
-        stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+        //stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
         fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
         ellipse(position.x, position.y, size, size);
 
-        stroke(255, 0, 0,128);
+        //stroke(255, 0, 0,128);
         fill(255, 0, 0, 100);
         ellipse(position.x, position.y, size, size);
       }
      } else {
+       if(enableMeaningfulSize){
        stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+       } else{
+       noStroke();
+       fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+       }
      }
 
       if (alive()) {
         if(enableMeaningfulSize){
           if(previousEnergy == 0)
           {
-            ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+            ellipse(position.x, position.y, size+size*sqrt(energy)/4, size+size*sqrt(energy)/4);
           } else if (previousEnergy <= energy) {
             previousEnergy = 0;
-            ellipse(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+            ellipse(position.x, position.y, size+size*sqrt(energy)/4, size+size*sqrt(energy)/4);
           } else if (previousEnergy > energy){
             previousEnergy-=previousEnergy/2;
-            ellipse(position.x, position.y, size*sqrt(previousEnergy)/3, size*sqrt(previousEnergy)/3);
+            ellipse(position.x, position.y, size+size*sqrt(previousEnergy)/4, size+size*sqrt(previousEnergy)/4);
           }
 
           stroke(gene.geneColor.r-50, gene.geneColor.g-50, gene.geneColor.b-50,128);
-          fill(0,0,0,0);
+          fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,60);
           ellipse(position.x, position.y, size, size);
 
         } else {
@@ -447,7 +511,7 @@ class Life {
         }
       } else {
         if (disableResourceColor) return;
-        rect(position.x, position.y, size*sqrt(energy)/3, size*sqrt(energy)/3);
+        rect(position.x, position.y, size*sqrt(energy)/4, size*sqrt(energy)/4);
       }
 
     } else {
@@ -465,6 +529,9 @@ class Life {
       rect(position.x, position.y, size, size);
     }
   }
+  Life replicate(int x, int y, int size, int energy, Gene g){
+    return (new Life(x, y, size, energy, g))
+  }
 
   Life[] reproduce(){
     float birthEnergy = size * size;
@@ -479,7 +546,7 @@ class Life {
 
       Gene newGene = gene.childGene();
 
-      Life child = new Life(x, y, size, energyAfterBirth, newGene);
+      Life child = replicate(x, y, size, energyAfterBirth, newGene);
 
       previousEnergy = energy;
       energy = energyAfterBirth;
@@ -535,7 +602,9 @@ void setup()
                                       initialGenesArray[g_i]);
           } if(isNormalMode) {
             lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
-          }
+          } if(isTorusMode){
+            lifes[lifes.length] = new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+            }
         }
       }
     }
@@ -549,6 +618,8 @@ void setup()
                                        Gene.randomGene());
       }if(isNormalMode){
         lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      }if(isTorusMode){
+        lifes[lifes.length]=new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }
     }
   }
@@ -561,6 +632,8 @@ void setup()
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode){
       lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    } if(isTorusMode){
+      lifes[lifes.length] = TorusLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
     }
   }
 }
@@ -653,7 +726,7 @@ void draw(){
 // Draw Graph
   drawGraph();
 
-  console.log("frameRate: " + frameRate);
+  //console.log("frameRate: " + frameRate);
 }
 
 void drawGraph(){
@@ -694,6 +767,9 @@ void addResources() {
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode){
       lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+      }
+    if(isTorusMode){
+      lifes[lifes.length] = TorusLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
       }
   }
 }
