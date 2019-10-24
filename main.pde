@@ -20,8 +20,8 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 500;
-float fieldHeight = 500;
+float fieldWidth = 1000;
+float fieldHeight = 700;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
@@ -29,9 +29,10 @@ float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
 bool isLinearMode=false;
-bool isTorusMode=true;
+bool isTorusMode=false;
 bool isCircumMode=false;
 bool isNormalMode=false;
+bool isRotateMode=true;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -39,7 +40,7 @@ bool enableEatColor = true;
 bool disableResourceColor = false;
 
 // Life Parameter
-float lifeRadius = 6;
+float lifeRadius = 7;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
@@ -50,13 +51,13 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 4;
+int geneLength = 3;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.7;
+float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.03;
@@ -213,11 +214,75 @@ var makeTimer = (function(){
     });
 });
 
+class RotateLife extends Life{
+  PVector velocity;
+  RotateLife(float x, float y, float _size, float _energy, Gene _gene){
+    super(x, y, _size, _energy, _gene);
+    velocity = new PVector(random(-1, 1), random(0,1));
+  }
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new RotateLife(x, y, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  static float outerCircle = 300;
+  static  float innerCircle = 200;
+  static   float middleCircle = (outerCircle + innerCircle)/2;
+  void move(){
+    velocity.add(new PVector(customizedRandom(-1, 1), customizedRandom(-1,1)));
+    PVector center = new PVector (fieldWidth/2, fieldHeight/2);
+    float fromCenter = PVector.sub(position, center);
+    float distanceFromCenter = fromCenter.mag();
+    
+
+    if(distanceFromCenter < outerCircle && distanceFromCenter > innerCircle){
+      velocity.x += - sin (fromCenter.heading()) * 0.1;
+      velocity.y += cos (fromCenter.heading()) * 0.1;
+      // プラスかマイナスかに応じて時計周りと反時計周りを変えられる
+
+      PVector donutCenter = PVector.add(center, PVector.mult(PVector.normalize(fromCenter), middleCircle));
+      PVector fromDonutCenterToPos = PVector.sub(position,donutCenter);
+      velocity = PVector.sub(velocity, PVector.normalize(fromDonutCenterToPos));
+    }
+
+    vx = velocity.x;
+    vy = velocity.y;
+
+    position.x += vx;
+    position.y += vy;
+
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate;
+    if(position.x <= 0 || position.x >= fieldWidth){
+      velocity.x = - velocity.x;
+      //energy = 0;
+    }
+    if(position.y <= 0 || position.y+lifeRadius >= fieldHeight){
+      velocity.y = - velocity.y;
+      //energy = 0;
+    }
+    position.x = min(position.x, fieldWidth);
+    position.x = max(position.x, 0);
+    position.y = min(position.y, fieldHeight);
+    position.y = max(position.y, 0);
+
+    energy -= energyConsumption;
+
+  }
+  Life replicate(int x, int y, int size, int energy, Gene g){
+    Life newLife = (new RotateLife(x, y, size, energy, g));
+    //newLife.velocity = new PVector(velocity.x, velocity.y);
+    return newLife;
+  }
+}
 
 
 class TorusLife extends Life{
+  PVector velocity;
   TorusLife(float x, float y, float _size, float _energy, Gene _gene){
     super(x, y, _size, _energy, _gene);
+    velocity = new PVector(random(-1, 1), random(0,1));
   }
   static Life makeResource(float x, float y, float size, Gene gene) {
     Life resource = new TorusLife(x, y, size, 0, gene);
@@ -227,33 +292,64 @@ class TorusLife extends Life{
     return resource;
   }
   void move(){
-    // v += 2;
-    // v *= customizedRandom(-5, 5);
-    // r += customizedRandom(-6, 6);
-    // float vx = Math.cos(r) * v;
-    // float vy = Math.sin(r) * v;
-
-    float vx = random(-defaultMoveDistance, defaultMoveDistance);
-    float vy = random(-defaultMoveDistance, defaultMoveDistance);
+    velocity.add(new PVector(customizedRandom(-1, 1), customizedRandom(-1,1)));
+    PVector center = new PVector (fieldWidth/2, fieldHeight/2);
+    float fromCenter = PVector.sub(position, center);
+    float distanceFromCenter = fromCenter.mag();
+    if(distanceFromCenter < 500 && distanceFromCenter > 100){
+      velocity.x += - sin (fromCenter.heading()) * 0.1;
+      velocity.y += cos (fromCenter.heading()) * 0.1;
+    }
+    vx = velocity.x;
+    vy = velocity.y;
 
     position.x += vx;
     position.y += vy;
 
     float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate
-
-    /*position.x = (position.x > (fieldWidth-lifeRadius)) ? 0 : position.x;
-    position.x = (position.x < 0) ? (fieldWidth - lifeRadius) : position.x;
-    position.y = (position.y > (fieldHeight -lifeRadius)) ? 0 : position.y;
-    position.y = (position.y < 0) ? (fieldHeight - lifeRadius): position.y;*/
-
-    position.x = position.x % fieldWidth
-    position.y = position.y % fieldHeight
+    function mod(i, j) {
+      return (i % j) < 0 ? (i % j) + 0 + (j < 0 ? -j : j) : (i % j + 0);
+    }
+    position.x = mod(position.x, fieldWidth)
+    position.y = mod(position.y, fieldHeight)
 
     energy -= energyConsumption;
 
   }
+  void drawTriangle(int x, int y, int r, float rot) {
+    pushMatrix();
+    translate(x, y);  // 中心となる座標
+    //console.log(degrees(rot));
+    rotate(rot - PI/2);
+
+    // 円を均等に3分割する点を結び、三角形をつくる
+    beginShape();
+      vertex(r*cos(PI/2), r*sin(PI/2));
+      vertex(r*cos(0)/2, rot/4);
+      vertex(r*cos(PI)/2, rot/4);
+    endShape(CLOSE);
+    beginShape();
+      vertex(0, 0);
+      vertex(r*cos(3*PI/2), r*sin(3*PI/2));
+    endShape(CLOSE);
+
+
+    popMatrix();
+  }
+  /*
+  void draw(){
+    if(alive()){
+      stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+      drawTriangle(position.x, position.y, size/3, velocity.heading());
+    } else {
+      super.draw();
+      }
+  }
+  */
   Life replicate(int x, int y, int size, int energy, Gene g){
-    return (new TorusLife(x, y, size, energy, g));
+    Life newLife = (new TorusLife(x, y, size, energy, g));
+    newLife.velocity = new PVector(velocity.x, velocity.y);
+    return newLife;
   }
 }
 
@@ -604,7 +700,9 @@ void setup()
             lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isTorusMode){
             lifes[lifes.length] = new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
-            }
+          } if(isRotateMode){
+            lifes[lifes.length] = new RotateLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          }
         }
       }
     }
@@ -620,6 +718,8 @@ void setup()
         lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }if(isTorusMode){
         lifes[lifes.length]=new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      } if(isRotateMode){
+        lifes[lifes.length]=new RotateLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }
     }
   }
@@ -630,10 +730,9 @@ void setup()
     }
     if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
-    } if(isNormalMode){
+    } if(isNormalMode || isTorusMode || isRotateMode){
       lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
     } if(isTorusMode){
-      lifes[lifes.length] = TorusLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
     }
   }
 }
@@ -658,6 +757,14 @@ void draw(){
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
   populationOfResource = 0;
+
+  if(isRotateMode && !artMode){
+    PVector center = new PVector (fieldWidth/2, fieldHeight/2);
+    fill(255, 0, 0, 40);
+    ellipse (center.x, center.y, RotateLife.outerCircle*2,RotateLife.outerCircle*2);
+    fill(255, 255, 255);
+    ellipse (center.x, center.y, RotateLife.innerCircle*2,RotateLife.innerCircle*2);
+  }
 
   for (int i = 0; i < lifes.length; i++){
     Life focus = lifes[i];
@@ -765,12 +872,9 @@ void addResources() {
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
-    } if(isNormalMode){
+    } if(isNormalMode || isRotateMode || isTorusMode){
       lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
-      }
-    if(isTorusMode){
-      lifes[lifes.length] = TorusLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
-      }
+    }
   }
 }
 
