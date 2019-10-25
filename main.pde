@@ -10,7 +10,7 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 100;
+int populationSize = 1000;
 int initialResourceSize = 500;
 int resourceGrowth = 1 + 4.01;
 
@@ -227,15 +227,15 @@ class RotateLife extends Life{
 
     return resource;
   }
-  static float outerCircle = 300;
-  static  float innerCircle = 200;
+  static float outerCircle = 700;
+  static  float innerCircle = 0;
   static   float middleCircle = (outerCircle + innerCircle)/2;
   void move(){
     velocity.add(new PVector(customizedRandom(-1, 1), customizedRandom(-1,1)));
     PVector center = new PVector (fieldWidth/2, fieldHeight/2);
     float fromCenter = PVector.sub(position, center);
     float distanceFromCenter = fromCenter.mag();
-    
+
 
     if(distanceFromCenter < outerCircle && distanceFromCenter > innerCircle){
       velocity.x += - sin (fromCenter.heading()) * 0.1;
@@ -294,12 +294,7 @@ class TorusLife extends Life{
   void move(){
     velocity.add(new PVector(customizedRandom(-1, 1), customizedRandom(-1,1)));
     PVector center = new PVector (fieldWidth/2, fieldHeight/2);
-    float fromCenter = PVector.sub(position, center);
-    float distanceFromCenter = fromCenter.mag();
-    if(distanceFromCenter < 500 && distanceFromCenter > 100){
-      velocity.x += - sin (fromCenter.heading()) * 0.1;
-      velocity.y += cos (fromCenter.heading()) * 0.1;
-    }
+
     vx = velocity.x;
     vy = velocity.y;
 
