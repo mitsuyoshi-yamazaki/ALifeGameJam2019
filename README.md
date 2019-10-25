@@ -9,3 +9,8 @@ https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/?art_mode=1&population_si
 ![](resources/docs/image001.png)
 ![](resources/docs/image002.gif)
 ![](resources/docs/image003.gif)
+
+## Run Locally
+
+`$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir`
+then open index.html on Chrome
