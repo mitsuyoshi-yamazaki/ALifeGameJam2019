@@ -1,11 +1,20 @@
 {
 	"compilerOptions": {
 		"target": "es6",
-		"module": "commonjs",
+		"module": "es6",
 		"outDir": "out",
-		"sourceMap": true
+		"sourceMap": true,
+		"baseUrl": "./",
+		"paths": {
+			"p5": [
+				"src/@types/p5"
+			]
+		},
+		"typeRoots": [
+			"src/@types"
+		]
 	},
 	"include": [
-		"source/*"
+		"src/**/*"
 	]
 }
