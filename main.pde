@@ -11,8 +11,8 @@ bool artMode = false;
 // Population
 Life[] lifes;
 int populationSize = 1000;
-int initialResourceSize = 600;
-int resourceGrowth = 4;
+int initialResourceSize = 500;
+int resourceGrowth = 1 + 4.01;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -20,13 +20,19 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 1600;
+float fieldWidth = 1000;
 float fieldHeight = 700;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = false;
+bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
+
+bool isLinearMode=false;
+bool isTorusMode=false;
+bool isCircumMode=false;
+bool isNormalMode=false;
+bool isRotateMode=true;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -34,24 +40,28 @@ bool enableEatColor = true;
 bool disableResourceColor = false;
 
 // Life Parameter
-float lifeRadius = 6;
+float lifeRadius = 7;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
 float defaultMoveDistance = lifeRadius / 2;
+float visualSizeCoeff = 1;
+
+bool enableMeaningfulSize =false;
+bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 10;
+int geneLength = 3;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.5;
+float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.03;
-bool isScavenger = false;
+bool isScavenger = true;
 
 // Parse URL Parameter
 String rawQuery = document.location.search;
@@ -81,6 +91,18 @@ if (artMode) {
   backgroundTransparency = 0;
   enableEatColor = false;
   disableResourceColor = true;
+}
+
+// Detailed View
+bool detailedView = false;
+if(detailedView){
+  //enableMeaningfulSize = true;
+  visualSizeCoeff = 4;
+  populationSize = 3;
+  initialResourceSize = 400;
+  mutationRate = 0.03;
+  enableReproduction = true;
+  resourceGrowth = 1 + 2.1;
 }
 
 // --
@@ -184,6 +206,261 @@ class Gene {
   }
 }
 
+var makeTimer = (function(){
+  var t = 0;
+  return (function(){
+    t++;
+    return t;
+    });
+});
+
+class RotateLife extends Life{
+  PVector velocity;
+  RotateLife(float x, float y, float _size, float _energy, Gene _gene){
+    super(x, y, _size, _energy, _gene);
+    velocity = new PVector(random(-1, 1), random(0,1));
+  }
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new RotateLife(x, y, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  static float outerCircle = 700;
+  static  float innerCircle = 0;
+  static   float middleCircle = (outerCircle + innerCircle)/2;
+  void move(){
+    velocity.add(new PVector(customizedRandom(-1, 1), customizedRandom(-1,1)));
+    PVector center = new PVector (fieldWidth/2, fieldHeight/2);
+    float fromCenter = PVector.sub(position, center);
+    float distanceFromCenter = fromCenter.mag();
+
+
+    if(distanceFromCenter < outerCircle && distanceFromCenter > innerCircle){
+      velocity.x += - sin (fromCenter.heading()) * 0.1;
+      velocity.y += cos (fromCenter.heading()) * 0.1;
+      // プラスかマイナスかに応じて時計周りと反時計周りを変えられる
+
+      PVector donutCenter = PVector.add(center, PVector.mult(PVector.normalize(fromCenter), middleCircle));
+      PVector fromDonutCenterToPos = PVector.sub(position,donutCenter);
+      velocity = PVector.sub(velocity, PVector.normalize(fromDonutCenterToPos));
+    }
+
+    vx = velocity.x;
+    vy = velocity.y;
+
+    position.x += vx;
+    position.y += vy;
+
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate;
+    if(position.x <= 0 || position.x >= fieldWidth){
+      velocity.x = - velocity.x;
+      //energy = 0;
+    }
+    if(position.y <= 0 || position.y+lifeRadius >= fieldHeight){
+      velocity.y = - velocity.y;
+      //energy = 0;
+    }
+    position.x = min(position.x, fieldWidth);
+    position.x = max(position.x, 0);
+    position.y = min(position.y, fieldHeight);
+    position.y = max(position.y, 0);
+
+    energy -= energyConsumption;
+
+  }
+  Life replicate(int x, int y, int size, int energy, Gene g){
+    Life newLife = (new RotateLife(x, y, size, energy, g));
+    //newLife.velocity = new PVector(velocity.x, velocity.y);
+    return newLife;
+  }
+}
+
+
+class TorusLife extends Life{
+  PVector velocity;
+  TorusLife(float x, float y, float _size, float _energy, Gene _gene){
+    super(x, y, _size, _energy, _gene);
+    velocity = new PVector(random(-1, 1), random(0,1));
+  }
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new TorusLife(x, y, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  void move(){
+    velocity.add(new PVector(customizedRandom(-1, 1), customizedRandom(-1,1)));
+    PVector center = new PVector (fieldWidth/2, fieldHeight/2);
+
+    vx = velocity.x;
+    vy = velocity.y;
+
+    position.x += vx;
+    position.y += vy;
+
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate
+    function mod(i, j) {
+      return (i % j) < 0 ? (i % j) + 0 + (j < 0 ? -j : j) : (i % j + 0);
+    }
+    position.x = mod(position.x, fieldWidth)
+    position.y = mod(position.y, fieldHeight)
+
+    energy -= energyConsumption;
+
+  }
+  void drawTriangle(int x, int y, int r, float rot) {
+    pushMatrix();
+    translate(x, y);  // 中心となる座標
+    //console.log(degrees(rot));
+    rotate(rot - PI/2);
+
+    // 円を均等に3分割する点を結び、三角形をつくる
+    beginShape();
+      vertex(r*cos(PI/2), r*sin(PI/2));
+      vertex(r*cos(0)/2, rot/4);
+      vertex(r*cos(PI)/2, rot/4);
+    endShape(CLOSE);
+    beginShape();
+      vertex(0, 0);
+      vertex(r*cos(3*PI/2), r*sin(3*PI/2));
+    endShape(CLOSE);
+
+
+    popMatrix();
+  }
+  /*
+  void draw(){
+    if(alive()){
+      stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+      drawTriangle(position.x, position.y, size/3, velocity.heading());
+    } else {
+      super.draw();
+      }
+  }
+  */
+  Life replicate(int x, int y, int size, int energy, Gene g){
+    Life newLife = (new TorusLife(x, y, size, energy, g));
+    newLife.velocity = new PVector(velocity.x, velocity.y);
+    return newLife;
+  }
+}
+
+
+class LinearLife extends Life{
+  static float constant_y(){return fieldHeight/2;}
+  LinearLife(float x, float _size, float _energy, Gene _gene){
+    super(x, constant_y(), _size, _energy, _gene);
+    position = new PVector(x, constant_y());
+  }
+  static Life makeResource(float x, float y, float size, Gene gene) {
+    Life resource = new LinearLife(x, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  void move(){
+    float vx = random(0, 1)<0.5 ? 1*sqrt(defaultMoveDistance) : 1*(-sqrt(defaultMoveDistance));
+
+    position.x += vx;
+
+    float energyConsumption = (new PVector(vx)).mag() * size * size * energyConsumptionRate
+    position.x = min(position.x, fieldWidth)
+    position.x = max(position.x, 0)
+    position.y = constant_y();
+
+    energy -= energyConsumption;
+  }
+
+
+  Life[] reproduce(){
+    float birthEnergy = size * size;
+
+    if (energy > birthEnergy) {
+      float energyAfterBirth = (energy - birthEnergy) / 2;
+      float radian =  random(0, 1)<0.5 ? 1 : (-1);
+
+      float x = position.x + radian * size * 3.0;
+      float y = position.y;
+
+      Gene newGene = gene.childGene();
+
+      Life child = new LinearLife(x, size, energyAfterBirth, newGene);
+
+      energy = energyAfterBirth;
+
+      return [child];
+    }
+    return [];
+  }
+}
+
+class CircumLife extends Life{
+  static Vector constant_center(){return new PVector(fieldWidth/2,fieldHeight/2);}
+  static float constant_radius(){return 250;}
+
+  // angle :: radian
+  CircumLife(float angle, float _size, float _energy, Gene _gene){
+    super(constant_center().x + constant_radius() * Math.cos(angle),
+          constant_center().y + constant_radius() * Math.sin(angle),
+          _size, _energy, _gene)
+    position.x = constant_center().x + constant_radius() * Math.cos(angle);
+    position.y = constant_center().y + constant_radius() * Math.sin(angle);
+  }
+  static Life makeResource(float angle, float size, Gene gene) {
+    Life resource = new CircumLife(angle, size, 0, gene);
+    resource.bodyEnergy *= 20;
+    resource.type = 'Resource';
+
+    return resource;
+  }
+  float getAngle(){
+    PVector v = PVector.sub(position, constant_center());
+    //AB = OB - OA
+    //OA : (0,0)→中心
+    //OB : (0,0)→現在
+    //AB : 中心→現在
+    return Math.atan2(v.y,v.x);
+  }
+  void move(){
+    float currentAngle = getAngle();
+    float vangle = random(-0.01, 0.1);
+
+    position.x = constant_center().x + constant_radius() * Math.cos(currentAngle+ vangle);
+    position.y = constant_center().y + constant_radius() * Math.sin(currentAngle+vangle);
+
+    float energyConsumption = vangle * size * size * energyConsumptionRate;
+    //position.x = min(position.x, fieldWidth)
+    //position.x = max(position.x, 0)
+
+    energy -= energyConsumption;
+  }
+
+  Life[] reproduce(){
+    float birthEnergy = size * size;
+
+    if (energy > birthEnergy) {
+      float energyAfterBirth = (energy - birthEnergy) / 2;
+      float radian =  random(0, 1)<0.5 ? 1 : (-1);
+
+      float currentAngle = getAngle();
+      float vangle = random(0, 0.01);
+
+      Gene newGene = gene.childGene();
+
+      Life child = new CircumLife(currentAngle+vangle, size, energyAfterBirth, newGene);
+
+      energy = energyAfterBirth;
+
+      return [child];
+    }
+    return [];
+  }
+}
+
 class Life {
 
   PVector position;
@@ -193,6 +470,7 @@ class Life {
   bool isEaten = false;
   Gene gene;
   float energy;
+  float previousEnergy; // 分裂前のエネルギー
   String type = 'Life';
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
@@ -213,6 +491,13 @@ class Life {
 
     return resource;
   }
+  /*static Life randomPlace(Gene gene){
+    return (new Life(random(paddingWidth,fieldWidth - paddingWidth),
+                    random(paddingHeight, fieldHeight - paddingHeight),
+                    lifeRadius,
+                    defaultEnergy,
+                    gene));
+  }*/
 
   String show(){
     String s = ("size: " + size + ".   \n")
@@ -232,6 +517,7 @@ class Life {
 
   void eat(Life other) {
     energy += other.energy + other.bodyEnergy;
+    other.previousEnergy = other.energy;
     other.energy = 0;
     other.bodyEnergy = 0;
     other.eaten();
@@ -241,66 +527,10 @@ class Life {
     isEaten = true;
   }
 
-  void draw(){
-    if (type == 'Life') {
-     if (enableEatColor && isEaten) {
-        noStroke();
-        fill(255, 0, 0);
-        ellipse(position.x, position.y, size, size);
-
-      } else {  
-        noStroke();
-        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
-    
-        if (alive()) {
-          ellipse(position.x, position.y, size, size);
-        } else {
-          if (disableResourceColor) return;
-          rect(position.x, position.y, size * 0.5, size * 0.5);
-        }
-      }
-
-    } else {
-      if (disableResourceColor) return;
-
-      if (isEaten) {
-        noStroke();
-        fill(255, 0, 0);
-
-      } else {  
-        // Alive
-        noStroke();
-        fill(81, 145, 198);
-      }
-      rect(position.x, position.y, size, size);
-    }
-  }
-
-  Life[] update(){
-    if (!alive()) return[];
-
-    float birthEnergy = size * size;
-
-    if (energy > birthEnergy) {
-      float energyAfterBirth = (energy - birthEnergy) / 2;
-      float radian = random(0, 2.0 * PI);
-
-      float x = position.x + sin(radian) * size * 3.0;
-      float y = position.y + cos(radian) * size * 3.0;
-
-      Gene newGene = gene.childGene();
-
-      Life child = new Life(x, y, size, energyAfterBirth, newGene);
-
-      energy = energyAfterBirth;
-
-      return [child];
-    }
-
+  void move(){
     // v += 2;
     // v *= customizedRandom(-5, 5);
     // r += customizedRandom(-6, 6);
-    
     // float vx = Math.cos(r) * v;
     // float vy = Math.sin(r) * v;
 
@@ -318,7 +548,111 @@ class Life {
     position.y = max(position.y, 0)
 
     energy -= energyConsumption;
+  }
+  void draw(){
+    int size = this.size * visualSizeCoeff;
+    if (type == 'Life') {
+     if (enableEatColor && isEaten) {
+      if(enableMeaningfulSize){
+        stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+        ellipse(position.x, position.y, size+size*sqrt(previousEnergy)/4, size+size*sqrt(previousEnergy)/4);
 
+        stroke(255, 0, 0,128);
+        fill(255, 0, 0, 100);
+        ellipse(position.x, position.y, size+size*sqrt(previousEnergy)/4, size+size*sqrt(previousEnergy)/4);
+      } else {
+        //stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+        ellipse(position.x, position.y, size, size);
+
+        //stroke(255, 0, 0,128);
+        fill(255, 0, 0, 100);
+        ellipse(position.x, position.y, size, size);
+      }
+     } else {
+       if(enableMeaningfulSize){
+       stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,256);
+       fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+       } else{
+       noStroke();
+       fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+       }
+     }
+
+      if (alive()) {
+        if(enableMeaningfulSize){
+          if(previousEnergy == 0)
+          {
+            ellipse(position.x, position.y, size+size*sqrt(energy)/4, size+size*sqrt(energy)/4);
+          } else if (previousEnergy <= energy) {
+            previousEnergy = 0;
+            ellipse(position.x, position.y, size+size*sqrt(energy)/4, size+size*sqrt(energy)/4);
+          } else if (previousEnergy > energy){
+            previousEnergy-=previousEnergy/2;
+            ellipse(position.x, position.y, size+size*sqrt(previousEnergy)/4, size+size*sqrt(previousEnergy)/4);
+          }
+
+          stroke(gene.geneColor.r-50, gene.geneColor.g-50, gene.geneColor.b-50,128);
+          fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,60);
+          ellipse(position.x, position.y, size, size);
+
+        } else {
+          ellipse(position.x, position.y, size, size);
+        }
+      } else {
+        if (disableResourceColor) return;
+        rect(position.x, position.y, size*sqrt(energy)/4, size*sqrt(energy)/4);
+      }
+
+    } else {
+      if (disableResourceColor) return;
+
+      if (enableEatColor && isEaten) {
+        noStroke();
+        fill(255, 0, 0);
+      } else {
+        // Alive
+        noStroke();
+        //fill(81, 145, 198);
+        fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
+      }
+      rect(position.x, position.y, size, size);
+    }
+  }
+  Life replicate(int x, int y, int size, int energy, Gene g){
+    return (new Life(x, y, size, energy, g))
+  }
+
+  Life[] reproduce(){
+    float birthEnergy = size * size;
+
+    if(!enableReproduction) return [];
+    if (energy > birthEnergy) {
+      float energyAfterBirth = (energy - birthEnergy) / 2;
+      float radian = random(0, 2.0 * PI);
+
+      float x = position.x + sin(radian) * size * 3.0;
+      float y = position.y + cos(radian) * size * 3.0;
+
+      Gene newGene = gene.childGene();
+
+      Life child = replicate(x, y, size, energyAfterBirth, newGene);
+
+      previousEnergy = energy;
+      energy = energyAfterBirth;
+
+      return [child];
+    }
+    return [];
+  }
+
+  Life[] update(){
+    if (!alive()) return[];
+
+    Life[] childs = reproduce();
+    if(childs.length != 0) return childs;
+    move();
     return [];
   }
 }
@@ -339,12 +673,10 @@ void setup()
   textFont(fontA, 14);
 
   lifes = [];
-  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
+  int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
+  int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene initialGene = new Gene(0x0, 0xf);
-
-  Gene[] initialGenesArray = [new Gene(0x8,0x0), new Gene(0x0,0x8)];
+  Gene[] initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -352,30 +684,61 @@ void setup()
       for(int g_i = 0; g_i != initialGenesArray.length;g_i++){
         if(dice == g_i)
         {
-        lifes[i] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          if(isLinearMode){
+            lifes[lifes.length] = new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          } if(isCircumMode){
+            lifes[lifes.length] = new CircumLife(random(0, Math.PI*2),
+                                      lifeRadius,
+                                      defaultEnergy,
+                                      initialGenesArray[g_i]);
+          } if(isNormalMode) {
+            lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          } if(isTorusMode){
+            lifes[lifes.length] = new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          } if(isRotateMode){
+            lifes[lifes.length] = new RotateLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+          }
         }
       }
     }
     else {
-      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      if(isLinearMode){
+        lifes[lifes.length]=new LinearLife(random(paddingWidth,fieldWidth - paddingWidth),lifeRadius,defaultEnergy,Gene.randomGene());
+      } if(isCircumMode){
+        lifes[lifes.length]=new CircumLife(random(0, Math.PI*2),
+                                       lifeRadius,
+                                       defaultEnergy,
+                                       Gene.randomGene());
+      }if(isNormalMode){
+        lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      }if(isTorusMode){
+        lifes[lifes.length]=new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      } if(isRotateMode){
+        lifes[lifes.length]=new RotateLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+      }
     }
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    Gene g1 = new Gene(0, 0);
+    if(isLinearMode){
+      lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
+    }
+    if (isCircumMode){
+      lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
+    } if(isNormalMode || isTorusMode || isRotateMode){
+      lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    } if(isTorusMode){
+    }
   }
-  Gene g = Gene.fromWholeGene(0xff);
-  Gene g2 = g.childGene();
-  console.log("getWhole:" + g.getWholeGene());
-  console.log("desc:" + g.description());
-  console.log("binary:" + g.showBinary());
-  console.log("getWhole g2:" + g2.getWholeGene());
-  console.log("desc:" + g2.description());
-  console.log("binary:" + g2.showBinary());
 }
 
+int populationOfResource = 0;
 void draw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
+  /*if(second()%30==0){
+    fill(0xff, 0xff);
+  }*/
   rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
   // Draw Lives
@@ -388,13 +751,25 @@ void draw(){
   });
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
+  populationOfResource = 0;
+
+  if(isRotateMode && !artMode){
+    PVector center = new PVector (fieldWidth/2, fieldHeight/2);
+    fill(255, 0, 0, 40);
+    ellipse (center.x, center.y, RotateLife.outerCircle*2,RotateLife.outerCircle*2);
+    fill(255, 255, 255);
+    ellipse (center.x, center.y, RotateLife.innerCircle*2,RotateLife.innerCircle*2);
+  }
 
   for (int i = 0; i < lifes.length; i++){
     Life focus = lifes[i];
 
+    if (lifes[i].type == "Resource"){
+      populationOfResource += 1;
+    }
     if(lifes[i].alive()){
-      populationPerSpecies[focus.gene.getWholeGene()] += 1;
       born = born.concat(lifes[i].update());
+      populationPerSpecies[focus.gene.getWholeGene()] += 1;
 
       Life life = lifes[i];
       Life[] compareTo = [];
@@ -452,6 +827,8 @@ void draw(){
 
 // Draw Graph
   drawGraph();
+
+  //console.log("frameRate: " + frameRate);
 }
 
 void drawGraph(){
@@ -466,6 +843,10 @@ void drawGraph(){
     stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
     point(unit%appFieldWidth, appFieldHeight-(pop * graphSize));
   });
+
+  stroke(0xff, 0xff, 0);
+  point(unit%appFieldWidth, appFieldHeight-(populationOfResource * graphSize));
+
   if((Math.floor(unit))%fieldWidth < 4) {
     clearGraph();
   }
@@ -476,18 +857,19 @@ void clearGraph(){
   rect(0,fieldHeight,appFieldWidth,graphHeight);
 }
 
-var timer = (function(){
-  var t = 0;
-  return (function(){
-    t++;
-    return t;
-    });
-})();
+var timer = makeTimer();
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
+  Gene g = new Gene(0, 0);
   for (int i = 0; i < numberOfResources; i++) {
-    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+    if(isLinearMode){
+      lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+    } if (isCircumMode){
+      lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
+    } if(isNormalMode || isRotateMode || isTorusMode){
+      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+    }
   }
 }
 
@@ -507,25 +889,6 @@ void mouseClicked(){
     }
   }
 }
-
-
-/*var keyPressed = (function (){
-  var isStopping = false;
-
-  return (function(){
-  if(key == 32){
-    noLoop();
-    if(!isStopping){
-      noLoop();
-      print("noloop");
-    } else {
-      loop();
-      print("loop");
-    }
-    isStopping = !isStopping;
-  }
-  });
-})();*/
 
 void keyPressed (){
   if(key == 32){
