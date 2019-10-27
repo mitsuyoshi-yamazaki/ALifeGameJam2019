@@ -1,22 +1,18 @@
+declare function background(color: number): void
+declare function background(r: number, g: number, b: number): void
+declare function noFill(): void
+declare function noStroke(): void
+declare function fill(r: number, g: number, b: number): void
 declare function stroke(r: number, g: number, b: number): void
 declare function ellipse(x: number, y: number, w: number, h: number): void
+declare function createVector(x: number, y: number): p5.Vector
 
-// export const foobar = require('p5') as P5;
-
-// interface P5 {
-
-// }
-
-// export = module;
-// export as namespace p5;
-// declare global {
-// 	interface Window {
-// 		p5: typeof module,
-// 	}
-// }
-// interface IFooBar {
-// 	bazMethod(qux: string): string;
-// 	fuga(hoge: number): boolean
-// }
-// // tslint:disable-next-line:no-var-requires
-// const foobar = require('foobar') as IFooBar;
+declare namespace p5 {
+	class Vector {
+		static random2D(): Vector
+		static mult(v: Vector, n: number): Vector
+		x: number
+		y: number
+		z: number
+	}
+}

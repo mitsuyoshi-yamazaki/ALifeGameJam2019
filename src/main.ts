@@ -1,7 +1,13 @@
-let world: World
+let world: World<WorldObject>
 
 function setup(): void {
-	world = new VanillaWorld(200, 200)
+	const worldSize = 200
+	world = new VanillaWorld(createVector(worldSize, worldSize))
+
+	const objects: [SimpleLife, p5.Vector][] = [
+		[new SimpleLife(), createVector(50, 100)]
+	]
+	world.addObjects(objects)
 }
 
 function draw(): void {
@@ -10,19 +16,41 @@ function draw(): void {
 }
 
 // TODO: ファイルを分割する
-interface World {
+// Worlds
+interface World<ObjectType> {
+	size: p5.Vector
 	t: number
+	objects: [ObjectType, p5.Vector][]
+
+	addObjects(objects: [ObjectType, p5.Vector][]): void
 	next(): void
-	draw(): void	// TODO: 世界は描画系とは独立して存在するので、描画処理は外部に出して、 World.state を読み込み描画するようにする
+
+	// TODO: 世界は描画系とは独立して存在するので、描画処理は外部に出して、 World.state を読み込み描画するようにする
+	draw(): void
 }
 
-class VanillaWorld implements World {
+class VanillaWorld<ObjectType> implements World<ObjectType> {
+	private _size: p5.Vector
+	get size(): p5.Vector {
+		return this._size
+	}
+
 	private _t: number = 0
 	get t(): number {
 		return this._t
 	}
 
-	constructor(readonly width: number, readonly height: number) {
+	private _objects: [ObjectType, p5.Vector][] = []
+	get objects(): [ObjectType, p5.Vector][] {
+		return this._objects
+	}
+
+	constructor(size: p5.Vector) {
+		this._size = size
+	}
+
+	addObjects(objects: [ObjectType, p5.Vector][]): void {
+		this._objects = this._objects.concat(objects)
 	}
 
 	next(): void {
@@ -31,8 +59,19 @@ class VanillaWorld implements World {
 	}
 
 	draw(): void {
-		// TODO: implement here
-		stroke(255, 0, 0)
-		ellipse(50, 50, 80, 80);
+		background(220)
+		noStroke()
+		fill(0, 255, 0)
+		const radius = 10
+		this._objects.forEach(obj => {
+			ellipse(obj[1].x, obj[1].y, radius, radius)
+		})
 	}
+}
+
+// Objects
+interface WorldObject {
+}
+
+class SimpleLife implements WorldObject {
 }
