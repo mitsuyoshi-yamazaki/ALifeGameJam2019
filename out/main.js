@@ -3,7 +3,7 @@ function setup() {
     const worldSize = 200;
     world = new VanillaWorld(createVector(worldSize, worldSize));
     const objects = [
-        [new SimpleLife(), createVector(50, 100)]
+        [new SimpleLife(), createVector(50, 100)],
     ];
     world.addObjects(objects);
 }

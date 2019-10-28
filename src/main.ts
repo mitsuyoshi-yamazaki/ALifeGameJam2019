@@ -5,7 +5,7 @@ function setup(): void {
   world = new VanillaWorld(createVector(worldSize, worldSize))
 
   const objects: [SimpleLife, p5.Vector][] = [
-    [new SimpleLife(), createVector(50, 100)]
+    [new SimpleLife(), createVector(50, 100)],
   ]
   world.addObjects(objects)
 }
@@ -30,35 +30,35 @@ interface World<ObjectType> {
 }
 
 class VanillaWorld<ObjectType> implements World<ObjectType> {
-  private _size: p5.Vector
-  get size(): p5.Vector {
+  private readonly _size: p5.Vector
+  public get size(): p5.Vector {
     return this._size
   }
 
-  private _t: number = 0
-  get t(): number {
+  private _t = 0
+  public get t(): number {
     return this._t
   }
 
   private _objects: [ObjectType, p5.Vector][] = []
-  get objects(): [ObjectType, p5.Vector][] {
+  public get objects(): [ObjectType, p5.Vector][] {
     return this._objects
   }
 
-  constructor(size: p5.Vector) {
+  public constructor(size: p5.Vector) {
     this._size = size
   }
 
-  addObjects(objects: [ObjectType, p5.Vector][]): void {
+  public addObjects(objects: [ObjectType, p5.Vector][]): void {
     this._objects = this._objects.concat(objects)
   }
 
-  next(): void {
+  public next(): void {
     this._t += 1
     // TODO: implement here
   }
 
-  draw(): void {
+  public draw(): void {
     background(220)
     noStroke()
     fill(0, 255, 0)
