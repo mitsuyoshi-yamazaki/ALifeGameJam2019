@@ -111,9 +111,7 @@
 					"class-name": true,
 					"comment-format": [
 						true,
-						"check-space",
-						"check-uppercase",
-						"allow-trailing-lowercase"
+						"check-space"
 					],
 					"encoding": true,
 					"file-name-casing": [
@@ -186,7 +184,8 @@
 						"check-type-operator",
 						"check-preblock",
 						"check-postbrace"
-					]
+					],
+					"no-console": false
 				},
 				"rulesDirectory": []
 }
