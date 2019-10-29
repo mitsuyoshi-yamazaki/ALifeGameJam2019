@@ -1,15 +1,18 @@
+let drawer;
 let world;
 function setup() {
+    drawer = new P5Drawer();
     const worldSize = 200;
+    createCanvas(worldSize, worldSize);
     world = new VanillaWorld(createVector(worldSize, worldSize));
     const objects = [
-        [new SimpleLife(), createVector(50, 100)],
+        [new SimpleObject(), createVector(50, 50)],
     ];
     world.addObjects(objects);
 }
 function draw() {
     world.next();
-    world.draw();
+    drawer.draw(world.objects);
 }
 class VanillaWorld {
     constructor(size) {
@@ -33,16 +36,22 @@ class VanillaWorld {
         this._t += 1;
         // TODO: implement here
     }
-    draw() {
-        background(220);
-        noStroke();
-        fill(0, 255, 0);
-        const radius = 10;
-        this._objects.forEach(obj => {
-            ellipse(obj[1].x, obj[1].y, radius, radius);
-        });
+}
+class SimpleObject {
+    next() {
+        return;
     }
 }
-class SimpleLife {
+class P5Drawer {
+    draw(objects) {
+        background(220);
+        noStroke();
+        fill(255, 0, 0);
+        const radius = 10;
+        objects.forEach(value => {
+            const position = value[1];
+            ellipse(position.x, position.y, radius, radius);
+        });
+    }
 }
 //# sourceMappingURL=main.js.map

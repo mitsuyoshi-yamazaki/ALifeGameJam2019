@@ -1,22 +1,26 @@
+let drawer: P5Drawer<SimpleObject>
 let world: World<WorldObject>
 
 function setup(): void {
+  drawer = new P5Drawer<SimpleObject>()
+
   const worldSize = 200
+  createCanvas(worldSize, worldSize)
   world = new VanillaWorld(createVector(worldSize, worldSize))
 
-  const objects: [SimpleLife, p5.Vector][] = [
-    [new SimpleLife(), createVector(50, 100)],
+  const objects: [SimpleObject, p5.Vector][] = [
+    [new SimpleObject(), createVector(50, 50)],
   ]
   world.addObjects(objects)
 }
 
 function draw(): void {
   world.next()
-  world.draw()
+  drawer.draw(world.objects)
 }
 
 // TODO: ファイルを分割する
-// Worlds
+/// Worlds
 interface World<ObjectType> {
   size: p5.Vector
   t: number
@@ -24,9 +28,6 @@ interface World<ObjectType> {
 
   addObjects(objects: [ObjectType, p5.Vector][]): void
   next(): void
-
-  // TODO: 世界は描画系とは独立して存在するので、描画処理は外部に出して、 World.state を読み込み描画するようにする
-  draw(): void
 }
 
 class VanillaWorld<ObjectType> implements World<ObjectType> {
@@ -57,21 +58,38 @@ class VanillaWorld<ObjectType> implements World<ObjectType> {
     this._t += 1
     // TODO: implement here
   }
+}
 
-  public draw(): void {
-    background(220)
-    noStroke()
-    fill(0, 255, 0)
-    const radius = 10
-    this._objects.forEach(obj => {
-      ellipse(obj[1].x, obj[1].y, radius, radius)
-    })
+/// Objects
+interface WorldObject {
+  next(): Movement | undefined
+}
+
+class SimpleObject implements WorldObject {
+  public next(): Movement | undefined {
+    return
   }
 }
 
-// Objects
-interface WorldObject {
+/// Other
+interface Movement {
+
 }
 
-class SimpleLife implements WorldObject {
+/// Utility
+interface Drawer<ObjectType extends WorldObject> {
+  draw(objects: [ObjectType, p5.Vector][]): void
+}
+
+class P5Drawer<ObjectType extends WorldObject> implements Drawer<ObjectType> {
+  public draw(objects: [ObjectType, p5.Vector][]): void {
+    background(220)
+    noStroke()
+    fill(255, 0, 0)
+    const radius = 10
+    objects.forEach(value => {
+      const position = value[1]
+      ellipse(position.x, position.y, radius, radius)
+    })
+  }
 }
