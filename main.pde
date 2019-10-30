@@ -12,7 +12,7 @@ bool artMode = false;
 Life[] lifes;
 int populationSize = 1000;
 int initialResourceSize = 500;
-int resourceGrowth = 1 + 4.01;
+int resourceGrowth = 4.01;
 
 // Inspector
 int[] populationPerSpecies = [];
