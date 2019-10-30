@@ -12,7 +12,7 @@ bool artMode = false;
 Life[] lifes;
 int populationSize = 1000;
 int initialResourceSize = 500;
-int resourceGrowth = 1 + 4.01;
+int resourceGrowth = 4.01;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -21,7 +21,7 @@ float graphHeight = 400;
 
 // Field
 float fieldWidth = 1000;
-float fieldHeight = 700;
+float fieldHeight = 500;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
@@ -31,8 +31,20 @@ float appFieldHeight = fieldHeight + graphHeight;
 bool isLinearMode=false;
 bool isTorusMode=false;
 bool isCircumMode=false;
-bool isNormalMode=false;
-bool isRotateMode=true;
+bool isNormalMode=true;
+bool isRotateMode=false;
+
+// Walls
+int wallWidth = 40;
+int space = fieldHeight / 10;
+Wall[] walls = [];
+
+if (isNormalMode) {
+	walls = [
+		new Wall((fieldWidth - wallWidth) / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall((fieldWidth - wallWidth) / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+	]
+}
 
 // Color
 float backgroundTransparency = 0xff;
@@ -114,6 +126,28 @@ void log(String data) {
 
 float customizedRandom(float lower, float upper) {
   return (random(lower, upper), random(lower, upper), random(lower, upper), random(lower, upper), random(lower, upper)) / 5.0;
+}
+
+class Wall {
+	float x;
+	float maxX;
+	float y;
+	float maxY;
+	float width;
+	float height;
+
+	Wall(float _x, float _y, float _width, float _height) {
+		x = _x;
+		y = _y;
+		width = _width;
+		height = _height;
+		maxX = x + width;
+		maxY = y + height;
+	}
+
+	bool contains(PVector position) {
+		return position.x > x && position.x < maxX && position.y > y && position.y < maxY;
+	}
 }
 
 class Color {
@@ -753,6 +787,13 @@ void draw(){
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
   populationOfResource = 0;
 
+		for (int ii = 0; ii < walls.length; ii++) {
+			Wall wall = walls[ii]
+			stroke(255)
+			fill(80)
+			rect(wall.x, wall.y, wall.width, wall.height)
+		}
+
   if(isRotateMode && !artMode){
     PVector center = new PVector (fieldWidth/2, fieldHeight/2);
     fill(255, 0, 0, 40);
@@ -772,6 +813,20 @@ void draw(){
       populationPerSpecies[focus.gene.getWholeGene()] += 1;
 
       Life life = lifes[i];
+						bool isDead = false;
+						for (int ii = 0; ii < walls.length; ii++) {
+							Wall wall = walls[ii];
+							if (wall.contains(life.position)) {
+								isDead = true
+								break;
+							}
+						}
+						if (isDead) {
+							life.energy = 0.0;
+							killed[killed.length] = life;
+							continue;
+						}
+
       Life[] compareTo = [];
 
       int xIndex = sortedX.indexOf(life);
