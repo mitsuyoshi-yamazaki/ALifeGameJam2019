@@ -40,8 +40,10 @@ int space = fieldHeight / 10;
 Wall[] walls = [];
 
 if (isNormalMode) {
-	walls[walls.length] = new Wall(fieldWidth / 2, 0, wallWidth, fieldHeight);
-//	Wall(fieldWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+	walls = [
+		new Wall((fieldWidth - wallWidth) / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall((fieldWidth - wallWidth) / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+	]
 }
 
 // Color
