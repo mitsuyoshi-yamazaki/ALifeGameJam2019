@@ -1,16 +1,12 @@
 let world: World
 
 function setup(): void {
-  const worldSize = 200
-  createCanvas(worldSize, worldSize)
-  world = new VanillaWorld(createVector(worldSize, worldSize))
+  const size = 200
+  const worldSize = createVector(size, size)
+  createCanvas(size, size)
+  world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, 10, size * 0.1))
 
-  const walls = wallsAround(worldSize, worldSize, worldSize * 0.01)
-  world.addObjects(walls)
-
-  const lives: Life[] = [
-    new Life(createVector(random(worldSize), random(worldSize))),
-  ]
+  const lives = randomLives(20, size)
   world.addLives(lives)
 }
 
@@ -19,13 +15,10 @@ function draw(): void {
   world.draw()
 }
 
-function wallsAround(width: number, height: number, wallWidth: number): Wall[] {
-  return [
-    new Wall(createVector(0, 0), width, wallWidth),
-    new Wall(createVector(width - wallWidth, wallWidth), wallWidth, height - wallWidth * 2),
-    new Wall(createVector(0, height - wallWidth), width, wallWidth),
-    new Wall(createVector(0, wallWidth), wallWidth, height - wallWidth * 2),
-  ]
+function randomLives(numberOfLives: number, positionSpace: number): Life[] {
+  return [...new Array(numberOfLives).keys()].map(_ => {
+    return new Life(createVector(random(positionSpace), random(positionSpace)))
+  })
 }
 
 // TODO: ファイルを分割する
@@ -33,6 +26,7 @@ function wallsAround(width: number, height: number, wallWidth: number): Wall[] {
 interface World {
   size: p5.Vector
   t: number
+  terrain: Terrain | undefined
   objects: WorldObject[]
   lives: Life[]
 
@@ -55,6 +49,11 @@ class VanillaWorld implements World {
     return this._t
   }
 
+  private readonly _terrain: Terrain
+  public get terrain(): Terrain {
+    return this._terrain
+  }
+
   private _objects: WorldObject[] = []
   public get objects(): WorldObject[] {
     return this._objects
@@ -65,8 +64,9 @@ class VanillaWorld implements World {
     return this._lives
   }
 
-  public constructor(size: p5.Vector) {
+  public constructor(size: p5.Vector, terrain: Terrain) {
     this._size = size
+    this._terrain = terrain
   }
 
   public addObjects(objects: WorldObject[]): void {
@@ -81,19 +81,82 @@ class VanillaWorld implements World {
     this._t += 1
 
     this._lives.forEach(life => {
-      life.next()
+      const force = life.next()
+
+      const friction = 0.5
+      const acceleration = force.accelerationTo(life.mass)
+
+      life.position = p5.Vector.add(life.position, life.velocity)
+      life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration)
     })
   }
 
   public draw(): void {
     background(220)
 
+    this.terrain.draw()
     this._objects.forEach(obj => {
       obj.draw()
     })
     this._lives.forEach(life => {
       life.draw()
     })
+  }
+}
+
+// その場所に存在する力やプロパティを格納する
+class Terrain {
+  public constructor(public readonly size: p5.Vector) {
+  }
+
+  public frictionAt(position: p5.Vector): number {
+    return 0
+  }
+
+  public forceAt(position: p5.Vector): p5.Vector {
+    return createVector(0, 0)
+  }
+
+  public draw(): void {
+    return
+  }
+}
+
+class VanillaTerrain extends Terrain {
+  public constructor(
+    public readonly size: p5.Vector,
+    public readonly friction: number,
+    public readonly immobilizedWidth: number,
+  ) {
+    super(size)
+  }
+
+  public frictionAt(position: p5.Vector): number {
+    if (position.x < this.immobilizedWidth) {
+      return ((this.immobilizedWidth - position.x) / this.immobilizedWidth) * this.friction
+    }
+    if (position.x > (this.size.x - this.immobilizedWidth)) {
+      return ((this.immobilizedWidth - this.size.x - position.x) / this.immobilizedWidth) * this.friction
+    }
+    if (position.y < this.immobilizedWidth) {
+      return ((this.immobilizedWidth - position.y) / this.immobilizedWidth) * this.friction
+    }
+    if (position.y > (this.size.y - this.immobilizedWidth)) {
+      return ((this.immobilizedWidth - this.size.y - position.y) / this.immobilizedWidth) * this.friction
+    }
+
+    return 0
+  }
+
+  public forceAt(position: p5.Vector): p5.Vector {
+    return createVector(0, 0)
+  }
+
+  public draw(): void {
+    stroke(207, 196, 251)
+    strokeWeight(this.immobilizedWidth)
+    noFill()
+    rect(0, 0, this.size.x, this.size.y)
   }
 }
 
@@ -130,7 +193,7 @@ class Wall extends WorldObject {
 
   public draw(): void {
     noStroke()
-    fill(255, 0, 0)
+    fill(207, 196, 251)
     rect(this.position.x, this.position.y, this.width, this.height)
   }
 }
@@ -156,18 +219,12 @@ class Life extends WorldObject {
     this.mass = 3
   }
 
-  public next(): void {
+  public next(): Force {
     const max = 3
     const vx = random(-max, max)
     const vy = random(-max, max)
 
-    const force = new Force(vx, vy)
-
-    const friction = 0.5
-    const acceleration = force.accelerationTo(this.mass)
-
-    this.position = p5.Vector.add(this.position, this.velocity)
-    this.velocity = p5.Vector.add(p5.Vector.mult(this.velocity, friction), acceleration)
+    return new Force(vx, vy)
   }
 
   public draw(): void {

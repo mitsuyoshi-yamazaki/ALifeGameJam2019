@@ -1,39 +1,37 @@
 let world;
 function setup() {
-    const worldSize = 200;
-    createCanvas(worldSize, worldSize);
-    world = new VanillaWorld(createVector(worldSize, worldSize));
-    const walls = wallsAround(worldSize, worldSize, worldSize * 0.02);
-    world.addObjects(walls);
-    const lives = [
-        new Life(createVector(random(worldSize), random(worldSize))),
-    ];
+    const size = 200;
+    const worldSize = createVector(size, size);
+    createCanvas(size, size);
+    world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, 10, size * 0.1));
+    const lives = randomLives(20, size);
     world.addLives(lives);
 }
 function draw() {
     world.next();
     world.draw();
 }
-function wallsAround(width, height, wallWidth) {
-    return [
-        new Wall(createVector(0, 0), width, wallWidth),
-        new Wall(createVector(width - wallWidth, wallWidth), wallWidth, height - wallWidth * 2),
-        new Wall(createVector(0, height - wallWidth), width, wallWidth),
-        new Wall(createVector(0, wallWidth), wallWidth, height - wallWidth * 2),
-    ];
+function randomLives(numberOfLives, positionSpace) {
+    return [...new Array(numberOfLives).keys()].map(_ => {
+        return new Life(createVector(random(positionSpace), random(positionSpace)));
+    });
 }
 class VanillaWorld {
-    constructor(size) {
+    constructor(size, terrain) {
         this._t = 0;
         this._objects = [];
         this._lives = [];
         this._size = size;
+        this._terrain = terrain;
     }
     get size() {
         return this._size;
     }
     get t() {
         return this._t;
+    }
+    get terrain() {
+        return this._terrain;
     }
     get objects() {
         return this._objects;
@@ -50,17 +48,69 @@ class VanillaWorld {
     next() {
         this._t += 1;
         this._lives.forEach(life => {
-            life.next();
+            const force = life.next();
+            const friction = 0.5;
+            const acceleration = force.accelerationTo(life.mass);
+            life.position = p5.Vector.add(life.position, life.velocity);
+            life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration);
         });
     }
     draw() {
         background(220);
+        this.terrain.draw();
         this._objects.forEach(obj => {
             obj.draw();
         });
         this._lives.forEach(life => {
             life.draw();
         });
+    }
+}
+// その場所に存在する力やプロパティを格納する
+class Terrain {
+    constructor(size) {
+        this.size = size;
+    }
+    frictionAt(position) {
+        return 0;
+    }
+    forceAt(position) {
+        return createVector(0, 0);
+    }
+    draw() {
+        return;
+    }
+}
+class VanillaTerrain extends Terrain {
+    constructor(size, friction, immobilizedWidth) {
+        super(size);
+        this.size = size;
+        this.friction = friction;
+        this.immobilizedWidth = immobilizedWidth;
+    }
+    frictionAt(position) {
+        if (position.x < this.immobilizedWidth) {
+            return ((this.immobilizedWidth - position.x) / this.immobilizedWidth) * this.friction;
+        }
+        if (position.x > (this.size.x - this.immobilizedWidth)) {
+            return ((this.immobilizedWidth - this.size.x - position.x) / this.immobilizedWidth) * this.friction;
+        }
+        if (position.y < this.immobilizedWidth) {
+            return ((this.immobilizedWidth - position.y) / this.immobilizedWidth) * this.friction;
+        }
+        if (position.y > (this.size.y - this.immobilizedWidth)) {
+            return ((this.immobilizedWidth - this.size.y - position.y) / this.immobilizedWidth) * this.friction;
+        }
+        return 0;
+    }
+    forceAt(position) {
+        return createVector(0, 0);
+    }
+    draw() {
+        stroke(207, 196, 251);
+        strokeWeight(this.immobilizedWidth);
+        noFill();
+        rect(0, 0, this.size.x, this.size.y);
     }
 }
 /// Objects
@@ -93,7 +143,7 @@ class Wall extends WorldObject {
     }
     draw() {
         noStroke();
-        fill(255, 0, 0);
+        fill(207, 196, 251);
         rect(this.position.x, this.position.y, this.width, this.height);
     }
 }
@@ -118,11 +168,7 @@ class Life extends WorldObject {
         const max = 3;
         const vx = random(-max, max);
         const vy = random(-max, max);
-        const force = new Force(vx, vy);
-        const friction = 0.5;
-        const acceleration = force.accelerationTo(this.mass);
-        this.position = p5.Vector.add(this.position, this.velocity);
-        this.velocity = p5.Vector.add(p5.Vector.mult(this.velocity, friction), acceleration);
+        return new Force(vx, vy);
     }
     draw() {
         super.draw(); // TODO: implement
