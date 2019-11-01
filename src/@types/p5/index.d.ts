@@ -6,7 +6,9 @@ declare function background(r: number, g: number, b: number): void
 declare function noFill(): void
 declare function noStroke(): void
 declare function fill(r: number, g: number, b: number): void
+declare function fill(gray: number): void
 declare function stroke(r: number, g: number, b: number): void
+declare function stroke(gray: number): void
 declare function strokeWeight(weight: number): void
 declare function ellipse(x: number, y: number, width: number, height: number): void
 declare function rect(x: number, y: number, width: number, height: number): void
@@ -19,10 +21,12 @@ declare namespace p5 {
 	class Vector {
 		static random2D(): Vector
 		static add(lhs: Vector, rhs: Vector): Vector
+		static sub(lhs: Vector, rhs: Vector): Vector
 		static mult(v: Vector, n: number): Vector
 		x: number
 		y: number
 		z: number
 		div(n: number): Vector
+		dist(other: Vector): number
 	}
 }

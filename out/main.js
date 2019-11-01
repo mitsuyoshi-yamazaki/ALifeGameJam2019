@@ -3,18 +3,24 @@ function setup() {
     const size = 200;
     const worldSize = createVector(size, size);
     createCanvas(size, size);
-    world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, size * 0.1));
-    const lives = randomLives(80, size);
+    world = new VanillaWorld(worldSize, new GravitationalTerrain(worldSize, 1));
+    const lives = randomLives(80, size, 1);
     world.addLives(lives);
 }
 function draw() {
     world.next();
     world.draw();
 }
-function randomLives(numberOfLives, positionSpace) {
-    return [...new Array(numberOfLives).keys()].map(_ => {
+function randomLives(numberOfLives, positionSpace, velocity) {
+    const lives = [...new Array(numberOfLives).keys()].map(_ => {
         return new Life(createVector(random(positionSpace), random(positionSpace)));
     });
+    if (velocity != undefined) {
+        lives.forEach(life => {
+            life.velocity = createVector(random(-velocity, velocity), random(-velocity, velocity));
+        });
+    }
+    return lives;
 }
 class VanillaWorld {
     constructor(size, terrain) {
@@ -117,6 +123,29 @@ class VanillaTerrain extends Terrain {
         rect(0, 0, this.size.x, this.size.y);
     }
 }
+class GravitationalTerrain extends Terrain {
+    constructor(size, gravity) {
+        super(size);
+        this.size = size;
+        this.gravity = gravity;
+        this.center = p5.Vector.mult(size, 0.5);
+    }
+    frictionAt(position) {
+        return 1;
+    }
+    forceAt(position) {
+        const distance = Math.max(this.center.dist(position), 0.1); // ブラックホールは法律で禁止されている
+        const magnitude = (1 / (distance * distance)) * this.gravity;
+        const vector = p5.Vector.sub(this.center, position);
+        return new Force(p5.Vector.mult(vector, magnitude));
+    }
+    draw() {
+        noStroke();
+        fill(80);
+        const size = 20;
+        ellipse((this.size.x - 0) / 2, (this.size.y - 0) / 2, size, size);
+    }
+}
 /// Objects
 class WorldObject {
     constructor(position) {
@@ -172,7 +201,8 @@ class Life extends WorldObject {
         const max = 3;
         const vx = random(-max, max);
         const vy = random(-max, max);
-        return new Force(createVector(vx, vy));
+        // return new Force(createVector(vx, vy))
+        return Force.zero();
     }
     draw() {
         super.draw(); // TODO: implement
