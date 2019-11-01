@@ -5,6 +5,9 @@ function setup(): void {
   createCanvas(worldSize, worldSize)
   world = new VanillaWorld(createVector(worldSize, worldSize))
 
+  const walls = wallsAround(worldSize, worldSize, worldSize * 0.01)
+  world.addObjects(walls)
+
   const lives: Life[] = [
     new Life(createVector(random(worldSize), random(worldSize))),
   ]
@@ -14,6 +17,15 @@ function setup(): void {
 function draw(): void {
   world.next()
   world.draw()
+}
+
+function wallsAround(width: number, height: number, wallWidth: number): Wall[] {
+  return [
+    new Wall(createVector(0, 0), width, wallWidth),
+    new Wall(createVector(width - wallWidth, wallWidth), wallWidth, height - wallWidth * 2),
+    new Wall(createVector(0, height - wallWidth), width, wallWidth),
+    new Wall(createVector(0, wallWidth), wallWidth, height - wallWidth * 2),
+  ]
 }
 
 // TODO: ファイルを分割する
@@ -116,8 +128,10 @@ class Wall extends WorldObject {
     super(position)
   }
 
-  public get velocity(): p5.Vector {
-    return createVector(0, 0)
+  public draw(): void {
+    noStroke()
+    fill(255, 0, 0)
+    rect(this.position.x, this.position.y, this.width, this.height)
   }
 }
 
@@ -127,11 +141,20 @@ class DeadBody extends WorldObject {
   public get velocity(): p5.Vector {
     return createVector(0, 0)
   }
+
+  public draw(): void {
+    super.draw()  // TODO: implement
+  }
 }
 
 /// Lives
 class Life extends WorldObject {
   public static collisionPriority = 100
+
+  public constructor(public position: p5.Vector) {
+    super(position)
+    this.mass = 3
+  }
 
   public next(): void {
     const max = 3
@@ -145,6 +168,10 @@ class Life extends WorldObject {
 
     this.position = p5.Vector.add(this.position, this.velocity)
     this.velocity = p5.Vector.add(p5.Vector.mult(this.velocity, friction), acceleration)
+  }
+
+  public draw(): void {
+    super.draw()  // TODO: implement
   }
 }
 

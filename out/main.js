@@ -3,6 +3,8 @@ function setup() {
     const worldSize = 200;
     createCanvas(worldSize, worldSize);
     world = new VanillaWorld(createVector(worldSize, worldSize));
+    const walls = wallsAround(worldSize, worldSize, worldSize * 0.02);
+    world.addObjects(walls);
     const lives = [
         new Life(createVector(random(worldSize), random(worldSize))),
     ];
@@ -11,6 +13,14 @@ function setup() {
 function draw() {
     world.next();
     world.draw();
+}
+function wallsAround(width, height, wallWidth) {
+    return [
+        new Wall(createVector(0, 0), width, wallWidth),
+        new Wall(createVector(width - wallWidth, wallWidth), wallWidth, height - wallWidth * 2),
+        new Wall(createVector(0, height - wallWidth), width, wallWidth),
+        new Wall(createVector(0, wallWidth), wallWidth, height - wallWidth * 2),
+    ];
 }
 class VanillaWorld {
     constructor(size) {
@@ -81,8 +91,10 @@ class Wall extends WorldObject {
         this.width = width;
         this.height = height;
     }
-    get velocity() {
-        return createVector(0, 0);
+    draw() {
+        noStroke();
+        fill(255, 0, 0);
+        rect(this.position.x, this.position.y, this.width, this.height);
     }
 }
 Wall.collisionPriority = 1;
@@ -90,10 +102,18 @@ class DeadBody extends WorldObject {
     get velocity() {
         return createVector(0, 0);
     }
+    draw() {
+        super.draw(); // TODO: implement
+    }
 }
 DeadBody.collisionPriority = 101;
 /// Lives
 class Life extends WorldObject {
+    constructor(position) {
+        super(position);
+        this.position = position;
+        this.mass = 3;
+    }
     next() {
         const max = 3;
         const vx = random(-max, max);
@@ -103,6 +123,9 @@ class Life extends WorldObject {
         const acceleration = force.accelerationTo(this.mass);
         this.position = p5.Vector.add(this.position, this.velocity);
         this.velocity = p5.Vector.add(p5.Vector.mult(this.velocity, friction), acceleration);
+    }
+    draw() {
+        super.draw(); // TODO: implement
     }
 }
 Life.collisionPriority = 100;
