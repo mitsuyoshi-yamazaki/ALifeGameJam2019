@@ -3,8 +3,8 @@ function setup() {
     const size = 200;
     const worldSize = createVector(size, size);
     createCanvas(size, size);
-    world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, 10, size * 0.1));
-    const lives = randomLives(20, size);
+    world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, size * 0.1));
+    const lives = randomLives(80, size);
     world.addLives(lives);
 }
 function draw() {
@@ -48,10 +48,15 @@ class VanillaWorld {
     next() {
         this._t += 1;
         this._lives.forEach(life => {
-            const force = life.next();
-            const friction = 0.5;
+            const fieldForce = this.terrain.forceAt(life.position);
+            const force = life.next()
+                .add(fieldForce);
+            const friction = this.terrain.frictionAt(life.position);
             const acceleration = force.accelerationTo(life.mass);
-            life.position = p5.Vector.add(life.position, life.velocity);
+            const nextPosition = p5.Vector.add(life.position, life.velocity);
+            const x = Math.max(Math.min(nextPosition.x, this.size.x), 0);
+            const y = Math.max(Math.min(nextPosition.y, this.size.y), 0);
+            life.position = createVector(x, y);
             life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration);
         });
     }
@@ -72,39 +77,38 @@ class Terrain {
         this.size = size;
     }
     frictionAt(position) {
-        return 0;
+        return 1; // 0(停止) ~ 1(摩擦なし)
     }
     forceAt(position) {
-        return createVector(0, 0);
+        return Force.zero();
     }
     draw() {
         return;
     }
 }
 class VanillaTerrain extends Terrain {
-    constructor(size, friction, immobilizedWidth) {
+    constructor(size, immobilizedWidth) {
         super(size);
         this.size = size;
-        this.friction = friction;
         this.immobilizedWidth = immobilizedWidth;
     }
     frictionAt(position) {
         if (position.x < this.immobilizedWidth) {
-            return ((this.immobilizedWidth - position.x) / this.immobilizedWidth) * this.friction;
+            return (position.x / this.immobilizedWidth);
         }
         if (position.x > (this.size.x - this.immobilizedWidth)) {
-            return ((this.immobilizedWidth - this.size.x - position.x) / this.immobilizedWidth) * this.friction;
+            return (this.size.x - position.x) / this.immobilizedWidth;
         }
         if (position.y < this.immobilizedWidth) {
-            return ((this.immobilizedWidth - position.y) / this.immobilizedWidth) * this.friction;
+            return (position.y / this.immobilizedWidth);
         }
         if (position.y > (this.size.y - this.immobilizedWidth)) {
-            return ((this.immobilizedWidth - this.size.y - position.y) / this.immobilizedWidth) * this.friction;
+            return (this.size.y - position.y) / this.immobilizedWidth;
         }
-        return 0;
+        return 1;
     }
     forceAt(position) {
-        return createVector(0, 0);
+        return Force.zero();
     }
     draw() {
         stroke(207, 196, 251);
@@ -168,7 +172,7 @@ class Life extends WorldObject {
         const max = 3;
         const vx = random(-max, max);
         const vy = random(-max, max);
-        return new Force(vx, vy);
+        return new Force(createVector(vx, vy));
     }
     draw() {
         super.draw(); // TODO: implement
@@ -177,11 +181,18 @@ class Life extends WorldObject {
 Life.collisionPriority = 100;
 /// Other
 class Force {
-    constructor(vx, vy) {
-        this.magnitude = createVector(vx, vy);
+    constructor(magnitude) {
+        this.magnitude = magnitude;
+    }
+    static zero() {
+        return new Force(createVector(0, 0));
     }
     accelerationTo(mass) {
         return this.magnitude.div(mass);
+    }
+    add(other) {
+        const vector = p5.Vector.add(this.magnitude, other.magnitude);
+        return new Force(vector);
     }
 }
 /// Utility

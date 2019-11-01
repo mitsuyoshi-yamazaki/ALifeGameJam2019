@@ -4,9 +4,9 @@ function setup(): void {
   const size = 200
   const worldSize = createVector(size, size)
   createCanvas(size, size)
-  world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, 10, size * 0.1))
+  world = new VanillaWorld(worldSize, new VanillaTerrain(worldSize, size * 0.1))
 
-  const lives = randomLives(20, size)
+  const lives = randomLives(80, size)
   world.addLives(lives)
 }
 
@@ -81,12 +81,17 @@ class VanillaWorld implements World {
     this._t += 1
 
     this._lives.forEach(life => {
+      const fieldForce = this.terrain.forceAt(life.position)
       const force = life.next()
+        .add(fieldForce)
 
-      const friction = 0.5
+      const friction = this.terrain.frictionAt(life.position)
       const acceleration = force.accelerationTo(life.mass)
 
-      life.position = p5.Vector.add(life.position, life.velocity)
+      const nextPosition = p5.Vector.add(life.position, life.velocity)
+      const x = Math.max(Math.min(nextPosition.x, this.size.x), 0)
+      const y = Math.max(Math.min(nextPosition.y, this.size.y), 0)
+      life.position = createVector(x, y)
       life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration)
     })
   }
@@ -110,11 +115,11 @@ class Terrain {
   }
 
   public frictionAt(position: p5.Vector): number {
-    return 0
+    return 1  // 0(停止) ~ 1(摩擦なし)
   }
 
-  public forceAt(position: p5.Vector): p5.Vector {
-    return createVector(0, 0)
+  public forceAt(position: p5.Vector): Force {
+    return Force.zero()
   }
 
   public draw(): void {
@@ -125,7 +130,6 @@ class Terrain {
 class VanillaTerrain extends Terrain {
   public constructor(
     public readonly size: p5.Vector,
-    public readonly friction: number,
     public readonly immobilizedWidth: number,
   ) {
     super(size)
@@ -133,23 +137,23 @@ class VanillaTerrain extends Terrain {
 
   public frictionAt(position: p5.Vector): number {
     if (position.x < this.immobilizedWidth) {
-      return ((this.immobilizedWidth - position.x) / this.immobilizedWidth) * this.friction
+      return (position.x / this.immobilizedWidth)
     }
     if (position.x > (this.size.x - this.immobilizedWidth)) {
-      return ((this.immobilizedWidth - this.size.x - position.x) / this.immobilizedWidth) * this.friction
+      return (this.size.x - position.x) / this.immobilizedWidth
     }
     if (position.y < this.immobilizedWidth) {
-      return ((this.immobilizedWidth - position.y) / this.immobilizedWidth) * this.friction
+      return (position.y / this.immobilizedWidth)
     }
     if (position.y > (this.size.y - this.immobilizedWidth)) {
-      return ((this.immobilizedWidth - this.size.y - position.y) / this.immobilizedWidth) * this.friction
+      return (this.size.y - position.y) / this.immobilizedWidth
     }
 
-    return 0
+    return 1
   }
 
-  public forceAt(position: p5.Vector): p5.Vector {
-    return createVector(0, 0)
+  public forceAt(position: p5.Vector): Force {
+    return Force.zero()
   }
 
   public draw(): void {
@@ -224,7 +228,7 @@ class Life extends WorldObject {
     const vx = random(-max, max)
     const vy = random(-max, max)
 
-    return new Force(vx, vy)
+    return new Force(createVector(vx, vy))
   }
 
   public draw(): void {
@@ -234,14 +238,21 @@ class Life extends WorldObject {
 
 /// Other
 class Force {
-  public readonly magnitude: p5.Vector
+  public constructor(public readonly magnitude: p5.Vector) {
+  }
 
-  public constructor(vx: number, vy: number) {
-    this.magnitude = createVector(vx, vy)
+  public static zero(): Force {
+    return new Force(createVector(0, 0))
   }
 
   public accelerationTo(mass: number): p5.Vector {
     return this.magnitude.div(mass)
+  }
+
+  public add(other: Force): Force {
+    const vector = p5.Vector.add(this.magnitude, other.magnitude)
+
+    return new Force(vector)
   }
 }
 
