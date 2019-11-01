@@ -1,3 +1,5 @@
+// https://p5js.org/reference/
+
 declare function createCanvas(width: number, height: number)
 declare function background(color: number): void
 declare function background(r: number, g: number, b: number): void

@@ -1,36 +1,38 @@
-let drawer: P5Drawer<SimpleLife>
-let world: World<WorldObject>
+let world: World
 
 function setup(): void {
-  drawer = new P5Drawer<SimpleLife>()
-
   const worldSize = 200
   createCanvas(worldSize, worldSize)
   world = new VanillaWorld(createVector(worldSize, worldSize))
 
-  const objects: ObjectWrapper<SimpleLife>[] = [
-    new ObjectWrapper<SimpleLife>(new SimpleLife(), createVector(50, 50), createVector(0, 0)),
+  const lives: Life[] = [
+    new Life(createVector(random(worldSize), random(worldSize))),
   ]
-  world.addObjects(objects)
+  world.addLives(lives)
 }
 
 function draw(): void {
   world.next()
-  drawer.draw(world.objects)
+  world.draw()
 }
 
 // TODO: ファイルを分割する
 /// Worlds
-interface World<ObjectType extends WorldObject> {
+interface World {
   size: p5.Vector
   t: number
-  objects: ObjectWrapper<ObjectType>[]  // FIXME: 複数の型の WorldObject が許容されない
+  objects: WorldObject[]
+  lives: Life[]
 
-  addObjects(objects: ObjectWrapper<ObjectType>[]): void
+  addObjects(objects: WorldObject[]): void
+  addLives(lives: Life[]): void
   next(): void
+
+  // 描画
+  draw(): void
 }
 
-class VanillaWorld<ObjectType extends WorldObject> implements World<ObjectType> {
+class VanillaWorld implements World {
   private readonly _size: p5.Vector
   public get size(): p5.Vector {
     return this._size
@@ -41,65 +43,108 @@ class VanillaWorld<ObjectType extends WorldObject> implements World<ObjectType> 
     return this._t
   }
 
-  private _objects: ObjectWrapper<ObjectType>[] = []
-  public get objects(): ObjectWrapper<ObjectType>[] {
+  private _objects: WorldObject[] = []
+  public get objects(): WorldObject[] {
     return this._objects
+    }
+
+  private _lives: Life[] = []
+  public get lives(): Life[] {
+    return this._lives
   }
 
   public constructor(size: p5.Vector) {
     this._size = size
   }
 
-  public addObjects(objects: ObjectWrapper<ObjectType>[]): void {
+  public addObjects(objects: WorldObject[]): void {
     this._objects = this._objects.concat(objects)
+  }
+
+  public addLives(lives: Life[]): void {
+    this._lives = this._lives.concat(lives)
   }
 
   public next(): void {
     this._t += 1
 
-    this._objects.forEach(wrapper => {
-      this.nextObject(wrapper)
+    this._lives.forEach(life => {
+      life.next()
     })
   }
 
-  private nextObject(wrapper: ObjectWrapper<ObjectType>): void {
-    const force = wrapper.obj.next()
-    if (force == undefined) {
-      return
-    }
+  public draw(): void {
+    background(220)
 
-    const mass = 1
-    const friction = 0.5
-    const acceleration = force.accelerationTo(mass)
-
-    wrapper.position = p5.Vector.add(wrapper.position, wrapper.velocity)
-    wrapper.velocity = p5.Vector.add(p5.Vector.mult(wrapper.velocity, friction), acceleration)
+    this._objects.forEach(obj => {
+      obj.draw()
+    })
+    this._lives.forEach(life => {
+      life.draw()
+    })
   }
 }
 
 /// Objects
-interface WorldObject {
-  next(): Force | undefined
-}
+class WorldObject {
+  public static collisionPriority = 0
+  public velocity: p5.Vector = createVector(0, 0)
+  public mass = 1
 
-class ObjectWrapper<ObjectType extends WorldObject> {
-  public constructor(public readonly obj: ObjectType, public position: p5.Vector, public velocity: p5.Vector) {
+  public constructor(public position: p5.Vector) {
   }
-}
 
-class SimpleObject implements WorldObject {
-  public next(): Force | undefined {
+  public collideWith(other: WorldObject): void {
+    // TODO: implement
+    // ここで何かが起きるのは物理法則の何かを発動するということ
     return
   }
+
+  public draw(): void {
+    noStroke()
+    fill(255, 0, 0)
+    const radius = 1
+    const diameter = radius * 2
+    ellipse(this.position.x - radius, this.position.y - radius, diameter, diameter)
+  }
 }
 
-class SimpleLife implements WorldObject {
-  public next(): Force | undefined {
+class Wall extends WorldObject {
+  public static collisionPriority = 1
+
+  public constructor(public position: p5.Vector, public width: number, public height: number) {
+    super(position)
+  }
+
+  public get velocity(): p5.Vector {
+    return createVector(0, 0)
+  }
+}
+
+class DeadBody extends WorldObject {
+  public static collisionPriority = 101
+
+  public get velocity(): p5.Vector {
+    return createVector(0, 0)
+  }
+}
+
+/// Lives
+class Life extends WorldObject {
+  public static collisionPriority = 100
+
+  public next(): void {
     const max = 3
     const vx = random(-max, max)
     const vy = random(-max, max)
 
-    return new Force(vx, vy)
+    const force = new Force(vx, vy)
+
+    const friction = 0.5
+    const acceleration = force.accelerationTo(this.mass)
+
+    this.position = p5.Vector.add(this.position, this.velocity)
+    this.velocity = p5.Vector.add(p5.Vector.mult(this.velocity, friction), acceleration)
   }
 }
 
@@ -117,18 +162,3 @@ class Force {
 }
 
 /// Utility
-interface Drawer<ObjectType extends WorldObject> {
-  draw(objects: ObjectWrapper<ObjectType>[]): void
-}
-
-class P5Drawer<ObjectType extends WorldObject> implements Drawer<ObjectType> {
-  public draw(objects: ObjectWrapper<ObjectType>[]): void {
-    background(220)
-    noStroke()
-    fill(255, 0, 0)
-    const radius = 10
-    objects.forEach(wrapper => {
-      ellipse(wrapper.position.x, wrapper.position.y, radius, radius)
-    })
-  }
-}

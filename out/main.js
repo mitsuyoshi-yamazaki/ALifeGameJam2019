@@ -1,23 +1,22 @@
-let drawer;
 let world;
 function setup() {
-    drawer = new P5Drawer();
     const worldSize = 200;
     createCanvas(worldSize, worldSize);
     world = new VanillaWorld(createVector(worldSize, worldSize));
-    const objects = [
-        new ObjectWrapper(new SimpleLife(), createVector(50, 50), createVector(0, 0)),
+    const lives = [
+        new Life(createVector(random(worldSize), random(worldSize))),
     ];
-    world.addObjects(objects);
+    world.addLives(lives);
 }
 function draw() {
     world.next();
-    drawer.draw(world.objects);
+    world.draw();
 }
 class VanillaWorld {
     constructor(size) {
         this._t = 0;
         this._objects = [];
+        this._lives = [];
         this._size = size;
     }
     get size() {
@@ -29,49 +28,84 @@ class VanillaWorld {
     get objects() {
         return this._objects;
     }
+    get lives() {
+        return this._lives;
+    }
     addObjects(objects) {
         this._objects = this._objects.concat(objects);
     }
+    addLives(lives) {
+        this._lives = this._lives.concat(lives);
+    }
     next() {
         this._t += 1;
-        this._objects.forEach(wrapper => {
-            this.nextObject(wrapper);
+        this._lives.forEach(life => {
+            life.next();
         });
     }
-    nextObject(wrapper) {
-        const force = wrapper.obj.next();
-        if (force == undefined) {
-            // Console.log(`no force`)
-            return;
-        }
-        const mass = 1;
-        const friction = 0.5;
-        const acceleration = force.accelerationTo(mass);
-        // wrapper.position = force.magnitude// P5.Vector.add(wrapper.position, acceleration)
-        wrapper.position = p5.Vector.add(wrapper.position, wrapper.velocity);
-        wrapper.velocity = p5.Vector.add(p5.Vector.mult(wrapper.velocity, friction), acceleration);
+    draw() {
+        background(220);
+        this._objects.forEach(obj => {
+            obj.draw();
+        });
+        this._lives.forEach(life => {
+            life.draw();
+        });
     }
 }
-class ObjectWrapper {
-    constructor(obj, position, velocity) {
-        this.obj = obj;
+/// Objects
+class WorldObject {
+    constructor(position) {
         this.position = position;
-        this.velocity = velocity;
+        this.velocity = createVector(0, 0);
+        this.mass = 1;
     }
-}
-class SimpleObject {
-    next() {
+    collideWith(other) {
+        // TODO: implement
+        // ここで何かが起きるのは物理法則の何かを発動するということ
         return;
     }
+    draw() {
+        noStroke();
+        fill(255, 0, 0);
+        const radius = 1;
+        const diameter = radius * 2;
+        ellipse(this.position.x - radius, this.position.y - radius, diameter, diameter);
+    }
 }
-class SimpleLife {
+WorldObject.collisionPriority = 0;
+class Wall extends WorldObject {
+    constructor(position, width, height) {
+        super(position);
+        this.position = position;
+        this.width = width;
+        this.height = height;
+    }
+    get velocity() {
+        return createVector(0, 0);
+    }
+}
+Wall.collisionPriority = 1;
+class DeadBody extends WorldObject {
+    get velocity() {
+        return createVector(0, 0);
+    }
+}
+DeadBody.collisionPriority = 101;
+/// Lives
+class Life extends WorldObject {
     next() {
         const max = 3;
         const vx = random(-max, max);
         const vy = random(-max, max);
-        return new Force(vx, vy);
+        const force = new Force(vx, vy);
+        const friction = 0.5;
+        const acceleration = force.accelerationTo(this.mass);
+        this.position = p5.Vector.add(this.position, this.velocity);
+        this.velocity = p5.Vector.add(p5.Vector.mult(this.velocity, friction), acceleration);
     }
 }
+Life.collisionPriority = 100;
 /// Other
 class Force {
     constructor(vx, vy) {
@@ -81,16 +115,5 @@ class Force {
         return this.magnitude.div(mass);
     }
 }
-class P5Drawer {
-    draw(objects) {
-        background(220);
-        noStroke();
-        fill(255, 0, 0);
-        const radius = 10;
-        objects.forEach(wrapper => {
-            // Console.log(`hoge ${String(wrapper.position)}`)
-            ellipse(wrapper.position.x, wrapper.position.y, radius, radius);
-        });
-    }
-}
+/// Utility
 //# sourceMappingURL=main.js.map
