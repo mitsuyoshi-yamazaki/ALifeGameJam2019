@@ -180,6 +180,14 @@ class GravitationalTerrain extends Terrain {
   }
 
   public frictionAt(position: p5.Vector): number {
+    // // 大気圏
+    // const distance = Math.max(this.center.dist(position), 0.1)
+    // if (distance > 10) {
+    //   return 1
+    // }
+
+    // return (distance / 10)
+
     return 1
   }
 

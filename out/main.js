@@ -131,6 +131,12 @@ class GravitationalTerrain extends Terrain {
         this.center = p5.Vector.mult(size, 0.5);
     }
     frictionAt(position) {
+        // // 大気圏
+        // const distance = Math.max(this.center.dist(position), 0.1)
+        // if (distance > 10) {
+        //   return 1
+        // }
+        // return (distance / 10)
         return 1;
     }
     forceAt(position) {
