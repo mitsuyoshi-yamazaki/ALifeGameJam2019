@@ -34,6 +34,9 @@ bool isCircumMode=false;
 bool isNormalMode=true;
 bool isRotateMode=false;
 
+
+bool clickResource = false;
+
 // Walls
 int wallWidth = 40;
 int space = fieldHeight / 10;
@@ -166,13 +169,13 @@ class Gene {
   int predatorGene;
   int preyGene;
   int uncoGene;
+  float size = lifeRadius;
   Color geneColor;
 
   Gene(int _predatorGene, int _preyGene, int _uncoGene) {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
     uncoGene = _uncoGene % (Math.pow(2, geneLength));
-
 
     var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
       if(shiftLength > 0){
@@ -195,11 +198,16 @@ class Gene {
     int childwholegene = (this.getWholeGene()) ^ mutation;
     return fromWholeGene(childwholegene);
   }
+  float sizeRate = 1;
   Gene childGene(){
     if (mutationRate > random(0.0, 1.0)){
-      return mutantGene();
+      Gene g = mutantGene();
+      g.size = max(2,sizeRate - random(0,sizeRate*2) + size);
+      return g;
     } else {
-      return new Gene(predatorGene, preyGene, uncoGene);
+      Gene g = new Gene(predatorGene, preyGene, uncoGene);
+      g.size = max(2,sizeRate/2 - random(0,sizeRate) + size);
+      return g;
     }
   }
   string showBinary(){
@@ -229,6 +237,9 @@ class Gene {
 
   float canEat(Gene other) {
     int diff = 0;
+    if(size + 3 < other.size) {
+      return 0;
+    }
 
     for (int i = 0; i < geneLength; i++) {
       if (((predatorGene >> i) & 0x01) == ((other.preyGene >> i) & 0x01)) {
@@ -239,7 +250,7 @@ class Gene {
   }
 
   String description() {
-    return '' + predatorGene + ' | ' + preyGene + ' | ' + uncoGene
+    return '' + predatorGene + ' | ' + preyGene + ' | ' + uncoGene + ' | ' + round(size)
   }
 }
 
@@ -512,7 +523,7 @@ class Life {
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
-    size=_size;
+    size = _gene.size;
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
@@ -522,8 +533,9 @@ class Life {
   }
 
   static Life makeResource(float x, float y, float size, Gene gene) {
-    Life resource = new Life(x, y, size, 0, gene);
-    resource.bodyEnergy *= 20;
+    gene.size = resourceSize;
+    Life resource = new Life(x, y, resourceSize, 0, gene);
+    resource.bodyEnergy *= 100;
     resource.type = 'Resource';
 
     return resource;
@@ -563,7 +575,7 @@ class Life {
     if(populationOfResource > maxResourceSize) {
      return;
     }
-    if(random(0,1)<=1){
+    if(random(0,1)<=0.01){
 
 //      for (int i = 0; i < 2; i++) {
         float vx = random(-defaultMoveDistance, defaultMoveDistance);
@@ -574,8 +586,10 @@ class Life {
         positionx = max(positionx, 10);
         positiony = min(positiony, fieldHeight-10);
         positiony = max(positiony, 10);
-        Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, new Gene(gene.unco,0,0));
-        res.bodyEnergy = e;
+        Gene g = new Gene(gene.unco,0,0);
+        g.size = resourceSize;
+        Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, g);
+        res.bodyEnergy = e * 100;
         lifes[lifes.length] = res;
 //     }
     }
@@ -591,9 +605,10 @@ class Life {
     // r += customizedRandom(-6, 6);
     // float vx = Math.cos(r) * v;
     // float vy = Math.sin(r) * v;
-
-    float vx = random(-defaultMoveDistance, defaultMoveDistance);
-    float vy = random(-defaultMoveDistance, defaultMoveDistance);
+    float sizeRatio = size / lifeRadius;
+    float moveDistance = defaultMoveDistance * sizeRatio * sizeRatio;
+    float vx = random(-moveDistance, moveDistance);
+    float vy = random(-moveDistance, moveDistance);
     position.x += vx;
     position.y += vy;
 
@@ -604,7 +619,7 @@ class Life {
     position.y = min(position.y, fieldHeight);
     position.y = max(position.y, 0);
 
-    unco(energyConsumption);
+    unco(energyConsumption/2);
     energy -= energyConsumption;
   }
   void draw(){
@@ -778,6 +793,7 @@ void setup()
   }
   for (int i = 0; i < initialResourceSize; i++) {
     Gene g1 = new Gene(0, 0, 0);
+    g1.size = resourceSize;
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
     }
@@ -944,7 +960,8 @@ void addResources() {
     return
   }
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0, 0, 0);
+//  Gene g = new Gene(0, 0, 0);
+  Gene g = Gene.randomGene();
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
@@ -966,9 +983,11 @@ void mouseClicked(){
   }
   else{
 //    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
-    for(int i=0; i!=10;i++){
-     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
-     //TODO:クリック後、その場所に継続的にエサを与え続ける
+  if(clickResource){
+      for(int i=0; i!=10;i++){
+      lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
+      //TODO:クリック後、その場所に継続的にエサを与え続ける
+      }
     }
   }
 }
