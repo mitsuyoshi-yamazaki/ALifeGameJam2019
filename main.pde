@@ -173,6 +173,7 @@ class Gene {
     preyGene = _preyGene % (Math.pow(2, geneLength));
     uncoGene = _uncoGene % (Math.pow(2, geneLength));
 
+
     var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
       if(shiftLength > 0){
         return (shiftee << shiftLength);
