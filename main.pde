@@ -701,7 +701,7 @@ class Life {
     float birthEnergy = size * size;
 
     if(!enableReproduction) return [];
-    if (energy > birthEnergy) {
+    if (energy > birthEnergy * 2) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
       float radian = random(0, 2.0 * PI);
 
