@@ -574,8 +574,10 @@ class Life {
         positionx = max(positionx, 10);
         positiony = min(positiony, fieldHeight-10);
         positiony = max(positiony, 10);
-        Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, new Gene(gene.unco,0,0));
+
+        Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, new Gene(gene.uncoGene,gene.uncoGene,0));
         res.bodyEnergy = e;
+
         lifes[lifes.length] = res;
 //     }
     }
