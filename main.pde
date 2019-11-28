@@ -13,7 +13,7 @@ Life[] lifes;
 int populationSize = 4000;
 int initialResourceSize = 1000;
 int resourceGrowth = 4.01;
-int maxResourceSize = 5000;
+int maxResourceSize = 10000;
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
@@ -44,18 +44,27 @@ Wall[] walls = [];
 
 if (isNormalMode) {
 	walls = [
-		new Wall((fieldWidth - wallWidth) / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		new Wall((fieldWidth - wallWidth) / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		//new Wall(fieldWidth /6 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3*2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		//new Wall(fieldWidth/6*5 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/6 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		//new Wall(fieldWidth/2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 	]
 }
 
 // Color
 float backgroundTransparency = 0xff;
-bool enableEatColor = true;
+bool enableEatColor = false;
 bool disableResourceColor = false;
 
 // Life Parameter
 float lifeRadius = 7;
+float initialLifeRadius = 3;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
@@ -66,7 +75,7 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 3;
+int geneLength = 4;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -169,13 +178,13 @@ class Gene {
   int predatorGene;
   int preyGene;
   int uncoGene;
-  float size = lifeRadius;
+  float size = initialLifeRadius;
   Color geneColor;
 
   Gene(int _predatorGene, int _preyGene, int _uncoGene) {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
-    uncoGene = _uncoGene % (Math.pow(2, geneLength));
+    uncoGene = _uncoGene ;
 
     var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
       if(shiftLength > 0){
@@ -213,7 +222,7 @@ class Gene {
   string showBinary(){
     String str = "";
     for(int i=0; i!=wholeLength;i++){
-      console.log(((getWholeGene() >> i) & 0x01));
+//      console.log(((getWholeGene() >> i) & 0x01));
       str+=((getWholeGene() >> i) & 0x01);
     }
     return str;
@@ -237,7 +246,7 @@ class Gene {
 
   float canEat(Gene other) {
     int diff = 0;
-    if(size + 3 < other.size) {
+    if(size + 2 < other.size) {
       return 0;
     }
 
@@ -575,7 +584,7 @@ class Life {
     if(populationOfResource > maxResourceSize) {
      return;
     }
-    if(random(0,1)<=0.01){
+    if(random(0,1)<=0.0001){
 
 //      for (int i = 0; i < 2; i++) {
         float vx = random(-defaultMoveDistance, defaultMoveDistance);
@@ -586,12 +595,10 @@ class Life {
         positionx = max(positionx, 10);
         positiony = min(positiony, fieldHeight-10);
         positiony = max(positiony, 10);
-
         Gene g = new Gene(gene.uncoGene,gene.uncoGene,0);
         g.size = resourceSize;
         Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, g);
-        res.bodyEnergy = e * 100;
-
+        res.bodyEnergy = e * 10000;
         lifes[lifes.length] = res;
 //     }
     }
@@ -608,7 +615,7 @@ class Life {
     // float vx = Math.cos(r) * v;
     // float vy = Math.sin(r) * v;
     float sizeRatio = size / lifeRadius;
-    float moveDistance = defaultMoveDistance * sizeRatio * sizeRatio;
+    float moveDistance = defaultMoveDistance * sizeRatio;
     float vx = random(-moveDistance, moveDistance);
     float vy = random(-moveDistance, moveDistance);
     position.x += vx;
