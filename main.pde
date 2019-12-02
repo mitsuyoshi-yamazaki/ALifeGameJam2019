@@ -15,6 +15,8 @@ String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
 // Screenshot
 var link = document.getElementById('link');
 var canvas = document.getElementById('canvas');
+int screenshotInterval = 1000;
+bool screenshotEnabled = false;
 
 // Population
 Life[] lifes;
@@ -116,6 +118,10 @@ if (parameters['mutation_rate'] != null) {
 }
 if (parameters['single_gene'] != null) {
   useSingleGene = int(parameters['single_gene']);
+}
+if (parameters['screenshot_interval'] != null) {
+  screenshotInterval = int(parameters['screenshot_interval']);
+		screenshotEnabled = true;
 }
 
 // Artistics Mode
@@ -943,8 +949,8 @@ void draw(){
 
   //console.log("frameRate: " + frameRate);
 
-		if (t % 100 == 0) {
-			String num = ('000000' + t).slice(-6);
+		if (screenshotEnabled && (t % screenshotInterval == 0)) {
+			String num = ('000000' + (t / screenshotInterval)).slice(-6);
 			String filename = '' + launchTime + '__' + num + '.png';	// template literal not working sucks
 			link.setAttribute('download', filename);
 			link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
