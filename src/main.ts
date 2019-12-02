@@ -1,7 +1,7 @@
 let world: World
 
 function setup(): void {
-  const size = 200
+  const size = 800
   const worldSize = createVector(size, size)
   createCanvas(size, size)
   world = new VanillaWorld(worldSize, new GravitationalTerrain(worldSize, 1))
@@ -277,8 +277,19 @@ class Life extends WorldObject {
   }
 
   public draw(): void {
-    super.draw()  // TODO: implement
+  noFill()
+  stroke(86, 51, 245)
+
+  this.drawCircles(5, this.position.x, this.position.y, 20)
   }
+
+  private drawCircles(numberOfCircles: number, x: number, y: number, diameter: number): void {
+  if (numberOfCircles <= 0) {
+   return
+  }
+  circle(x, y, diameter)
+  this.drawCircles(numberOfCircles - 1, x - this.velocity.x * 2.5, y - this.velocity.y * 2.5, diameter * 0.6)
+ }
 }
 
 /// Other

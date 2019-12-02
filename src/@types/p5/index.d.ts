@@ -11,6 +11,7 @@ declare function stroke(r: number, g: number, b: number): void
 declare function stroke(gray: number): void
 declare function strokeWeight(weight: number): void
 declare function ellipse(x: number, y: number, width: number, height: number): void
+declare function circle(x: number, y: number, d: number): void
 declare function rect(x: number, y: number, width: number, height: number): void
 declare function createVector(x: number, y: number): p5.Vector
 declare function random(n: number): number
