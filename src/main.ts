@@ -4,7 +4,11 @@ function setup(): void {
   const size = 800
   const worldSize = createVector(size, size)
   createCanvas(size, size)
-  world = new VanillaWorld(worldSize, new GravitationalTerrain(worldSize, 1))
+  const terrains: Terrain[] = [
+   new GravitationalTerrain(worldSize, p5.Vector.mult(worldSize, 0.33), 2),
+   new GravitationalTerrain(worldSize, p5.Vector.mult(worldSize, 0.66), 2),
+ ]
+  world = new VanillaWorld(worldSize, terrains)
 
   const lives = randomLives(80, size, 1)
   world.addLives(lives)
@@ -33,7 +37,7 @@ function randomLives(numberOfLives: number, positionSpace: number, velocity?: nu
 interface World {
   size: p5.Vector
   t: number
-  terrain: Terrain | undefined
+  terrains: Terrain[]
   objects: WorldObject[]
   lives: Life[]
 
@@ -56,9 +60,9 @@ class VanillaWorld implements World {
     return this._t
   }
 
-  private readonly _terrain: Terrain
-  public get terrain(): Terrain {
-    return this._terrain
+  private readonly _terrains: Terrain[]
+  public get terrains(): Terrain[] {
+    return this._terrains
   }
 
   private _objects: WorldObject[] = []
@@ -71,9 +75,9 @@ class VanillaWorld implements World {
     return this._lives
   }
 
-  public constructor(size: p5.Vector, terrain: Terrain) {
+  public constructor(size: p5.Vector, terrains: Terrain[]) {
     this._size = size
-    this._terrain = terrain
+    this._terrains = terrains
   }
 
   public addObjects(objects: WorldObject[]): void {
@@ -88,25 +92,37 @@ class VanillaWorld implements World {
     this._t += 1
 
     this._lives.forEach(life => {
-      const fieldForce = this.terrain.forceAt(life.position)
-      const force = life.next()
+    const forces: Force[] = this.terrains.map(terrain => {
+     return terrain.forceAt(life.position)
+    })
+    const fieldForce: Force = forces.reduce((result: Force, value: Force) => {
+     return result.add(value)
+    },                                      Force.zero())
+    const force = life.next()
         .add(fieldForce)
 
-      const friction = this.terrain.frictionAt(life.position)
-      const acceleration = force.accelerationTo(life.mass)
+    const frictions: number[] = this.terrains.map(terrain => {
+      return terrain.frictionAt(life.position)
+     })
+    const friction: number = frictions.reduce((sum, value) => {
+      return sum + value
+    },                                        1) / (frictions.length + 1)
+    const acceleration = force.accelerationTo(life.mass)
 
-      const nextPosition = p5.Vector.add(life.position, life.velocity)
-      const x = Math.max(Math.min(nextPosition.x, this.size.x), 0)
-      const y = Math.max(Math.min(nextPosition.y, this.size.y), 0)
-      life.position = createVector(x, y)
-      life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration)
+    const nextPosition = p5.Vector.add(life.position, life.velocity)
+    const x = Math.max(Math.min(nextPosition.x, this.size.x), 0)
+    const y = Math.max(Math.min(nextPosition.y, this.size.y), 0)
+    life.position = createVector(x, y)
+    life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration)
     })
   }
 
   public draw(): void {
     background(220)
 
-    this.terrain.draw()
+    this.terrains.forEach(terrain => {
+    terrain.draw()
+    })
     this._objects.forEach(obj => {
       obj.draw()
     })
@@ -172,11 +188,8 @@ class VanillaTerrain extends Terrain {
 }
 
 class GravitationalTerrain extends Terrain {
-  public readonly center: p5.Vector
-
-  public constructor(public readonly size: p5.Vector, public readonly gravity: number) {
+  public constructor(public readonly size: p5.Vector, public readonly center: p5.Vector, public readonly gravity: number) {
     super(size)
-    this.center = p5.Vector.mult(size, 0.5)
   }
 
   public frictionAt(position: p5.Vector): number {
@@ -204,7 +217,7 @@ class GravitationalTerrain extends Terrain {
     noStroke()
     fill(80)
     const size = 20
-    ellipse((this.size.x - 0) / 2, (this.size.y - 0) / 2, size, size)
+    ellipse(this.center.x, this.center.y, size, size)
   }
 }
 
@@ -280,7 +293,7 @@ class Life extends WorldObject {
   noFill()
   stroke(86, 51, 245)
 
-  this.drawCircles(5, this.position.x, this.position.y, 20)
+  this.drawCircles(6, this.position.x, this.position.y, 20)
   }
 
   private drawCircles(numberOfCircles: number, x: number, y: number, diameter: number): void {

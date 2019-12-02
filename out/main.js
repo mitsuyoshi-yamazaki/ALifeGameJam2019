@@ -3,7 +3,11 @@ function setup() {
     const size = 800;
     const worldSize = createVector(size, size);
     createCanvas(size, size);
-    world = new VanillaWorld(worldSize, new GravitationalTerrain(worldSize, 1));
+    const terrains = [
+        new GravitationalTerrain(worldSize, p5.Vector.mult(worldSize, 0.33), 2),
+        new GravitationalTerrain(worldSize, p5.Vector.mult(worldSize, 0.66), 2),
+    ];
+    world = new VanillaWorld(worldSize, terrains);
     const lives = randomLives(80, size, 1);
     world.addLives(lives);
 }
@@ -23,12 +27,12 @@ function randomLives(numberOfLives, positionSpace, velocity) {
     return lives;
 }
 class VanillaWorld {
-    constructor(size, terrain) {
+    constructor(size, terrains) {
         this._t = 0;
         this._objects = [];
         this._lives = [];
         this._size = size;
-        this._terrain = terrain;
+        this._terrains = terrains;
     }
     get size() {
         return this._size;
@@ -36,8 +40,8 @@ class VanillaWorld {
     get t() {
         return this._t;
     }
-    get terrain() {
-        return this._terrain;
+    get terrains() {
+        return this._terrains;
     }
     get objects() {
         return this._objects;
@@ -54,10 +58,20 @@ class VanillaWorld {
     next() {
         this._t += 1;
         this._lives.forEach(life => {
-            const fieldForce = this.terrain.forceAt(life.position);
+            const forces = this.terrains.map(terrain => {
+                return terrain.forceAt(life.position);
+            });
+            const fieldForce = forces.reduce((result, value) => {
+                return result.add(value);
+            }, Force.zero());
             const force = life.next()
                 .add(fieldForce);
-            const friction = this.terrain.frictionAt(life.position);
+            const frictions = this.terrains.map(terrain => {
+                return terrain.frictionAt(life.position);
+            });
+            const friction = frictions.reduce((sum, value) => {
+                return sum + value;
+            }, 1) / (frictions.length + 1);
             const acceleration = force.accelerationTo(life.mass);
             const nextPosition = p5.Vector.add(life.position, life.velocity);
             const x = Math.max(Math.min(nextPosition.x, this.size.x), 0);
@@ -68,7 +82,9 @@ class VanillaWorld {
     }
     draw() {
         background(220);
-        this.terrain.draw();
+        this.terrains.forEach(terrain => {
+            terrain.draw();
+        });
         this._objects.forEach(obj => {
             obj.draw();
         });
@@ -124,11 +140,11 @@ class VanillaTerrain extends Terrain {
     }
 }
 class GravitationalTerrain extends Terrain {
-    constructor(size, gravity) {
+    constructor(size, center, gravity) {
         super(size);
         this.size = size;
+        this.center = center;
         this.gravity = gravity;
-        this.center = p5.Vector.mult(size, 0.5);
     }
     frictionAt(position) {
         // // 大気圏
@@ -149,7 +165,7 @@ class GravitationalTerrain extends Terrain {
         noStroke();
         fill(80);
         const size = 20;
-        ellipse((this.size.x - 0) / 2, (this.size.y - 0) / 2, size, size);
+        ellipse(this.center.x, this.center.y, size, size);
     }
 }
 /// Objects
@@ -213,7 +229,7 @@ class Life extends WorldObject {
     draw() {
         noFill();
         stroke(86, 51, 245);
-        this.drawCircles(5, this.position.x, this.position.y, 20);
+        this.drawCircles(6, this.position.x, this.position.y, 20);
     }
     drawCircles(numberOfCircles, x, y, diameter) {
         if (numberOfCircles <= 0) {
