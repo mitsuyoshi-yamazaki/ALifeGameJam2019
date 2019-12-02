@@ -8,6 +8,14 @@
 bool DEBUG = false;
 bool artMode = false;
 
+// Timestamp
+int t = 0;
+String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
+
+// Screenshot
+var link = document.getElementById('link');
+var canvas = document.getElementById('canvas');
+
 // Population
 Life[] lifes;
 int populationSize = 4000;
@@ -934,6 +942,16 @@ void draw(){
   drawGraph();
 
   //console.log("frameRate: " + frameRate);
+
+		if (t % 100 == 0) {
+			String num = ('000000' + t).slice(-6);
+			String filename = '' + launchTime + '__' + num + '.png';	// template literal not working sucks
+			link.setAttribute('download', filename);
+			link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+			link.click();
+			console.log('Saved: ' + filename);
+		}
+		t += 1;
 }
 
 void drawGraph(){
