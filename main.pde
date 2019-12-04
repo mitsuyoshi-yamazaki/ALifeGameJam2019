@@ -31,8 +31,8 @@ float appFieldHeight = fieldHeight + graphHeight;
 bool isLinearMode=false;
 bool isTorusMode=false;
 bool isCircumMode=false;
-bool isNormalMode=false;
-bool isRotateMode=true;
+bool isNormalMode=true;
+bool isRotateMode=false;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -51,16 +51,16 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 3;
+int geneLength = 1;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 // Fight
-float eatProbability = 0.9;
+float eatProbability = 0.6;
 
 // Evolution
-float mutationRate = 0.03;
+float mutationRate = 0.00;
 bool isScavenger = true;
 
 // Parse URL Parameter
@@ -625,15 +625,15 @@ class Life {
   }
 
   Life[] reproduce(){
-    float birthEnergy = size * size;
+    float birthEnergy = 1.2 * size * size;
 
     if(!enableReproduction) return [];
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
       float radian = random(0, 2.0 * PI);
 
-      float x = position.x + sin(radian) * size * 3.0;
-      float y = position.y + cos(radian) * size * 3.0;
+      float x = position.x + sin(radian) * size * 1.0;
+      float y = position.y + cos(radian) * size * 1.0;
 
       Gene newGene = gene.childGene();
 
@@ -676,7 +676,7 @@ void setup()
   int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene[] initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
+  Gene[] initialGenesArray = [new Gene(1, 1), new Gene(0, 0)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -826,7 +826,7 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraph();
+  drawGraphXY();
 
   //console.log("frameRate: " + frameRate);
 }
@@ -851,6 +851,19 @@ void drawGraph(){
     clearGraph();
   }
 }
+
+void drawGraphXY(){
+  strokeWeight(3);
+
+  if(populationPerSpecies.keys().length < 2){ return ;}
+  first = 0;
+  second = 3;
+
+  stroke(random(0,255), random(0,255), random(0,255));
+  point(populationPerSpecies[first],
+        appFieldHeight-(populationPerSpecies[second]));
+}
+
 
 void clearGraph(){
   fill(0xff);
