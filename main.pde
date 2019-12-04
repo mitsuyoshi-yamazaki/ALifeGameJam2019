@@ -876,6 +876,7 @@ void drawGraph(){
   }
 }
 
+PVector previousPoint;
 visualizeResource=false;
 void drawGraphXY(){
   strokeWeight(3);
@@ -903,13 +904,18 @@ void drawGraphXY(){
   // colorMode(HSB);
   strokeWeight(2);
   stroke(cos(populationOfResource/1000)*256, sin(populationOfResource/1000)*256, 190);
+
+  PVector newPoint;
   if(!visualizeResource){
-    point(populationPerSpecies[first],
+    newPoint = new PVector(populationPerSpecies[first],
           appFieldHeight-populationPerSpecies[second]);
   } else {
-    point(populationPerSpecies[first],
-          appFieldHeight-(populationOfResource-1000)/7);
+    newPoint = new PVector(point(populationPerSpecies[first],
+          appFieldHeight-(populationOfResource-1000)/7));
   }
+  point(newPoint.x, newPoint.y);
+  if(previousPoint!=null) line(previousPoint.x, previousPoint.y, newPoint.x, newPoint.y);
+  previousPoint = newPoint;
   // colorMode(RGB);
 }
 
