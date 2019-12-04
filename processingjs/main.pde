@@ -566,7 +566,7 @@ class Life {
   }
 
   static Life makeResource(float x, float y, float size, Gene gene) {
-    Life resource = new Life(x, y, size, 0, gene);
+    Life resource = new LifeKlass(x, y, size, 0, gene);
     resource.bodyEnergy *= 20;
     resource.type = 'Resource';
 
@@ -702,7 +702,7 @@ class Life {
     }
   }
   Life replicate(int x, int y, int size, int energy, Gene g){
-    return (new Life(x, y, size, energy, g))
+    return (new LifeKlass(x, y, size, energy, g))
   }
 
   Life[] reproduce(){
@@ -744,7 +744,7 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void setup()
+void defaultSetup()
 {
   size(appFieldWidth, appFieldHeight);
   background(0xff);
@@ -773,7 +773,7 @@ void setup()
                                       defaultEnergy,
                                       initialGenesArray[g_i]);
           } if(isNormalMode) {
-            lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+            lifes[lifes.length] = new LifeKlass(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isTorusMode){
             lifes[lifes.length] = new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isRotateMode){
@@ -791,7 +791,7 @@ void setup()
                                        defaultEnergy,
                                        Gene.randomGene());
       }if(isNormalMode){
-        lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+        lifes[lifes.length]=new LifeKlass(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }if(isTorusMode){
         lifes[lifes.length]=new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       } if(isRotateMode){
@@ -814,7 +814,7 @@ void setup()
 }
 
 int populationOfResource = 0;
-void draw(){
+void defaultDraw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
   /*if(second()%30==0){
@@ -974,41 +974,5 @@ void addResources() {
     } if(isNormalMode || isRotateMode || isTorusMode){
       lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
     }
-  }
-}
-
-void mouseClicked(){
-  PVector m_pos = new PVector(mouseX, mouseY);
-  Life found = lifes.find(function(l){
-    return ((PVector.sub(m_pos, l.position)).mag() <= l.size)
-    });
-  if(found != undefined){
-    console.log(found.show());
-  }
-  else{
-//    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
-    for(int i=0; i!=10;i++){
-     lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
-     //TODO:クリック後、その場所に継続的にエサを与え続ける
-    }
-  }
-}
-
-void keyPressed (){
-  if(key == 32){
-    noLoop();
-    fill(0xff);
-      console.log("start");
-      console.log("length:" + populationPerSpecies.length);
-    populationPerSpecies.forEach(function(var e, var key){
-      console.log("gene:" + Gene.fromWholeGene(key).showBinary() + " " + key + " " + e);
-    });
-      console.log("end");
-  }
-}
-
-void keyReleased (){
-  if(key == 32){
-    loop();
   }
 }
