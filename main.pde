@@ -56,11 +56,13 @@ int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
+bool predator_prey_mode = true;
+
 // Fight
 float eatProbability = 0.6;
 
 // Evolution
-float mutationRate = 0.00;
+float mutationRate = 0.04;
 bool isScavenger = true;
 
 // Parse URL Parameter
@@ -158,7 +160,12 @@ class Gene {
   }
 
   Gene mutantGene(){
-    int mutation = (1 << (random(0, wholeLength)));
+    int mutation;
+    if(predator_prey_mode){
+      mutation = (1 << (random(1, 1)));
+    } else {
+      mutation = (1 << (random(0, wholeLength)));
+    }
     int childwholegene = (this.getWholeGene()) ^ mutation;
     return fromWholeGene(childwholegene);
   }
@@ -680,7 +687,12 @@ void setup()
   int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene[] initialGenesArray = [new Gene(1, 1), new Gene(0, 0)]; //[Gene.randomGene()];
+  Gene[] initialGenesArray;
+  if(predator_prey_mode){
+    initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
+  } else {
+    initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
+  }
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -723,15 +735,23 @@ void setup()
     }
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    Gene g1 = new Gene(0, 0);
+    Gene g1;
+    if(predator_prey_mode){
+      g1 = new Gene(1, 1);
+    } else {
+      g1 = new Gene(1, 1);
+    }
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
     }
     if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isTorusMode || isRotateMode){
-      lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
-    } if(isTorusMode){
+      if(!predator_prey_mode){
+        lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+      } else {
+        lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, g1);
+      }
     }
   }
 }
@@ -861,19 +881,26 @@ void drawGraphXY(){
 
   if(populationPerSpecies.keys().length < 2){ return ;}
   first = 0;
-  second = 3;
+  second = 2;
+
+  t= timer();
 
   Gene g1 = Gene.fromWholeGene(first);
+  strokeWeight(10);
   stroke(g1.geneColor.r, g1.geneColor.g, g1.geneColor.b);
-  line(0, appFieldHeight, 500, appFieldHeight);
+  line(0, appFieldHeight, appFieldWidth, appFieldHeight);
 
   Gene g2 = Gene.fromWholeGene(second);
+  strokeWeight(10);
   stroke(g2.geneColor.r, g2.geneColor.g, g2.geneColor.b);
   line(0, appFieldHeight, 0, fieldHeight);
 
-  stroke(random(0,255), random(0,255), random(0,255));
+  colorMode(HSB);
+  strokeWeight(2);
+  stroke(t%256, 256, 190);
   point(populationPerSpecies[first],
         appFieldHeight-(populationPerSpecies[second]));
+  colorMode(RGB);
 }
 
 
@@ -886,14 +913,20 @@ var timer = makeTimer();
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0, 0);
+  Gene g;
+  if(predator_prey_mode){g=new Gene(1, 1);}
+  else {g=new Gene(1, 1);}
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isRotateMode || isTorusMode){
-      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+      if(!predator_prey_mode){
+        lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+      } else {
+        lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+      }
     }
   }
 }
