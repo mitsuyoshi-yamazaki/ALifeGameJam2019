@@ -86,6 +86,13 @@ int resourceGrowth = 4.01;
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
 float graphHeight = 400;
+bool graphEnabled = true;
+if (artMode) {
+	graphEnabled = false;
+}
+if (!graphEnabled) {
+ graphHeight = 0;
+}
 
 // Field
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
@@ -921,7 +928,9 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraph();
+		if (graphEnabled) {
+  	drawGraph();
+		}
 
   //console.log("frameRate: " + frameRate);
 }
