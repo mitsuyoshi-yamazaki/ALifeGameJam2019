@@ -1,3 +1,5 @@
+var LifeKlass = Life;
+
 void setup() {
 	defaultSetup();
 }

@@ -566,7 +566,7 @@ class Life {
   }
 
   static Life makeResource(float x, float y, float size, Gene gene) {
-    Life resource = new Life(x, y, size, 0, gene);
+    Life resource = new LifeKlass(x, y, size, 0, gene);
     resource.bodyEnergy *= 20;
     resource.type = 'Resource';
 
@@ -702,7 +702,7 @@ class Life {
     }
   }
   Life replicate(int x, int y, int size, int energy, Gene g){
-    return (new Life(x, y, size, energy, g))
+    return (new LifeKlass(x, y, size, energy, g))
   }
 
   Life[] reproduce(){
@@ -773,7 +773,7 @@ void defaultSetup()
                                       defaultEnergy,
                                       initialGenesArray[g_i]);
           } if(isNormalMode) {
-            lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+            lifes[lifes.length] = new LifeKlass(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isTorusMode){
             lifes[lifes.length] = new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isRotateMode){
@@ -791,7 +791,7 @@ void defaultSetup()
                                        defaultEnergy,
                                        Gene.randomGene());
       }if(isNormalMode){
-        lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+        lifes[lifes.length]=new LifeKlass(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }if(isTorusMode){
         lifes[lifes.length]=new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       } if(isRotateMode){
