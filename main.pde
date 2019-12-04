@@ -128,6 +128,19 @@ class Color {
   }
 }
 
+var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
+      if(shiftLength > 0){
+        return (shiftee << shiftLength);
+        }
+      else{
+        return (shiftee >> (-shiftLength));
+        }
+      });
+
+Color gene2Color(int predatorGene, int preyGene){
+  return new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
+}
+
 class Gene {
   int predatorGene;
   int preyGene;
@@ -137,16 +150,7 @@ class Gene {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
 
-    var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
-      if(shiftLength > 0){
-        return (shiftee << shiftLength);
-        }
-      else{
-        return (shiftee >> (-shiftLength));
-        }
-      });
-
-    geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
+    geneColor = gene2Color(predatorGene, preyGene);
   }
 
   static Gene randomGene() {
@@ -858,6 +862,14 @@ void drawGraphXY(){
   if(populationPerSpecies.keys().length < 2){ return ;}
   first = 0;
   second = 3;
+
+  Gene g1 = Gene.fromWholeGene(first);
+  stroke(g1.geneColor.r, g1.geneColor.g, g1.geneColor.b);
+  line(0, appFieldHeight, 500, appFieldHeight);
+
+  Gene g2 = Gene.fromWholeGene(second);
+  stroke(g2.geneColor.r, g2.geneColor.g, g2.geneColor.b);
+  line(0, appFieldHeight, 0, fieldHeight);
 
   stroke(random(0,255), random(0,255), random(0,255));
   point(populationPerSpecies[first],
