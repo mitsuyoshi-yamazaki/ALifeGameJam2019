@@ -744,7 +744,7 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void setup()
+void defaultSetup()
 {
   size(appFieldWidth, appFieldHeight);
   background(0xff);
@@ -814,7 +814,7 @@ void setup()
 }
 
 int populationOfResource = 0;
-void draw(){
+void defaultDraw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
   /*if(second()%30==0){
