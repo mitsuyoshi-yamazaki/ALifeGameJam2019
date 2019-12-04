@@ -6,7 +6,80 @@
 
 // System
 bool DEBUG = false;
+
+// Parameters
 bool artMode = false;
+int populationSize = 1000;
+float mutationRate = 0.01;
+bool useSingleGene = true;
+float fieldWidth = 1000;
+float fieldHeight = 500;
+
+
+bool isLinearMode=false;
+bool isTorusMode=false;
+bool isCircumMode=false;
+bool isNormalMode=false;
+bool isRotateMode=false;
+
+
+// Parse URL Parameter
+String rawQuery = document.location.search;
+String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
+Object parameters = {};
+for (int i = 0; i < queries.length; i++) {
+  String[] pair = queries[i].split('=');
+  parameters[pair[0]] = pair[1];
+}
+console.log(parameters);
+
+if (parameters['art_mode'] != null) {
+  artMode = int(parameters['art_mode']);
+}
+if (parameters['population_size'] != null) {
+  populationSize = int(parameters['population_size']);
+}
+if (parameters['mutation_rate'] != null) {
+  mutationRate = float(parameters['mutation_rate']);
+}
+if (parameters['single_gene'] != null) {
+  useSingleGene = int(parameters['single_gene']);
+}
+if (parameters['mode'] != null) {
+
+		switch (parameters['mode']) {
+			case 'linear':
+					isLinearMode = true;
+			  break;
+			case 'torus':
+					isTorusMode = true;
+			  break;
+			case 'circum':
+					isCircumMode = true;
+			  break;
+			case 'rotate':
+					isRotateMode = true;
+			  break;
+			default:
+					isNormalMode = true;
+			  break;
+		}
+} else {
+	 isNormalMode = true;
+}
+if (parameters['field_size'] != null) {
+  fieldWidth = int(parameters['field_size']);
+		if (isTorusMode || isCircumMode || isRotateMode) {
+				fieldHeight = fieldWidth;
+		} else {
+				fieldHeight = Math.floor(fieldWidth * 0.6);
+		}
+}
+if (parameters['screenshot_interval'] != null) {
+  screenshotInterval = int(parameters['screenshot_interval']);
+		screenshotEnabled = true;
+}
+
 
 // Timestamp
 int t = 0;
@@ -20,7 +93,6 @@ bool screenshotEnabled = false;
 
 // Population
 Life[] lifes;
-int populationSize = 4000;
 int initialResourceSize = 1000;
 int resourceGrowth = 4.01;
 int maxResourceSize = 10000;
@@ -28,22 +100,19 @@ int maxResourceSize = 10000;
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
 float graphHeight = 400;
+bool graphEnabled = true;
+if (artMode) {
+	graphEnabled = false;
+}
+if (!graphEnabled) {
+ graphHeight = 0;
+}
 
 // Field
-float fieldWidth = 1000;
-float fieldHeight = 500;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
-
-bool isLinearMode=false;
-bool isTorusMode=false;
-bool isCircumMode=false;
-bool isNormalMode=true;
-bool isRotateMode=false;
-
 
 bool clickResource = false;
 
@@ -64,7 +133,11 @@ if (isNormalMode) {
 		//new Wall(fieldWidth/2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 		new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 		new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-	]
+	];
+}
+if (artMode) {
+ walls = [];
+	console.log("No walls in artistic mode");
 }
 
 // Color
@@ -94,35 +167,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.9;
 
 // Evolution
-float mutationRate = 0.03;
 bool isScavenger = true;
-
-// Parse URL Parameter
-String rawQuery = document.location.search;
-String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
-Object parameters = {};
-for (int i = 0; i < queries.length; i++) {
-  String[] pair = queries[i].split('=');
-  parameters[pair[0]] = pair[1];
-}
-console.log(parameters);
-
-if (parameters['art_mode'] != null) {
-  artMode = int(parameters['art_mode']);
-}
-if (parameters['population_size'] != null) {
-  populationSize = int(parameters['population_size']);
-}
-if (parameters['mutation_rate'] != null) {
-  mutationRate = float(parameters['mutation_rate']);
-}
-if (parameters['single_gene'] != null) {
-  useSingleGene = int(parameters['single_gene']);
-}
-if (parameters['screenshot_interval'] != null) {
-  screenshotInterval = int(parameters['screenshot_interval']);
-		screenshotEnabled = true;
-}
 
 // Artistics Mode
 if (artMode) {
@@ -959,7 +1004,9 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraph();
+		if (graphEnabled) {
+  	drawGraph();
+		}
 
   //console.log("frameRate: " + frameRate);
 
