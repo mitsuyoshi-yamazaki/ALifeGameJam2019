@@ -10,7 +10,7 @@ bool DEBUG = false;
 // Parameters
 bool artMode = false;
 int populationSize = 1000;
-float mutationRate = 0.03;
+float mutationRate = 0.01;
 bool useSingleGene = true;
 float fieldWidth = 1000;
 float fieldHeight = 500;
@@ -102,7 +102,11 @@ if (isNormalMode) {
 	walls = [
 		new Wall((fieldWidth - wallWidth) / 2, 0, wallWidth, (fieldHeight - space) / 2),
 		new Wall((fieldWidth - wallWidth) / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-	]
+	];
+}
+if (artMode) {
+ walls = [];
+	console.log("No walls in artistic mode");
 }
 
 // Color
