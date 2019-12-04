@@ -6,11 +6,79 @@
 
 // System
 bool DEBUG = false;
+
+// Parameters
 bool artMode = false;
+int populationSize = 1000;
+float mutationRate = 0.03;
+bool useSingleGene = true;
+float fieldWidth = 1000;
+float fieldHeight = 500;
+
+
+bool isLinearMode=false;
+bool isTorusMode=false;
+bool isCircumMode=false;
+bool isNormalMode=false;
+bool isRotateMode=false;
+
+
+// Parse URL Parameter
+String rawQuery = document.location.search;
+String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
+Object parameters = {};
+for (int i = 0; i < queries.length; i++) {
+  String[] pair = queries[i].split('=');
+  parameters[pair[0]] = pair[1];
+}
+console.log(parameters);
+
+if (parameters['art_mode'] != null) {
+  artMode = int(parameters['art_mode']);
+}
+if (parameters['population_size'] != null) {
+  populationSize = int(parameters['population_size']);
+}
+if (parameters['mutation_rate'] != null) {
+  mutationRate = float(parameters['mutation_rate']);
+}
+if (parameters['single_gene'] != null) {
+  useSingleGene = int(parameters['single_gene']);
+}
+if (parameters['mode'] != null) {
+
+		switch (parameters['mode']) {
+			case 'linear':
+					isLinearMode = true;
+			  break;
+			case 'torus':
+					isTorusMode = true;
+			  break;
+			case 'circum':
+					isCircumMode = true;
+			  break;
+			case 'rotate':
+					isRotateMode = true;
+			  break;
+			default:
+					isNormalMode = true;
+			  break;
+		}
+} else {
+	 isNormalMode = true;
+}
+if (parameters['field_size'] != null) {
+  fieldWidth = int(parameters['field_size']);
+		if (isTorusMode || isCircumMode || isRotateMode) {
+				fieldHeight = fieldWidth;
+		} else {
+				fieldHeight = Math.floor(fieldWidth * 0.6);
+		}
+}
+
 
 // Population
 Life[] lifes;
-int populationSize = 1000;
 int initialResourceSize = 500;
 int resourceGrowth = 4.01;
 
@@ -20,19 +88,10 @@ float graphSize = 0.4;
 float graphHeight = 400;
 
 // Field
-float fieldWidth = 1000;
-float fieldHeight = 500;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
-
-bool isLinearMode=false;
-bool isTorusMode=false;
-bool isCircumMode=false;
-bool isNormalMode=true;
-bool isRotateMode=false;
 
 // Walls
 int wallWidth = 40;
@@ -72,31 +131,8 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.9;
 
 // Evolution
-float mutationRate = 0.03;
 bool isScavenger = true;
 
-// Parse URL Parameter
-String rawQuery = document.location.search;
-String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
-Object parameters = {};
-for (int i = 0; i < queries.length; i++) {
-  String[] pair = queries[i].split('=');
-  parameters[pair[0]] = pair[1];
-}
-console.log(parameters);
-
-if (parameters['art_mode'] != null) {
-  artMode = int(parameters['art_mode']);
-}
-if (parameters['population_size'] != null) {
-  populationSize = int(parameters['population_size']);
-}
-if (parameters['mutation_rate'] != null) {
-  mutationRate = float(parameters['mutation_rate']);
-}
-if (parameters['single_gene'] != null) {
-  useSingleGene = int(parameters['single_gene']);
-}
 
 // Artistics Mode
 if (artMode) {
