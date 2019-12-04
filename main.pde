@@ -17,7 +17,7 @@ int resourceGrowth = 1 + 4.01;
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
-float graphHeight = 400;
+float graphHeight = 700;
 
 // Field
 float fieldWidth = 1000;
@@ -59,10 +59,10 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 bool predator_prey_mode = true;
 
 // Fight
-float eatProbability = 0.6;
+float eatProbability = 0.9999999;
 
 // Evolution
-float mutationRate = 0.04;
+float mutationRate = 0.03;
 bool isScavenger = true;
 
 // Parse URL Parameter
@@ -739,7 +739,7 @@ void setup()
     if(predator_prey_mode){
       g1 = new Gene(1, 1);
     } else {
-      g1 = new Gene(1, 1);
+      g1 = new Gene(0, 0);
     }
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
@@ -876,6 +876,7 @@ void drawGraph(){
   }
 }
 
+visualizeResource=false;
 void drawGraphXY(){
   strokeWeight(3);
 
@@ -892,15 +893,24 @@ void drawGraphXY(){
 
   Gene g2 = Gene.fromWholeGene(second);
   strokeWeight(10);
-  stroke(g2.geneColor.r, g2.geneColor.g, g2.geneColor.b);
+  if(visualizeResource){
+    stroke(0xff, 0xff, 0);
+  } else {
+    stroke(g2.geneColor.r, g2.geneColor.g, g2.geneColor.b);
+  }
   line(0, appFieldHeight, 0, fieldHeight);
 
-  colorMode(HSB);
+  // colorMode(HSB);
   strokeWeight(2);
-  stroke(t%256, 256, 190);
-  point(populationPerSpecies[first],
-        appFieldHeight-(populationPerSpecies[second]));
-  colorMode(RGB);
+  stroke(cos(populationOfResource/1000)*256, sin(populationOfResource/1000)*256, 190);
+  if(!visualizeResource){
+    point(populationPerSpecies[first],
+          appFieldHeight-populationPerSpecies[second]);
+  } else {
+    point(populationPerSpecies[first],
+          appFieldHeight-(populationOfResource-1000)/7);
+  }
+  // colorMode(RGB);
 }
 
 
@@ -915,7 +925,7 @@ void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
   Gene g;
   if(predator_prey_mode){g=new Gene(1, 1);}
-  else {g=new Gene(1, 1);}
+  else {g=new Gene(0, 0);}
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
