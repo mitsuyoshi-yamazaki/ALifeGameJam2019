@@ -17,7 +17,7 @@ int resourceGrowth = 1 + 4.01;
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
-float graphHeight = 400;
+float graphHeight = 700;
 
 // Field
 float fieldWidth = 1000;
@@ -31,8 +31,8 @@ float appFieldHeight = fieldHeight + graphHeight;
 bool isLinearMode=false;
 bool isTorusMode=false;
 bool isCircumMode=false;
-bool isNormalMode=false;
-bool isRotateMode=true;
+bool isNormalMode=true;
+bool isRotateMode=false;
 
 // Color
 float backgroundTransparency = 0xff;
@@ -51,13 +51,15 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 3;
+int geneLength = 1;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
+bool predator_prey_mode = true;
+
 // Fight
-float eatProbability = 0.9;
+float eatProbability = 0.9999999;
 
 // Evolution
 float mutationRate = 0.03;
@@ -128,6 +130,19 @@ class Color {
   }
 }
 
+var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
+      if(shiftLength > 0){
+        return (shiftee << shiftLength);
+        }
+      else{
+        return (shiftee >> (-shiftLength));
+        }
+      });
+
+Color gene2Color(int predatorGene, int preyGene){
+  return new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
+}
+
 class Gene {
   int predatorGene;
   int preyGene;
@@ -137,16 +152,7 @@ class Gene {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
 
-    var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
-      if(shiftLength > 0){
-        return (shiftee << shiftLength);
-        }
-      else{
-        return (shiftee >> (-shiftLength));
-        }
-      });
-
-    geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
+    geneColor = gene2Color(predatorGene, preyGene);
   }
 
   static Gene randomGene() {
@@ -154,7 +160,12 @@ class Gene {
   }
 
   Gene mutantGene(){
-    int mutation = (1 << (random(0, wholeLength)));
+    int mutation;
+    if(predator_prey_mode){
+      mutation = (1 << (random(1, 1)));
+    } else {
+      mutation = (1 << (random(0, wholeLength)));
+    }
     int childwholegene = (this.getWholeGene()) ^ mutation;
     return fromWholeGene(childwholegene);
   }
@@ -625,15 +636,15 @@ class Life {
   }
 
   Life[] reproduce(){
-    float birthEnergy = size * size;
+    float birthEnergy = 1.2 * size * size;
 
     if(!enableReproduction) return [];
     if (energy > birthEnergy) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
       float radian = random(0, 2.0 * PI);
 
-      float x = position.x + sin(radian) * size * 3.0;
-      float y = position.y + cos(radian) * size * 3.0;
+      float x = position.x + sin(radian) * size * 1.0;
+      float y = position.y + cos(radian) * size * 1.0;
 
       Gene newGene = gene.childGene();
 
@@ -676,7 +687,12 @@ void setup()
   int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene[] initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
+  Gene[] initialGenesArray;
+  if(predator_prey_mode){
+    initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
+  } else {
+    initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
+  }
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -719,15 +735,23 @@ void setup()
     }
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    Gene g1 = new Gene(0, 0);
+    Gene g1;
+    if(predator_prey_mode){
+      g1 = new Gene(1, 1);
+    } else {
+      g1 = new Gene(0, 0);
+    }
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
     }
     if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isTorusMode || isRotateMode){
-      lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
-    } if(isTorusMode){
+      if(!predator_prey_mode){
+        lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+      } else {
+        lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, g1);
+      }
     }
   }
 }
@@ -826,7 +850,7 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraph();
+  drawGraphXY();
 
   //console.log("frameRate: " + frameRate);
 }
@@ -852,6 +876,50 @@ void drawGraph(){
   }
 }
 
+PVector previousPoint;
+visualizeResource=false;
+void drawGraphXY(){
+  strokeWeight(3);
+
+  if(populationPerSpecies.keys().length < 2){ return ;}
+  first = 0;
+  second = 2;
+
+  t= timer();
+
+  Gene g1 = Gene.fromWholeGene(first);
+  strokeWeight(10);
+  stroke(g1.geneColor.r, g1.geneColor.g, g1.geneColor.b);
+  line(0, appFieldHeight, appFieldWidth, appFieldHeight);
+
+  Gene g2 = Gene.fromWholeGene(second);
+  strokeWeight(10);
+  if(visualizeResource){
+    stroke(0xff, 0xff, 0);
+  } else {
+    stroke(g2.geneColor.r, g2.geneColor.g, g2.geneColor.b);
+  }
+  line(0, appFieldHeight, 0, fieldHeight);
+
+  // colorMode(HSB);
+  strokeWeight(2);
+  stroke(cos(populationOfResource/1000)*256, sin(populationOfResource/1000)*256, 190);
+
+  PVector newPoint;
+  if(!visualizeResource){
+    newPoint = new PVector(populationPerSpecies[first],
+          appFieldHeight-populationPerSpecies[second]);
+  } else {
+    newPoint = new PVector(point(populationPerSpecies[first],
+          appFieldHeight-(populationOfResource-1000)/7));
+  }
+  point(newPoint.x, newPoint.y);
+  if(previousPoint!=null) line(previousPoint.x, previousPoint.y, newPoint.x, newPoint.y);
+  previousPoint = newPoint;
+  // colorMode(RGB);
+}
+
+
 void clearGraph(){
   fill(0xff);
   rect(0,fieldHeight,appFieldWidth,graphHeight);
@@ -861,14 +929,20 @@ var timer = makeTimer();
 
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0, 0);
+  Gene g;
+  if(predator_prey_mode){g=new Gene(1, 1);}
+  else {g=new Gene(0, 0);}
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isRotateMode || isTorusMode){
-      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+      if(!predator_prey_mode){
+        lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+      } else {
+        lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+      }
     }
   }
 }
