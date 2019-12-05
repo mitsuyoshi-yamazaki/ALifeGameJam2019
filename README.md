@@ -50,6 +50,10 @@ Parameters for `main.html`
 - field_size
   - number(1~), around 1000 recommended
 		- The simulation field size
+- screenshot_interval
+  - number(1~), 200 recommended
+		- The interval between taking screenshots
+		- Disables screenshot by removing this parameter
 - [Experimental] mode
   - string. Options are either "default", "linear", "torus", "circum" or "rotate"
   - Changes the simulation algorithm
