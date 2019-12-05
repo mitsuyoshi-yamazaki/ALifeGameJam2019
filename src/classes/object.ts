@@ -4,9 +4,24 @@ import { Vector } from "./physics"
 export class WorldObject {
   public static collisionPriority = 0
   public velocity: Vector = new Vector(0, 0)
-  public mass = 1
+
+  protected _size = 1
+  public get size(): number {
+    return this._size
+  }
+
+  protected _mass = 1
+  public get mass(): number {
+    return this._mass
+  }
 
   public constructor(public position: Vector) {
+  }
+
+  public isCollidingWith(other: WorldObject): boolean {
+    const distance = this.position.dist(other.position)
+
+    return distance < ((this.size + other.size) / 2)
   }
 
   public collideWith(other: WorldObject): void {

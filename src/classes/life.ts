@@ -7,9 +7,15 @@ import { Force, Vector } from "./physics"
 export class Life extends WorldObject {
   public static collisionPriority = 100
 
+  public get isAlive(): boolean {
+    return true
+  }
+
   public constructor(public position: Vector) {
     super(position)
-    this.mass = 3
+    this._size = 3
+    const radius = this._size / 2
+    this._mass = radius * radius
   }
   public next(): Force {
     return Force.zero()
@@ -19,24 +25,31 @@ export class Life extends WorldObject {
     p.noFill()
     p.stroke(86, 51, 245)
 
-    const diameter = this.mass
+    const diameter = this.size
     p.circle(this.position.x, this.position.y, diameter)
   }
 }
 
 export class PassiveLife extends Life {
-  public next(): Force {
+   public constructor(public position: Vector) {
+       super(position)
+       this._size = 20
+       const radius = this._size / 2
+       this._mass = radius * radius
+   }
+
+   public next(): Force {
     return Force.zero()
   }
 
-  public draw(p: p5): void {
+   public draw(p: p5): void {
     p.noFill()
     p.stroke(86, 51, 245)
 
-    this.drawCircles(p, 6, this.position.x, this.position.y, 20)
+    this.drawCircles(p, 6, this.position.x, this.position.y, this.size)
   }
 
-  private drawCircles(p: p5, numberOfCircles: number, x: number, y: number, diameter: number): void {
+   private drawCircles(p: p5, numberOfCircles: number, x: number, y: number, diameter: number): void {
     if (numberOfCircles <= 0) {
       return
     }
@@ -49,11 +62,13 @@ export class GeneticLife extends Life {
   private readonly energy = 0
   public get isAlive(): boolean {
     return this.energy > 0
-    }
+  }
 
-  public constructor(public position: Vector, public readonly gene: Gene) {
+  public constructor(public position: Vector, public readonly gene: Gene, size: number) {
     super(position)
-    this.mass = 3
+    this._size = size
+    const radius = this._size / 2
+    this._mass = radius * radius
   }
 
   public next(): Force {

@@ -7,13 +7,15 @@ import { random } from "../utilities"
 
 const main = (p: p5) => {
   let world: World
+  const size = 800
+  const worldSize = new Vector(size, size)
+  const gravity = 100
+
   p.setup = () => {
-    const size = 800
-    const worldSize = new Vector(size, size)
     p.createCanvas(size, size)
     const terrains: Terrain[] = [
-      new GravitationalTerrain(worldSize, worldSize.mult(0.33), 2),
-      new GravitationalTerrain(worldSize, worldSize.mult(0.66), 2),
+      new GravitationalTerrain(worldSize, worldSize.mult(0.33), gravity),
+      new GravitationalTerrain(worldSize, worldSize.mult(0.66), gravity),
     ]
     world = new VanillaWorld(worldSize, terrains)
 
