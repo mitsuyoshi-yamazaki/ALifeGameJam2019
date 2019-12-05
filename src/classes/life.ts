@@ -1,7 +1,7 @@
 import * as p5 from "p5"
+import { random } from "../utilities"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
-import { random } from "./utilities"
 
 export class Life extends WorldObject {
   public static collisionPriority = 100

@@ -1,9 +1,9 @@
 import * as p5 from "p5"
-import { Life } from "./life"
-import { Vector } from "./physics"
-import { GravitationalTerrain, Terrain } from "./terrain"
-import { random } from "./utilities"
-import { VanillaWorld, World } from "./world"
+import { Life } from "../classes/life"
+import { Vector } from "../classes/physics"
+import { GravitationalTerrain, Terrain } from "../classes/terrain"
+import { VanillaWorld, World } from "../classes/world"
+import { random } from "../utilities"
 
 const sketch = (p: p5) => {
   let world: World
