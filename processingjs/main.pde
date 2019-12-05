@@ -950,7 +950,7 @@ void defaultDraw(){
 }
 
 void drawGraph(){
-  strokeWeight(3);
+  strokeWeight(2);
   var t;
   var unit;
 
