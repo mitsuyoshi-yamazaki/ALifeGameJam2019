@@ -12,5 +12,5 @@ https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019
 
 ## Run Locally
 
-`$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir`
+`$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir`  
 then open index.html on Chrome
