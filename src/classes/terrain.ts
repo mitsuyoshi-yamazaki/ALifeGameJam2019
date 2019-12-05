@@ -88,3 +88,20 @@ export class GravitationalTerrain extends Terrain {
     p.ellipse(this.center.x, this.center.y, size, size)
   }
 }
+
+export class FrictedTerrain extends Terrain {
+  public constructor(public readonly size: Vector, public readonly friction: number) {
+    super(size)
+  }
+
+  public frictionAt(position: Vector): number {
+    return this.friction
+  }
+
+  public forceAt(position: Vector): Force {
+    return Force.zero()
+  }
+
+  public draw(p: p5): void {
+  }
+}

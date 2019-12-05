@@ -186,7 +186,11 @@
 						"check-postbrace"
 					],
 					"no-console": false,
-					"no-bitwise": false
+					"no-bitwise": false,
+					"no-empty": [
+						true,
+						"allow-empty-functions"
+					]
 				},
 				"rulesDirectory": []
 }
