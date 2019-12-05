@@ -1,5 +1,5 @@
 import * as p5 from "p5"
-import { Life } from "../classes/life"
+import { Life, PassiveLife } from "../classes/life"
 import { Vector } from "../classes/physics"
 import { GravitationalTerrain, Terrain } from "../classes/terrain"
 import { VanillaWorld, World } from "../classes/world"
@@ -27,9 +27,9 @@ const main = (p: p5) => {
   }
 
   function randomLives(numberOfLives: number, positionSpace: number, velocity?: number | undefined): Life[] {
-    const lives: Life[] = []
+    const lives: PassiveLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
-      lives.push(new Life(new Vector(random(positionSpace), random(positionSpace))))
+      lives.push(new PassiveLife(new Vector(random(positionSpace), random(positionSpace))))
     }
     if (velocity != undefined) {
       lives.forEach(life => {

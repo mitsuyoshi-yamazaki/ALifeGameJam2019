@@ -10,13 +10,21 @@ export class Life extends WorldObject {
     super(position)
     this.mass = 3
   }
-
   public next(): Force {
-    const max = 3
-    const vx = random(-max, max)
-    const vy = random(-max, max)
+    return Force.zero()
+  }
 
-    // return new Force(new Vector(vx, vy))
+  public draw(p: p5): void {
+    p.noFill()
+    p.stroke(86, 51, 245)
+
+    const diameter = this.mass
+    p.circle(this.position.x, this.position.y, diameter)
+  }
+}
+
+export class PassiveLife extends Life {
+  public next(): Force {
     return Force.zero()
   }
 
