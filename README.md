@@ -53,3 +53,4 @@ Parameters for `main.html`
 - [Experimental] mode
   - string. Options are either "default", "linear", "torus", "circum" or "rotate"
   - Changes the simulation algorithm
+
