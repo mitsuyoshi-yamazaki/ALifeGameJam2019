@@ -35,26 +35,26 @@ $ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-da
 
 Parameters for `main.html`
 
-- art_mode
+- `art_mode`
   - 1(enable) or 0(disable)
-		- Enables drawing mode
-- population_size
+  - Enables drawing mode
+- `population_size`
   - number(1~)
-		- Initial population size
-- single_gene
+  - Initial population size
+- `single_gene`
   - 1(enable) or 0(disable)
   - Starts with only one species
-- mutation_rate
+- `mutation_rate`
   - number(0~1), 0.001~0.03 recommended
   - The mutation rate when they reproduce
-- field_size
+- `field_size`
   - number(1~), around 1000 recommended
-		- The simulation field size
-- screenshot_interval
+  - The simulation field size
+- `screenshot_interval`
   - number(1~), 200 recommended
-		- The interval between taking screenshots
-		- Disables screenshot by removing this parameter
-- [Experimental] mode
+  - The interval between taking screenshots
+  - Disables screenshot by removing this parameter
+- [Experimental] `mode`
   - string. Options are either "default", "linear", "torus", "circum" or "rotate"
   - Changes the simulation algorithm
 
