@@ -21,6 +21,9 @@ export class Terrain {
 export class VanillaTerrain extends Terrain {
   public constructor(
     public readonly size: Vector,
+    public readonly gravityCenter: Vector | null,
+    public readonly gravity: number,
+    public readonly friction: number,
     public readonly immobilizedWidth: number,
   ) {
     super(size)
@@ -40,18 +43,42 @@ export class VanillaTerrain extends Terrain {
       return (this.size.y - position.y) / this.immobilizedWidth
     }
 
-    return 1
+    return this.friction
   }
 
   public forceAt(position: Vector): Force {
-    return Force.zero()
+    if (this.gravityCenter == undefined) {
+      return
+    }
+    const distance = Math.max(this.gravityCenter.dist(position), 0.1) // ブラックホールは法律で禁止されている
+    const magnitude = (1 / (distance * distance)) * this.gravity
+
+    const vector = this.gravityCenter.sub(position)
+    const unitVector = vector.div(vector.size)
+
+    return new Force(vector.mult(magnitude))
   }
 
   public draw(p: p5): void {
+    this.drawImmobilizedArea(p)
+    this.drawGravityCenter(p)
+  }
+
+  private drawImmobilizedArea(p: p5): void {
     p.stroke(207, 196, 251)
     p.strokeWeight(this.immobilizedWidth)
     p.noFill()
     p.rect(0, 0, this.size.x, this.size.y)
+  }
+
+  private drawGravityCenter(p: p5): void {
+    if (this.gravityCenter == undefined) {
+      return
+    }
+    p.noStroke()
+    p.fill(80)
+    const size = 20
+    p.ellipse(this.gravityCenter.x, this.gravityCenter.y, size, size)
   }
 }
 
