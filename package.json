@@ -1,0 +1,9 @@
+{
+  "name": "blind_painter",
+  "version": "1.0.0",
+  "description": "Artificial life ecosystem",
+  "main": "index.js",
+  "repository": "git@github.com:mitsuyoshi-yamazaki/ALifeGameJam2019.git",
+  "license": "MIT",
+  "private": false
+}
