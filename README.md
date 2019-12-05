@@ -12,10 +12,28 @@ https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019
 
 ## Run Locally
 
-`$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir`
-then open index.html on Chrome
+```shell
+# Clone the repository
+$ git@github.com:mitsuyoshi-yamazaki/ALifeGameJam2019.git
 
-### Parameters
+$ cd ALifeGameJam2019
+
+# Install dependencies
+$ yarn install
+
+# Compile & build sources
+$ yarn build
+
+# Open Google Chrome with disabling security function (to load local js files)
+$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir
+
+# Open `index.html` on Google Chrome
+```
+
+
+## Parameters
+
+Parameters for `main.html`
 
 - art_mode
   - 1(enable) or 0(disable)
@@ -29,20 +47,9 @@ then open index.html on Chrome
 - mutation_rate
   - number(0~1), 0.001~0.03 recommended
   - The mutation rate when they reproduce
-
-## Build
-
-### Setup
-
-Install TypeScript
-https://www.typescriptlang.org/docs/home.html
-`$ npm install -g typescript`
-
-
-### Build source files into JS file.
-
-```shell
-$ cd ALifeGameJam2019
-# Compile TS source files
-$ tsc
-```
+- field_size
+  - number(1~), around 1000 recommended
+		- The simulation field size
+- [Experimental] mode
+  - string. Options are either "default", "linear", "torus", "circum" or "rotate"
+  - Changes the simulation algorithm
