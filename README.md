@@ -39,19 +39,19 @@ Parameters for `main.html`
   - 1(enable) or 0(disable)
   - Enables drawing mode
 - `population_size`
-  - number(1~)
+  - number(1\~)
   - Initial population size
 - `single_gene`
   - 1(enable) or 0(disable)
   - Starts with only one species
 - `mutation_rate`
-  - number(0~1), 0.001~0.03 recommended
+  - number(0\~1), 0.001\~0.03 recommended
   - The mutation rate when they reproduce
 - `field_size`
-  - number(1~), around 1000 recommended
+  - number(1\~), around 1000 recommended
   - The simulation field size
 - `screenshot_interval`
-  - number(1~), 200 recommended
+  - number(1\~), 200 recommended
   - The interval between taking screenshots
   - Disables screenshot by removing this parameter
 - [Experimental] `mode`
