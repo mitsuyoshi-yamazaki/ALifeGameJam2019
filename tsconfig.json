@@ -6,16 +6,7 @@
 		"moduleResolution": "node",
 		"downlevelIteration": true,
 		"removeComments": false,
-		"outDir": "out",
 		"baseUrl": "./",
-		"paths": {
-			"p5": [
-				"src/@types/p5"
-			]
-		},
-		"typeRoots": [
-			"src/@types"
-		]
 	},
 	"include": [
 		"src/**/*"
