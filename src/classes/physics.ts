@@ -1,4 +1,8 @@
 export class Vector {
+  public get size(): number {
+    return Math.sqrt(this.x * this.x + this.y * this.y)
+  }
+
   public constructor(public readonly x: number, public readonly y: number) {
   }
 
@@ -16,10 +20,10 @@ export class Vector {
 
   public div(n: number): Vector {
     return new Vector(this.x / n, this.y / n)
-    }
+  }
 
   public dist(other: Vector): number {
-    return Math.sqrt(this.x * other.x + this.y * other.y)
+    return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2))
   }
 }
 
@@ -36,8 +40,8 @@ export class Force {
   }
 
   public add(other: Force): Force {
-      const vector = this.magnitude.add(other.magnitude)
+    const vector = this.magnitude.add(other.magnitude)
 
-      return new Force(vector)
+    return new Force(vector)
   }
 }
