@@ -1010,7 +1010,21 @@ void addResources() {
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isRotateMode || isTorusMode){
-      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
+					 PVector position;
+						while (true) {
+							bool contained = false;
+							position = new PVector(random(10,fieldWidth - 10),random(10, fieldHeight - 10));
+							for (int j = 0; j < walls.length; j++) {
+								if (walls[j].contains(position)) {
+									contained = true;
+									break;
+								}
+							}
+							if (contained == false) {
+								break;
+							}
+						}
+      lifes[lifes.length] = Life.makeResource(position.x, position.y, resourceSize, Gene.randomGene());
     }
   }
 }
