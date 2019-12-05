@@ -14,6 +14,8 @@ float mutationRate = 0.01;
 bool useSingleGene = true;
 float fieldWidth = 1000;
 float fieldHeight = 500;
+int screenshotInterval = 1000;
+bool screenshotEnabled = false;
 
 
 bool isLinearMode=false;
@@ -75,7 +77,19 @@ if (parameters['field_size'] != null) {
 				fieldHeight = Math.floor(fieldWidth * 0.6);
 		}
 }
+if (parameters['screenshot_interval'] != null) {
+  screenshotInterval = int(parameters['screenshot_interval']);
+		screenshotEnabled = true;
+}
 
+
+// Timestamp
+int t = 0;
+String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
+
+// Screenshot
+var link = document.getElementById('link');
+var canvas = document.getElementById('canvas');
 
 // Population
 Life[] lifes;
@@ -947,6 +961,16 @@ void defaultDraw(){
 		}
 
   //console.log("frameRate: " + frameRate);
+
+		if (screenshotEnabled && (t % screenshotInterval == 0)) {
+			String num = ('000000' + (t / screenshotInterval)).slice(-6);
+			String filename = '' + launchTime + '__' + num + '.png';	// template literal not working sucks
+			link.setAttribute('download', filename);
+			link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+			link.click();
+			console.log('Saved: ' + filename);
+		}
+		t += 1;
 }
 
 void drawGraph(){
