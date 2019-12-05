@@ -10,12 +10,13 @@ const main = (p: p5) => {
   let world: World
   const backgroundTransparency = 0xFF
   const fieldWidth = 1200
-  const fieldHeight = Math.floor(fieldWidth * 0.6)
+  const fieldHeight = Math.floor(fieldWidth * 1)
   const worldSize = new Vector(fieldWidth, fieldHeight)
   const worldCenter = worldSize.div(2)
   const gravity = 20
   const friction = 0.99999
   const immobilizedWidth = 0
+  const initialEnergy = 100
 
   p.setup = () => {
     p.createCanvas(fieldWidth, fieldHeight)
@@ -42,7 +43,7 @@ const main = (p: p5) => {
 
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x), random(positionSpace.y))
-      lives.push(new GeneticLife(position, Gene.random(), lifeSize))
+      lives.push(new GeneticLife(position, Gene.random(), lifeSize, initialEnergy))
     }
     if (velocity != undefined) {
       lives.forEach(life => {

@@ -59,16 +59,21 @@ export class PassiveLife extends Life {
 }
 
 export class GeneticLife extends Life {
-  private readonly energy = 0
+  private readonly _energy: number
+  public get energy(): number {
+    return this._energy
+  }
+
   public get isAlive(): boolean {
     return this.energy > 0
   }
 
-  public constructor(public position: Vector, public readonly gene: Gene, size: number) {
+  public constructor(public position: Vector, public readonly gene: Gene, size: number, energy: number) {
     super(position)
     this._size = size
     const radius = this._size / 2
     this._mass = radius * radius
+    this._energy = energy
   }
 
   public next(): Force {

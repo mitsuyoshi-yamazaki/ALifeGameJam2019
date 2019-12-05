@@ -1,7 +1,8 @@
 import * as p5 from "p5"
+import { CustomStringConvertible } from "src/utilities"
 import { Vector } from "./physics"
 
-export class WorldObject {
+export class WorldObject implements CustomStringConvertible {
   public static collisionPriority = 0
   public velocity: Vector = new Vector(0, 0)
 
@@ -13,6 +14,10 @@ export class WorldObject {
   protected _mass = 1
   public get mass(): number {
     return this._mass
+  }
+
+  public get description(): string {
+    return String(this)
   }
 
   public constructor(public position: Vector) {
