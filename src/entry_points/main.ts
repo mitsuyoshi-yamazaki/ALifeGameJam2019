@@ -1,23 +1,22 @@
 import * as p5 from "p5"
-import { Life } from "../classes/life"
+import { Gene } from "../classes/gene"
+import { GeneticLife, Life } from "../classes/life"
 import { Vector } from "../classes/physics"
-import { GravitationalTerrain, Terrain } from "../classes/terrain"
+import { Terrain } from "../classes/terrain"
 import { VanillaWorld, World } from "../classes/world"
 import { random } from "../utilities"
 
 const main = (p: p5) => {
   let world: World
   p.setup = () => {
-    const size = 800
-    const worldSize = new Vector(size, size)
-    p.createCanvas(size, size)
-    const terrains: Terrain[] = [
-      new GravitationalTerrain(worldSize, worldSize.mult(0.33), 2),
-      new GravitationalTerrain(worldSize, worldSize.mult(0.66), 2),
-    ]
+    const fieldWidth = 1200
+    const fieldHeight = Math.floor(fieldWidth * 0.6)
+    const worldSize = new Vector(fieldWidth, fieldHeight)
+    p.createCanvas(fieldWidth, fieldHeight)
+    const terrains: Terrain[] = []
     world = new VanillaWorld(worldSize, terrains)
 
-    const lives = randomLives(80, size, 1)
+    const lives = randomLives(80, worldSize, 1)
     world.addLives(lives)
   }
 
@@ -26,10 +25,11 @@ const main = (p: p5) => {
     world.draw(p)
   }
 
-  function randomLives(numberOfLives: number, positionSpace: number, velocity?: number | undefined): Life[] {
-    const lives: Life[] = []
+  function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): Life[] {
+    const lives: GeneticLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
-      lives.push(new Life(new Vector(random(positionSpace), random(positionSpace))))
+      const position = new Vector(random(positionSpace.x), random(positionSpace.y))
+      lives.push(new GeneticLife(position, Gene.random()))
     }
     if (velocity != undefined) {
       lives.forEach(life => {

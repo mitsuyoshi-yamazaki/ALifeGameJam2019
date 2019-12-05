@@ -1,5 +1,6 @@
 import * as p5 from "p5"
 import { random } from "../utilities"
+import { Gene } from "./gene"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
 
@@ -41,6 +42,34 @@ export class PassiveLife extends Life {
     }
     p.circle(x, y, diameter)
     this.drawCircles(p, numberOfCircles - 1, x - this.velocity.x * 2.5, y - this.velocity.y * 2.5, diameter * 0.6)
+  }
+}
+
+export class GeneticLife extends Life {
+  private readonly energy = 0
+  public get isAlive(): boolean {
+    return this.energy > 0
+    }
+
+  public constructor(public position: Vector, public readonly gene: Gene) {
+    super(position)
+    this.mass = 3
+  }
+
+  public next(): Force {
+    const max = 0.1
+    const vx = random(max, -max)
+    const vy = random(max, -max)
+
+    return new Force(new Vector(vx, vy))
+  }
+
+  public draw(p: p5): void {
+    p.noStroke()
+    p.fill(this.gene.color.r, this.gene.color.g, this.gene.color.b)
+
+    const diameter = this.mass
+    p.circle(this.position.x, this.position.y, diameter)
   }
 }
 
