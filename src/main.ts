@@ -20,9 +20,10 @@ function draw(): void {
 }
 
 function randomLives(numberOfLives: number, positionSpace: number, velocity?: number | undefined): Life[] {
-  const lives: Life[] = [...new Array(numberOfLives).keys()].map(_ => {
-    return new Life(createVector(random(positionSpace), random(positionSpace)))
-  })
+  const lives: Life[] = []
+  for (let i = 0; i < numberOfLives; i += 1) {
+    lives.push(new Life(createVector(random(positionSpace), random(positionSpace))))
+  }
   if (velocity != undefined) {
     lives.forEach(life => {
       life.velocity = createVector(random(-velocity, velocity), random(-velocity, velocity))

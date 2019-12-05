@@ -1,14 +1,27 @@
-let world;
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var world;
 function setup() {
-    const size = 800;
-    const worldSize = createVector(size, size);
+    var size = 800;
+    var worldSize = createVector(size, size);
     createCanvas(size, size);
-    const terrains = [
+    var terrains = [
         new GravitationalTerrain(worldSize, p5.Vector.mult(worldSize, 0.33), 2),
         new GravitationalTerrain(worldSize, p5.Vector.mult(worldSize, 0.66), 2),
     ];
     world = new VanillaWorld(worldSize, terrains);
-    const lives = randomLives(80, size, 1);
+    var lives = randomLives(80, size, 1);
     world.addLives(lives);
 }
 function draw() {
@@ -16,105 +29,131 @@ function draw() {
     world.draw();
 }
 function randomLives(numberOfLives, positionSpace, velocity) {
-    const lives = [...new Array(numberOfLives).keys()].map(_ => {
-        return new Life(createVector(random(positionSpace), random(positionSpace)));
-    });
+    var lives = [];
+    for (var i = 0; i < numberOfLives; i += 1) {
+        lives.push(new Life(createVector(random(positionSpace), random(positionSpace))));
+    }
     if (velocity != undefined) {
-        lives.forEach(life => {
+        lives.forEach(function (life) {
             life.velocity = createVector(random(-velocity, velocity), random(-velocity, velocity));
         });
     }
     return lives;
 }
-class VanillaWorld {
-    constructor(size, terrains) {
+var VanillaWorld = /** @class */ (function () {
+    function VanillaWorld(size, terrains) {
         this._t = 0;
         this._objects = [];
         this._lives = [];
         this._size = size;
         this._terrains = terrains;
     }
-    get size() {
-        return this._size;
-    }
-    get t() {
-        return this._t;
-    }
-    get terrains() {
-        return this._terrains;
-    }
-    get objects() {
-        return this._objects;
-    }
-    get lives() {
-        return this._lives;
-    }
-    addObjects(objects) {
+    Object.defineProperty(VanillaWorld.prototype, "size", {
+        get: function () {
+            return this._size;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(VanillaWorld.prototype, "t", {
+        get: function () {
+            return this._t;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(VanillaWorld.prototype, "terrains", {
+        get: function () {
+            return this._terrains;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(VanillaWorld.prototype, "objects", {
+        get: function () {
+            return this._objects;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(VanillaWorld.prototype, "lives", {
+        get: function () {
+            return this._lives;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    VanillaWorld.prototype.addObjects = function (objects) {
         this._objects = this._objects.concat(objects);
-    }
-    addLives(lives) {
+    };
+    VanillaWorld.prototype.addLives = function (lives) {
         this._lives = this._lives.concat(lives);
-    }
-    next() {
+    };
+    VanillaWorld.prototype.next = function () {
+        var _this = this;
         this._t += 1;
-        this._lives.forEach(life => {
-            const forces = this.terrains.map(terrain => {
+        this._lives.forEach(function (life) {
+            var forces = _this.terrains.map(function (terrain) {
                 return terrain.forceAt(life.position);
             });
-            const fieldForce = forces.reduce((result, value) => {
+            var fieldForce = forces.reduce(function (result, value) {
                 return result.add(value);
             }, Force.zero());
-            const force = life.next()
+            var force = life.next()
                 .add(fieldForce);
-            const frictions = this.terrains.map(terrain => {
+            var frictions = _this.terrains.map(function (terrain) {
                 return terrain.frictionAt(life.position);
             });
-            const friction = frictions.reduce((sum, value) => {
+            var friction = frictions.reduce(function (sum, value) {
                 return sum + value;
             }, 1) / (frictions.length + 1);
-            const acceleration = force.accelerationTo(life.mass);
-            const nextPosition = p5.Vector.add(life.position, life.velocity);
-            const x = Math.max(Math.min(nextPosition.x, this.size.x), 0);
-            const y = Math.max(Math.min(nextPosition.y, this.size.y), 0);
+            var acceleration = force.accelerationTo(life.mass);
+            var nextPosition = p5.Vector.add(life.position, life.velocity);
+            var x = Math.max(Math.min(nextPosition.x, _this.size.x), 0);
+            var y = Math.max(Math.min(nextPosition.y, _this.size.y), 0);
             life.position = createVector(x, y);
             life.velocity = p5.Vector.add(p5.Vector.mult(life.velocity, friction), acceleration);
         });
-    }
-    draw() {
+    };
+    VanillaWorld.prototype.draw = function () {
         background(220);
-        this.terrains.forEach(terrain => {
+        this.terrains.forEach(function (terrain) {
             terrain.draw();
         });
-        this._objects.forEach(obj => {
+        this._objects.forEach(function (obj) {
             obj.draw();
         });
-        this._lives.forEach(life => {
+        this._lives.forEach(function (life) {
             life.draw();
         });
-    }
-}
+    };
+    return VanillaWorld;
+}());
 // その場所に存在する力やプロパティを格納する
-class Terrain {
-    constructor(size) {
+var Terrain = /** @class */ (function () {
+    function Terrain(size) {
         this.size = size;
     }
-    frictionAt(position) {
+    Terrain.prototype.frictionAt = function (position) {
         return 1; // 0(停止) ~ 1(摩擦なし)
-    }
-    forceAt(position) {
+    };
+    Terrain.prototype.forceAt = function (position) {
         return Force.zero();
-    }
-    draw() {
+    };
+    Terrain.prototype.draw = function () {
         return;
+    };
+    return Terrain;
+}());
+var VanillaTerrain = /** @class */ (function (_super) {
+    __extends(VanillaTerrain, _super);
+    function VanillaTerrain(size, immobilizedWidth) {
+        var _this = _super.call(this, size) || this;
+        _this.size = size;
+        _this.immobilizedWidth = immobilizedWidth;
+        return _this;
     }
-}
-class VanillaTerrain extends Terrain {
-    constructor(size, immobilizedWidth) {
-        super(size);
-        this.size = size;
-        this.immobilizedWidth = immobilizedWidth;
-    }
-    frictionAt(position) {
+    VanillaTerrain.prototype.frictionAt = function (position) {
         if (position.x < this.immobilizedWidth) {
             return (position.x / this.immobilizedWidth);
         }
@@ -128,25 +167,28 @@ class VanillaTerrain extends Terrain {
             return (this.size.y - position.y) / this.immobilizedWidth;
         }
         return 1;
-    }
-    forceAt(position) {
+    };
+    VanillaTerrain.prototype.forceAt = function (position) {
         return Force.zero();
-    }
-    draw() {
+    };
+    VanillaTerrain.prototype.draw = function () {
         stroke(207, 196, 251);
         strokeWeight(this.immobilizedWidth);
         noFill();
         rect(0, 0, this.size.x, this.size.y);
+    };
+    return VanillaTerrain;
+}(Terrain));
+var GravitationalTerrain = /** @class */ (function (_super) {
+    __extends(GravitationalTerrain, _super);
+    function GravitationalTerrain(size, center, gravity) {
+        var _this = _super.call(this, size) || this;
+        _this.size = size;
+        _this.center = center;
+        _this.gravity = gravity;
+        return _this;
     }
-}
-class GravitationalTerrain extends Terrain {
-    constructor(size, center, gravity) {
-        super(size);
-        this.size = size;
-        this.center = center;
-        this.gravity = gravity;
-    }
-    frictionAt(position) {
+    GravitationalTerrain.prototype.frictionAt = function (position) {
         // // 大気圏
         // const distance = Math.max(this.center.dist(position), 0.1)
         // if (distance > 10) {
@@ -154,107 +196,125 @@ class GravitationalTerrain extends Terrain {
         // }
         // return (distance / 10)
         return 1;
-    }
-    forceAt(position) {
-        const distance = Math.max(this.center.dist(position), 0.1); // ブラックホールは法律で禁止されている
-        const magnitude = (1 / (distance * distance)) * this.gravity;
-        const vector = p5.Vector.sub(this.center, position);
+    };
+    GravitationalTerrain.prototype.forceAt = function (position) {
+        var distance = Math.max(this.center.dist(position), 0.1); // ブラックホールは法律で禁止されている
+        var magnitude = (1 / (distance * distance)) * this.gravity;
+        var vector = p5.Vector.sub(this.center, position);
         return new Force(p5.Vector.mult(vector, magnitude));
-    }
-    draw() {
+    };
+    GravitationalTerrain.prototype.draw = function () {
         noStroke();
         fill(80);
-        const size = 20;
+        var size = 20;
         ellipse(this.center.x, this.center.y, size, size);
-    }
-}
+    };
+    return GravitationalTerrain;
+}(Terrain));
 /// Objects
-class WorldObject {
-    constructor(position) {
+var WorldObject = /** @class */ (function () {
+    function WorldObject(position) {
         this.position = position;
         this.velocity = createVector(0, 0);
         this.mass = 1;
     }
-    collideWith(other) {
+    WorldObject.prototype.collideWith = function (other) {
         // TODO: implement
         // ここで何かが起きるのは物理法則の何かを発動するということ
         return;
-    }
-    draw() {
+    };
+    WorldObject.prototype.draw = function () {
         noStroke();
         fill(255, 0, 0);
-        const radius = 1;
-        const diameter = radius * 2;
+        var radius = 1;
+        var diameter = radius * 2;
         ellipse(this.position.x - radius, this.position.y - radius, diameter, diameter);
+    };
+    WorldObject.collisionPriority = 0;
+    return WorldObject;
+}());
+var Wall = /** @class */ (function (_super) {
+    __extends(Wall, _super);
+    function Wall(position, width, height) {
+        var _this = _super.call(this, position) || this;
+        _this.position = position;
+        _this.width = width;
+        _this.height = height;
+        return _this;
     }
-}
-WorldObject.collisionPriority = 0;
-class Wall extends WorldObject {
-    constructor(position, width, height) {
-        super(position);
-        this.position = position;
-        this.width = width;
-        this.height = height;
-    }
-    draw() {
+    Wall.prototype.draw = function () {
         noStroke();
         fill(207, 196, 251);
         rect(this.position.x, this.position.y, this.width, this.height);
+    };
+    Wall.collisionPriority = 1;
+    return Wall;
+}(WorldObject));
+var DeadBody = /** @class */ (function (_super) {
+    __extends(DeadBody, _super);
+    function DeadBody() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-}
-Wall.collisionPriority = 1;
-class DeadBody extends WorldObject {
-    get velocity() {
-        return createVector(0, 0);
-    }
-    draw() {
-        super.draw(); // TODO: implement
-    }
-}
-DeadBody.collisionPriority = 101;
+    Object.defineProperty(DeadBody.prototype, "velocity", {
+        get: function () {
+            return createVector(0, 0);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DeadBody.prototype.draw = function () {
+        _super.prototype.draw.call(this); // TODO: implement
+    };
+    DeadBody.collisionPriority = 101;
+    return DeadBody;
+}(WorldObject));
 /// Lives
-class Life extends WorldObject {
-    constructor(position) {
-        super(position);
-        this.position = position;
-        this.mass = 3;
+var Life = /** @class */ (function (_super) {
+    __extends(Life, _super);
+    function Life(position) {
+        var _this = _super.call(this, position) || this;
+        _this.position = position;
+        _this.mass = 3;
+        return _this;
     }
-    next() {
-        const max = 3;
-        const vx = random(-max, max);
-        const vy = random(-max, max);
+    Life.prototype.next = function () {
+        var max = 3;
+        var vx = random(-max, max);
+        var vy = random(-max, max);
         // return new Force(createVector(vx, vy))
         return Force.zero();
-    }
-    draw() {
+    };
+    Life.prototype.draw = function () {
         noFill();
         stroke(86, 51, 245);
         this.drawCircles(6, this.position.x, this.position.y, 20);
-    }
-    drawCircles(numberOfCircles, x, y, diameter) {
+    };
+    Life.prototype.drawCircles = function (numberOfCircles, x, y, diameter) {
         if (numberOfCircles <= 0) {
             return;
         }
         circle(x, y, diameter);
         this.drawCircles(numberOfCircles - 1, x - this.velocity.x * 2.5, y - this.velocity.y * 2.5, diameter * 0.6);
-    }
-}
-Life.collisionPriority = 100;
+    };
+    Life.collisionPriority = 100;
+    return Life;
+}(WorldObject));
 /// Other
-class Force {
-    constructor(magnitude) {
+var Force = /** @class */ (function () {
+    function Force(magnitude) {
         this.magnitude = magnitude;
     }
-    static zero() {
+    Force.zero = function () {
         return new Force(createVector(0, 0));
-    }
-    accelerationTo(mass) {
+    };
+    Force.prototype.accelerationTo = function (mass) {
         return this.magnitude.div(mass);
-    }
-    add(other) {
-        const vector = p5.Vector.add(this.magnitude, other.magnitude);
+    };
+    Force.prototype.add = function (other) {
+        var vector = p5.Vector.add(this.magnitude, other.magnitude);
         return new Force(vector);
-    }
-}
+    };
+    return Force;
+}());
 /// Utility
 //# sourceMappingURL=main.js.map
