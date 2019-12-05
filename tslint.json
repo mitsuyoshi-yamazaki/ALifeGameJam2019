@@ -142,7 +142,7 @@
 						true,
 						"always"
 					],
-					"unnecessary-else": true,
+					"unnecessary-else": false,
 					"align": [
 						true,
 						"parameters",
@@ -185,7 +185,8 @@
 						"check-preblock",
 						"check-postbrace"
 					],
-					"no-console": false
+					"no-console": false,
+					"no-bitwise": false
 				},
 				"rulesDirectory": []
 }
