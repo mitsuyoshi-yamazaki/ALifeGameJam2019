@@ -100,18 +100,18 @@ export class GravitationalTerrain extends Terrain {
   }
 
   public forceAt(position: Vector): Force {
-    const distance = Math.max(this.center.dist(position), 0.1) // ブラックホールは法律で禁止されている
+    const distance = Math.max(this.center.dist(position), this.gravity / 10) // ブラックホールは法律で禁止されている
     const magnitude = (1 / (distance * distance)) * this.gravity
 
     const vector = this.center.sub(position)
 
-    return new Force(vector.mult(magnitude))
+    return new Force(vector.sized(magnitude))
   }
 
   public draw(p: p5): void {
     p.noStroke()
     p.fill(80)
-    const size = 20
+    const size = Math.max(this.gravity / 10, 4)
     p.ellipse(this.center.x, this.center.y, size, size)
   }
 }
