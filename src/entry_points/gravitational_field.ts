@@ -1,23 +1,26 @@
 import * as p5 from "p5"
 import { Life, PassiveLife } from "../classes/life"
-import { Vector } from "../classes/physics"
+import { calculateOrbitalVelocity, Vector } from "../classes/physics"
 import { GravitationalTerrain, Terrain } from "../classes/terrain"
 import { VanillaWorld, World } from "../classes/world"
 import { random } from "../utilities"
 
 const main = (p: p5) => {
   let world: World
+  const size = 800
+  const worldSize = new Vector(size, size)
+  const numberOfLives = 60
+  const gravityCenter = worldSize.mult(0.5)
+  const gravity = 200
+
   p.setup = () => {
-    const size = 800
-    const worldSize = new Vector(size, size)
     p.createCanvas(size, size)
     const terrains: Terrain[] = [
-      new GravitationalTerrain(worldSize, worldSize.mult(0.33), 2),
-      new GravitationalTerrain(worldSize, worldSize.mult(0.66), 2),
+      new GravitationalTerrain(worldSize, gravityCenter, gravity),
     ]
     world = new VanillaWorld(worldSize, terrains)
 
-    const lives = randomLives(80, size, 1)
+    const lives = randomLives()
     world.addLives(lives)
   }
 
@@ -26,16 +29,15 @@ const main = (p: p5) => {
     world.draw(p)
   }
 
-  function randomLives(numberOfLives: number, positionSpace: number, velocity?: number | undefined): Life[] {
+  function randomLives(): Life[] {
+    const positionSpace = size * 0.9
     const lives: PassiveLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
       lives.push(new PassiveLife(new Vector(random(positionSpace), random(positionSpace))))
     }
-    if (velocity != undefined) {
-      lives.forEach(life => {
-        life.velocity = new Vector(random(-velocity, velocity), random(-velocity, velocity))
-      })
-    }
+    lives.forEach(life => {
+      life.velocity = calculateOrbitalVelocity(life.position, gravityCenter, gravity)
+    })
 
     return lives
   }

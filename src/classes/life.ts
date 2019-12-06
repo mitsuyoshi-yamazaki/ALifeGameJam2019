@@ -24,6 +24,11 @@ export class Life extends WorldObject {
 }
 
 export class PassiveLife extends Life {
+  public constructor(public position: Vector) {
+    super(position)
+    this.mass = 1
+  }
+
   public next(): Force {
     return Force.zero()
   }

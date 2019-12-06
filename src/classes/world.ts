@@ -80,12 +80,28 @@ export class VanillaWorld implements World {
       const acceleration = force.accelerationTo(life.mass)
 
       const nextPosition = life.position.add(life.velocity)
-      const x = Math.max(Math.min(nextPosition.x, this.size.x), 0)
-      const y = Math.max(Math.min(nextPosition.y, this.size.y), 0)
-      life.position = new Vector(x, y)
-      life.velocity = life.velocity.mult(friction)
+      const nextVelocity = life.velocity.mult(friction)
         .add(acceleration)
-    })
+      let x = nextPosition.x
+      let y = nextPosition.y
+      let dx = nextVelocity.x
+      let dy = nextVelocity.y
+      if (x < 0) {
+        x = 0
+        dx = 0
+      } else if (x > this.size.x) {
+        x = this.size.x
+        dx = 0
+      }
+      if (y < 0) {
+        y = 0
+        dy = 0
+      } else if (y > this.size.y) {
+        y = this.size.y
+        dy = 0
+      }
+      life.position = new Vector(x, y)
+      life.velocity = new Vector(dx, dy)    })
   }
 
   public draw(p: p5): void {

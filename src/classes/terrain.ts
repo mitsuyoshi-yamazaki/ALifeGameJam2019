@@ -78,7 +78,7 @@ export class GravitationalTerrain extends Terrain {
 
     const vector = this.center.sub(position)
 
-    return new Force(vector.mult(magnitude))
+    return new Force(vector.sized(magnitude))
   }
 
   public draw(p: p5): void {
