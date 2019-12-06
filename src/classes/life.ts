@@ -35,7 +35,7 @@ export class PassiveLife extends Life {
        super(position)
        this._size = size
        const radius = this._size / 2
-       this._mass = radius * radius
+       this._mass = (radius * radius) / 100
    }
 
    public next(): Force {

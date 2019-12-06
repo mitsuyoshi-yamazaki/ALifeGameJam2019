@@ -9,7 +9,7 @@ const main = (p: p5) => {
   let world: World
   const size = 800
   const worldSize = new Vector(size, size)
-  const lifeSize = 10
+  const lifeSize = 20
   const numberOfLives = 60
   const gravityCenter = worldSize.mult(0.5)
   const gravity = 200
