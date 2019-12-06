@@ -9,15 +9,14 @@ const main = (p: p5) => {
   let world: World
   const size = 800
   const worldSize = new Vector(size, size)
-  const numberOfLives = 40
+  const numberOfLives = 60
   const gravityCenter = worldSize.mult(0.5)
   const gravity = 200
 
   p.setup = () => {
     p.createCanvas(size, size)
     const terrains: Terrain[] = [
-      new GravitationalTerrain(worldSize, worldSize.mult(0.42), gravity),
-      new GravitationalTerrain(worldSize, worldSize.mult(0.58), gravity * 0.5),
+      new GravitationalTerrain(worldSize, gravityCenter, gravity),
     ]
     world = new VanillaWorld(worldSize, terrains)
 
