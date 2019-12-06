@@ -31,9 +31,9 @@ export class Life extends WorldObject {
 }
 
 export class PassiveLife extends Life {
-   public constructor(public position: Vector) {
+   public constructor(public position: Vector, size: number) {
        super(position)
-       this._size = 20
+       this._size = size
        const radius = this._size / 2
        this._mass = radius * radius
    }

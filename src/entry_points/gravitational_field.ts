@@ -9,17 +9,19 @@ const main = (p: p5) => {
   let world: World
   const size = 800
   const worldSize = new Vector(size, size)
-  const gravity = 100
+  const gravity = 10
+  const lifeSize = 10
+  const numberOfLives = 40
 
   p.setup = () => {
     p.createCanvas(size, size)
     const terrains: Terrain[] = [
-      new GravitationalTerrain(worldSize, worldSize.mult(0.33), gravity),
-      new GravitationalTerrain(worldSize, worldSize.mult(0.66), gravity),
+      new GravitationalTerrain(worldSize, worldSize.mult(0.4), gravity),
+      new GravitationalTerrain(worldSize, worldSize.mult(0.6), gravity),
     ]
     world = new VanillaWorld(worldSize, terrains)
 
-    const lives = randomLives(80, size, 1)
+    const lives = randomLives(numberOfLives, size, 1)
     world.addLives(lives)
   }
 
@@ -31,7 +33,8 @@ const main = (p: p5) => {
   function randomLives(numberOfLives: number, positionSpace: number, velocity?: number | undefined): Life[] {
     const lives: PassiveLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
-      lives.push(new PassiveLife(new Vector(random(positionSpace), random(positionSpace))))
+      const position = new Vector(random(positionSpace), random(positionSpace))
+      lives.push(new PassiveLife(position, lifeSize))
     }
     if (velocity != undefined) {
       lives.forEach(life => {
