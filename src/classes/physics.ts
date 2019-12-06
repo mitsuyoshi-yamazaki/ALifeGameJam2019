@@ -19,7 +19,7 @@ export class Vector {
     }
 
   public dist(other: Vector): number {
-    return Math.sqrt(this.x * other.x + this.y * other.y)
+    return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2))
   }
 }
 
