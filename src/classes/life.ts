@@ -93,7 +93,11 @@ export class GeneticLife extends Life {
 
   public draw(p: p5): void {
     p.noStroke()
-    p.fill(this.gene.color.r, this.gene.color.g, this.gene.color.b)
+    if (this.energy < 1) {
+      p.fill(255, 0, 0)
+    } else {
+      p.fill(this.gene.color.p5(p))
+    }
 
     const diameter = this.size * 2
     p.circle(this.position.x, this.position.y, diameter)

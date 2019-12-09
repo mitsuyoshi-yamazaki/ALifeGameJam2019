@@ -138,7 +138,7 @@ export class PredPreyWorld extends VanillaWorld {
   public next(): void {
     const eatProbability = 0.9
 
-    const killed: GeneticLife[] = []
+    const deads: GeneticLife[] = []
     const born: GeneticLife[] = []
 
     const sortedX = [...this.lives].sort((lhs, rhs) => {
@@ -184,7 +184,7 @@ export class PredPreyWorld extends VanillaWorld {
               const predator = life
               const prey = otherLife
               predator.eat(prey)
-              killed.push(prey)
+              deads.push(prey)
               break
 
             } else {
@@ -192,11 +192,14 @@ export class PredPreyWorld extends VanillaWorld {
             }
           }
         }
+      } else {
+        // Dead
+        deads.push(life)
       }
     }
 
     this._lives = this.lives.filter(l => {
-      return killed.indexOf(l) < 0
+      return deads.indexOf(l) < 0
     })
 
     this.addLives(born)
