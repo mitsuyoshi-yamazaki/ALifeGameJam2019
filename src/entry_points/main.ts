@@ -42,7 +42,7 @@ const main = (p: p5) => {
   }
 
   function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): Life[] {
-    const lifeSize = 10
+    const lifeSize = 6
     const lives: GeneticLife[] = []
 
     const initialGene = new Gene(0x99, 0x99) // Gene.random()
