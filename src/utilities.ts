@@ -12,7 +12,3 @@ export class Color {
   public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
   }
 }
-
-export interface CustomStringConvertible {
-  description: string
-}

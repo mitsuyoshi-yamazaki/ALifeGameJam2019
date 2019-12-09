@@ -118,14 +118,11 @@ export class GeneticLife extends Life {
     this._energy = energyAfterReproduction
 
     const position = this.position.add(this.velocity.sized(this.size * -2))
-    const offspring = new GeneticLife(position, this.gene, this.size, energyAfterReproduction)
+    const offspring = new GeneticLife(position, this.gene.mutated(), this.size, energyAfterReproduction)
     offspring.velocity = this.velocity.sized(-1)
 
-    console.log(`reproduced at ${String(this.position)}`)
-
-       return [offspring]
+    return [offspring]
   }
-
 }
 
 export class DeadBody extends WorldObject {
