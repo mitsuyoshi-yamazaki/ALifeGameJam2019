@@ -38,7 +38,7 @@ const main = (p: p5) => {
   }
 
   function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): Life[] {
-    const lifeSize = 8
+    const lifeSize = 2
     const lives: GeneticLife[] = []
 
     for (let i = 0; i < numberOfLives; i += 1) {

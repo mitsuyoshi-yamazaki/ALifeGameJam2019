@@ -168,12 +168,12 @@ export class PredPreyWorld extends VanillaWorld {
         for (let j = 0; j < compareTo.length; j += 1) {
           const otherLife = compareTo[j]
           if (life.isCollidingWith(otherLife)) {
-
             if (life.gene.canEat(otherLife.gene, threshold)) {
               const predator = life
               const prey = otherLife
-              // predator.eat(prey)	// TODO: implement
+              predator.eat(prey)
               killed.push(prey)
+              console.log(`${String(predator)} eats ${String(prey)}`)
               break
 
             } else {

@@ -3,6 +3,7 @@ import { random } from "../utilities"
 import { Gene } from "./gene"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
+import { PredPreyWorld } from "./world"
 
 export class Life extends WorldObject {
   public static collisionPriority = 100
@@ -59,7 +60,7 @@ export class PassiveLife extends Life {
 }
 
 export class GeneticLife extends Life {
-  private readonly _energy: number
+  private _energy: number
   public get energy(): number {
     return this._energy
   }
@@ -81,15 +82,27 @@ export class GeneticLife extends Life {
     const vx = random(max, -max)
     const vy = random(max, -max)
 
-    return new Force(new Vector(vx, vy))
+    const force = new Force(new Vector(vx, vy))
+    this._energy = Math.max(this.energy - (force.magnitude.size * this.mass), 0)
+
+    return force
   }
 
   public draw(p: p5): void {
     p.noStroke()
     p.fill(this.gene.color.r, this.gene.color.g, this.gene.color.b)
 
-    const diameter = this.mass
+    const diameter = this.size * 2
     p.circle(this.position.x, this.position.y, diameter)
+    }
+
+  public eat(other: GeneticLife): void {
+    this._energy += other.energy
+    other.eaten()
+  }
+
+  public eaten(): void {
+    this._energy = 0
   }
 }
 
