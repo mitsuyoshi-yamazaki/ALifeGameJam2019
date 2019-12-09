@@ -2,7 +2,7 @@ import * as p5 from "p5"
 import { Gene } from "../classes/gene"
 import { GeneticLife, Life } from "../classes/life"
 import { Vector } from "../classes/physics"
-import { Terrain, VanillaTerrain } from "../classes/terrain"
+import { GravitationalTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { random } from "../utilities"
 
@@ -11,7 +11,7 @@ const main = (p: p5) => {
 
   let world: World
   const backgroundTransparency = 0xFF
-  const fieldWidth = 1600
+  const fieldWidth = 1200
   const fieldHeight = Math.floor(fieldWidth * 1)
   const worldSize = new Vector(fieldWidth, fieldHeight)
   const worldCenter = worldSize.div(2)
@@ -23,11 +23,13 @@ const main = (p: p5) => {
   p.setup = () => {
     p.createCanvas(fieldWidth, fieldHeight)
     const terrains: Terrain[] = [
-      new VanillaTerrain(worldSize, worldCenter, gravity, friction, immobilizedWidth),
+            // new VanillaTerrain(worldSize, worldCenter, gravity, friction, immobilizedWidth),
+     new GravitationalTerrain(worldSize, worldSize.mult(0.42), gravity),
+     new GravitationalTerrain(worldSize, worldSize.mult(0.58), gravity * 0.5),
     ]
     world = new PredPreyWorld(worldSize, terrains)
 
-    const lives = randomLives(2000, worldSize, 1)
+    const lives = randomLives(4000, worldSize, 1)
     world.addLives(lives)
   }
 

@@ -73,8 +73,7 @@ export class GeneticLife extends Life {
   public constructor(public position: Vector, public readonly gene: Gene, size: number, energy: number) {
     super(position)
     this._size = size
-    const radius = this._size / 2
-    this._mass = 1
+    this._mass = 0.5
     this._energy = energy
   }
 
