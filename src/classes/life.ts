@@ -97,7 +97,7 @@ export class GeneticLife extends Life {
 
     const diameter = this.size * 2
     p.circle(this.position.x, this.position.y, diameter)
-    }
+  }
 
   public eat(other: GeneticLife): void {
     this._energy += other.energy
