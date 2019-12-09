@@ -18,8 +18,8 @@ export class Life extends WorldObject {
     const radius = this._size / 2
     this._mass = radius * radius
   }
-  public next(): Force {
-    return Force.zero()
+  public next(): [Force, WorldObject[]] {
+    return [Force.zero(), []]
   }
 
   public draw(p: p5): void {
@@ -32,25 +32,25 @@ export class Life extends WorldObject {
 }
 
 export class PassiveLife extends Life {
-   public constructor(public position: Vector, size: number) {
+  public constructor(public position: Vector, size: number) {
        super(position)
        this._size = size
        const radius = this._size / 2
        this._mass = (radius * radius) / 100
    }
 
-   public next(): Force {
-    return Force.zero()
+  public next(): [Force, WorldObject[]] {
+    return [Force.zero(), []]
   }
 
-   public draw(p: p5): void {
+  public draw(p: p5): void {
     p.noFill()
     p.stroke(86, 51, 245)
 
     this.drawCircles(p, 6, this.position.x, this.position.y, this.size)
   }
 
-   private drawCircles(p: p5, numberOfCircles: number, x: number, y: number, diameter: number): void {
+  private drawCircles(p: p5, numberOfCircles: number, x: number, y: number, diameter: number): void {
     if (numberOfCircles <= 0) {
       return
     }
@@ -61,6 +61,7 @@ export class PassiveLife extends Life {
 
 export class GeneticLife extends Life {
   private _energy: number
+
   public get energy(): number {
     return this._energy
   }
@@ -73,19 +74,21 @@ export class GeneticLife extends Life {
     super(position)
     this._size = size
     const radius = this._size / 2
-    this._mass = radius * radius
+    this._mass = 1
     this._energy = energy
   }
 
-  public next(): Force {
+  public next(): [Force, WorldObject[]] {
     const max = 0.1
     const vx = random(max, -max)
     const vy = random(max, -max)
 
     const force = new Force(new Vector(vx, vy))
-    this._energy = Math.max(this.energy - (force.magnitude.size * this.mass), 0)
+    this._energy = Math.max(this.energy - force.consumedEnergyWith(this.mass), 0)
 
-    return force
+    const offsprings = this.reproduce()
+
+    return [force, offsprings]
   }
 
   public draw(p: p5): void {
@@ -104,6 +107,25 @@ export class GeneticLife extends Life {
   public eaten(): void {
     this._energy = 0
   }
+
+  private reproduce(): GeneticLife[] {
+    const reproductionEnergy = 80
+    if (this._energy < (reproductionEnergy * 1.5)) {
+      return []
+    }
+
+    const energyAfterReproduction = (this._energy - reproductionEnergy) / 2
+    this._energy = energyAfterReproduction
+
+    const position = this.position.add(this.velocity.sized(this.size * -2))
+    const offspring = new GeneticLife(position, this.gene, this.size, energyAfterReproduction)
+    offspring.velocity = this.velocity.sized(-1)
+
+    console.log(`reproduced at ${String(this.position)}`)
+
+       return [offspring]
+  }
+
 }
 
 export class DeadBody extends WorldObject {

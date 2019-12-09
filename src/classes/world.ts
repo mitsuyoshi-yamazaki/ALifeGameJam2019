@@ -62,48 +62,10 @@ export class VanillaWorld implements World {
     this._t += 1
 
     this._lives.forEach(life => {
-      const forces: Force[] = this.terrains.map(terrain => {
-        return terrain.forceAt(life.position)
-      })
-      const sumForces = (result: Force, value: Force) => {
-        return result.add(value)
-      }
-      const fieldForce: Force = forces.reduce(sumForces, Force.zero())
-      const force = life.next()
-        .add(fieldForce)
-
-      const frictions: number[] = this.terrains.map(terrain => {
-        return terrain.frictionAt(life.position)
-      })
-      const sumFrictions = (sum: number, value: number) => {
-        return sum + value
-      }
-      const friction: number = frictions.reduce(sumFrictions, 1) / (frictions.length + 1)
-      const acceleration = force.accelerationTo(life.mass)
-
-      const nextPosition = life.position.add(life.velocity)
-      const nextVelocity = life.velocity.mult(friction)
-        .add(acceleration)
-      let x = nextPosition.x
-      let y = nextPosition.y
-      let dx = nextVelocity.x
-      let dy = nextVelocity.y
-      if (x < 0) {
-        x = 0
-        dx = 0
-      } else if (x > this.size.x) {
-        x = this.size.x
-        dx = 0
-      }
-      if (y < 0) {
-        y = 0
-        dy = 0
-      } else if (y > this.size.y) {
-        y = this.size.y
-        dy = 0
-      }
-      life.position = new Vector(x, y)
-      life.velocity = new Vector(dx, dy)
+      const next = life.next()
+      const coordinate = this.updateCoordinateFor(life.position, life.velocity, next[0], life.mass)
+      life.position = coordinate[0]
+      life.velocity = coordinate[1]
     })
   }
 
@@ -120,6 +82,51 @@ export class VanillaWorld implements World {
       life.draw(p)
     })
   }
+
+   // 返り値は [newPosition: Vector, newVelocity: Vector]
+  protected updateCoordinateFor(position: Vector, velocity: Vector, force: Force, mass: number): [Vector, Vector] {
+    const forces: Force[] = this.terrains.map(terrain => {
+      return terrain.forceAt(position)
+    })
+    const sumForces = (result: Force, value: Force) => {
+      return result.add(value)
+    }
+    const fieldForce: Force = forces.reduce(sumForces, Force.zero())
+    const sumForce = force.add(fieldForce)
+
+    const frictions: number[] = this.terrains.map(terrain => {
+      return terrain.frictionAt(position)
+    })
+    const sumFrictions = (sum: number, value: number) => {
+      return sum + value
+    }
+    const friction: number = frictions.reduce(sumFrictions, 1) / (frictions.length + 1)
+    const acceleration = sumForce.accelerationTo(mass)
+
+    const nextPosition = position.add(velocity)
+    const nextVelocity = velocity.mult(friction)
+        .add(acceleration)
+    let x = nextPosition.x
+    let y = nextPosition.y
+    let dx = nextVelocity.x
+    let dy = nextVelocity.y
+    if (x < 0) {
+      x = 0
+      dx = 0
+    } else if (x > this.size.x) {
+      x = this.size.x
+      dx = 0
+    }
+    if (y < 0) {
+      y = 0
+      dy = 0
+    } else if (y > this.size.y) {
+      y = this.size.y
+      dy = 0
+    }
+
+    return [new Vector(x, y), new Vector(dx, dy)]
+  }
 }
 
 export class PredPreyWorld extends VanillaWorld {
@@ -129,8 +136,6 @@ export class PredPreyWorld extends VanillaWorld {
   }
 
   public next(): void {
-    super.next()
-
     const eatProbability = 0.9
 
     const killed: GeneticLife[] = []
@@ -142,6 +147,13 @@ export class PredPreyWorld extends VanillaWorld {
 
     for (let i = 0; i < this.lives.length; i += 1) {
       const life = this.lives[i]
+      const next = life.next()
+      const coordinate = this.updateCoordinateFor(life.position, life.velocity, next[0], life.mass)
+      life.position = coordinate[0]
+      life.velocity = coordinate[1]
+
+      const offsprings = next[1] as GeneticLife[]
+      born.push(...offsprings)
 
       if (life.isAlive) {
         const xIndex = sortedX.indexOf(life)
@@ -173,7 +185,6 @@ export class PredPreyWorld extends VanillaWorld {
               const prey = otherLife
               predator.eat(prey)
               killed.push(prey)
-              console.log(`${String(predator)} eats ${String(prey)}`)
               break
 
             } else {
@@ -187,5 +198,7 @@ export class PredPreyWorld extends VanillaWorld {
     this._lives = this.lives.filter(l => {
       return killed.indexOf(l) < 0
     })
+
+    this.addLives(born)
   }
 }

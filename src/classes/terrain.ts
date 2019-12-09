@@ -50,13 +50,12 @@ export class VanillaTerrain extends Terrain {
     if (this.gravityCenter == undefined) {
       return
     }
-    const distance = Math.max(this.gravityCenter.dist(position), 0.1) // ブラックホールは法律で禁止されている
+    const distance = Math.max(this.gravityCenter.dist(position), this.gravity / 10) // ブラックホールは法律で禁止されている
     const magnitude = (1 / (distance * distance)) * this.gravity
 
     const vector = this.gravityCenter.sub(position)
-    const unitVector = vector.div(vector.size)
 
-    return new Force(vector.mult(magnitude))
+    return new Force(vector.sized(magnitude))
   }
 
   public draw(p: p5): void {

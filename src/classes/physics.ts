@@ -65,6 +65,10 @@ export class Force {
     return this.magnitude.div(mass)
   }
 
+  public consumedEnergyWith(mass: number): number {
+    return this.magnitude.size * mass
+  }
+
   public add(other: Force): Force {
     const vector = this.magnitude.add(other.magnitude)
 

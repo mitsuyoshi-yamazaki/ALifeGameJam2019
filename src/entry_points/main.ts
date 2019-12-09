@@ -7,13 +7,15 @@ import { PredPreyWorld, World } from "../classes/world"
 import { random } from "../utilities"
 
 const main = (p: p5) => {
+  const startsWithSingleGene = true
+
   let world: World
   const backgroundTransparency = 0xFF
   const fieldWidth = 1200
   const fieldHeight = Math.floor(fieldWidth * 1)
   const worldSize = new Vector(fieldWidth, fieldHeight)
   const worldCenter = worldSize.div(2)
-  const gravity = 20
+  const gravity = 200
   const friction = 0.99999
   const immobilizedWidth = 0
   const initialEnergy = 100
@@ -38,12 +40,15 @@ const main = (p: p5) => {
   }
 
   function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): Life[] {
-    const lifeSize = 2
+    const lifeSize = 10
     const lives: GeneticLife[] = []
+
+    const initialGene = new Gene(0x99, 0x99) // Gene.random()
 
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x), random(positionSpace.y))
-      lives.push(new GeneticLife(position, Gene.random(), lifeSize, initialEnergy))
+      const gene = startsWithSingleGene ? initialGene : Gene.random()
+      lives.push(new GeneticLife(position, gene, lifeSize, initialEnergy))
     }
     if (velocity != undefined) {
       lives.forEach(life => {
