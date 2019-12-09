@@ -11,7 +11,7 @@ const main = (p: p5) => {
 
   let world: World
   const backgroundTransparency = 0xFF
-  const fieldWidth = 1200
+  const fieldWidth = 1600
   const fieldHeight = Math.floor(fieldWidth * 1)
   const worldSize = new Vector(fieldWidth, fieldHeight)
   const worldCenter = worldSize.div(2)
@@ -27,7 +27,7 @@ const main = (p: p5) => {
     ]
     world = new PredPreyWorld(worldSize, terrains)
 
-    const lives = randomLives(500, worldSize, 1)
+    const lives = randomLives(2000, worldSize, 1)
     world.addLives(lives)
   }
 

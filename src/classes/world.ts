@@ -157,8 +157,8 @@ export class PredPreyWorld extends VanillaWorld {
 
       if (life.isAlive) {
         const xIndex = sortedX.indexOf(life)
-        const maxX = life.position.x + life.size / 2
-        const minX = life.position.x - life.size / 2
+        const maxX = life.position.x + life.size
+        const minX = life.position.x - life.size
 
         const compareTo: GeneticLife[] = []
 
