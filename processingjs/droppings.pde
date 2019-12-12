@@ -1,6 +1,6 @@
-var LifeKlass = NotMovingLife;
-bool droppingsEnabled = false;
-bool mutatingSizeEnabled = false;
+var LifeKlass = Life;
+bool droppingsEnabled = true;
+bool mutatingSizeEnabled = true;
 
 void setup() {
 	defaultSetup(droppingsEnabled, mutatingSizeEnabled);
