@@ -1,7 +1,9 @@
 var LifeKlass = Life;
+bool droppingsEnabled = false;
+bool mutatingSizeEnabled = false;
 
 void setup() {
-	defaultSetup();
+	defaultSetup(droppingsEnabled, mutatingSizeEnabled);
 }
 
 void draw() {
