@@ -22,7 +22,7 @@ float graphHeight = 700;
 // Field
 float fieldWidth = 1000;
 float fieldHeight = 700;
-float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
+float initialPopulationFieldSize = 2000; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
@@ -689,7 +689,7 @@ void setup()
 
   Gene[] initialGenesArray;
   if(predator_prey_mode){
-    initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
+    initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
   } else {
     initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
   }
@@ -879,6 +879,13 @@ void drawGraph(){
 PVector previousPoint;
 visualizeResource=false;
 void drawGraphXY(){
+  pushMatrix();
+  stroke(0, 0, 0);
+  translate(0, appFieldHeight);
+  rotate(-PI/4);
+  line(0, 0, sqrt(Math.pow(graphHeight,2) * 2), 0);
+  popMatrix();
+
   strokeWeight(3);
 
   if(populationPerSpecies.keys().length < 2){ return ;}
