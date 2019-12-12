@@ -177,14 +177,14 @@ class Color {
 class Gene {
   int predatorGene;
   int preyGene;
-  int uncoGene;
+  int droppingsGene;
   float size = initialLifeRadius;
   Color geneColor;
 
-  Gene(int _predatorGene, int _preyGene, int _uncoGene) {
+  Gene(int _predatorGene, int _preyGene, int _droppingsGene) {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
-    uncoGene = _uncoGene ;
+    droppingsGene = _droppingsGene ;
 
     var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
       if(shiftLength > 0){
@@ -214,7 +214,7 @@ class Gene {
       g.size = max(2,sizeRate - random(0,sizeRate*2) + size);
       return g;
     } else {
-      Gene g = new Gene(predatorGene, preyGene, uncoGene);
+      Gene g = new Gene(predatorGene, preyGene, droppingsGene);
       g.size = max(2,sizeRate/2 - random(0,sizeRate) + size);
       return g;
     }
@@ -259,7 +259,7 @@ class Gene {
   }
 
   String description() {
-    return '' + predatorGene + ' | ' + preyGene + ' | ' + uncoGene + ' | ' + round(size)
+    return '' + predatorGene + ' | ' + preyGene + ' | ' + droppingsGene + ' | ' + round(size)
   }
 }
 
@@ -580,7 +580,7 @@ class Life {
     other.bodyEnergy = 0;
     other.eaten();
   }
-  void unco(float e){
+  void leftDroppings(float e){
     if(populationOfResource > maxResourceSize) {
      return;
     }
@@ -595,7 +595,7 @@ class Life {
         positionx = max(positionx, 10);
         positiony = min(positiony, fieldHeight-10);
         positiony = max(positiony, 10);
-        Gene g = new Gene(gene.uncoGene,gene.uncoGene,0);
+        Gene g = new Gene(gene.droppingsGene,gene.droppingsGene,0);
         g.size = resourceSize;
         Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, g);
         res.bodyEnergy = e * 10000;
@@ -628,7 +628,7 @@ class Life {
     position.y = min(position.y, fieldHeight);
     position.y = max(position.y, 0);
 
-    unco(energyConsumption/2);
+    leftDroppings(energyConsumption/2);
     energy -= energyConsumption;
   }
   void draw(){
