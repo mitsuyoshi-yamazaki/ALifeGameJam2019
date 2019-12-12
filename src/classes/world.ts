@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import { random } from "../utilities"
-import { GeneticLife, Life } from "./life"
+import { GeneticActiveLife, GeneticLife, Life } from "./life"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
 import { Terrain } from "./terrain"
@@ -155,46 +155,48 @@ export class PredPreyWorld extends VanillaWorld {
       const offsprings = next[1] as GeneticLife[]
       born.push(...offsprings)
 
-      if (life.isAlive) {
-        const xIndex = sortedX.indexOf(life)
-        const maxX = life.position.x + life.size
-        const minX = life.position.x - life.size
+      if (life instanceof GeneticActiveLife) {
+        if (life.isAlive) {
+          const xIndex = sortedX.indexOf(life)
+          const maxX = life.position.x + life.size
+          const minX = life.position.x - life.size
 
-        const compareTo: GeneticLife[] = []
+          const compareTo: GeneticLife[] = []
 
-        for (let k = xIndex + 1; k < sortedX.length; k += 1) {
-          if (sortedX[k].position.x > maxX) {
-            break
-          }
-          compareTo.push(sortedX[k])
-        }
-        for (let k = xIndex - 1; k >= 0; k -= 1) {
-          if (sortedX[k].position.x < minX) {
-            break
-          }
-          compareTo.push(sortedX[k])
-        }
-
-        const threshold = random(1, eatProbability)
-
-        for (let j = 0; j < compareTo.length; j += 1) {
-          const otherLife = compareTo[j]
-          if (life.isCollidingWith(otherLife)) {
-            if (life.gene.canEat(otherLife.gene, threshold)) {
-              const predator = life
-              const prey = otherLife
-              predator.eat(prey)
-              deads.push(prey)
+          for (let k = xIndex + 1; k < sortedX.length; k += 1) {
+            if (sortedX[k].position.x > maxX) {
               break
+            }
+            compareTo.push(sortedX[k])
+          }
+          for (let k = xIndex - 1; k >= 0; k -= 1) {
+            if (sortedX[k].position.x < minX) {
+              break
+            }
+            compareTo.push(sortedX[k])
+          }
 
-            } else {
-              continue
+          const threshold = random(1, eatProbability)
+
+          for (let j = 0; j < compareTo.length; j += 1) {
+            const otherLife = compareTo[j]
+            if (life.isCollidingWith(otherLife)) {
+              if (life.gene.canEat(otherLife.gene, threshold)) {
+                const predator = life
+                const prey = otherLife
+                predator.eat(prey)
+                deads.push(prey)
+                break
+
+              } else {
+                continue
+              }
             }
           }
+        } else {
+          // Dead
+          deads.push(life)
         }
-      } else {
-        // Dead
-        deads.push(life)
       }
     }
 

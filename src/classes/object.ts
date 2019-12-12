@@ -16,7 +16,7 @@ export class WorldObject {
   }
 
   public get toString(): string {
-    return String(this)
+    return `${String(typeof this)}, position: ${String(this.position)}, velocity: ${String(this.velocity)}`
   }
 
   public constructor(public position: Vector) {

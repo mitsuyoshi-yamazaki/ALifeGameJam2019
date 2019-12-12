@@ -60,14 +60,13 @@ export class PassiveLife extends Life {
 }
 
 export class GeneticLife extends Life {
-  private _energy: number
-
+  protected _energy: number
   public get energy(): number {
     return this._energy
   }
 
   public get isAlive(): boolean {
-    return this.energy > 0
+    return false
   }
 
   public constructor(public position: Vector, public readonly gene: Gene, size: number, energy: number) {
@@ -75,6 +74,31 @@ export class GeneticLife extends Life {
     this._size = size
     this._mass = 0.5
     this._energy = energy
+  }
+
+  public next(): [Force, WorldObject[]] {
+    return [Force.zero(), []]
+  }
+
+  public draw(p: p5): void {
+    p.noStroke()
+    p.fill(this.gene.color.p5(p))
+    const diameter = this.size * 2
+    p.rect(this.position.x - this.size, this.position.y - this.size, diameter, diameter)
+  }
+
+  public eaten(): void {
+    this._energy = 0
+  }
+}
+
+export class GeneticActiveLife extends GeneticLife {
+  public get isAlive(): boolean {
+    return this.energy > 0
+  }
+
+  public constructor(public position: Vector, public readonly gene: Gene, size: number, energy: number) {
+    super(position, gene, size, energy)
   }
 
   public next(): [Force, WorldObject[]] {
@@ -107,11 +131,7 @@ export class GeneticLife extends Life {
     other.eaten()
   }
 
-  public eaten(): void {
-    this._energy = 0
-  }
-
-  private reproduce(): GeneticLife[] {
+  private reproduce(): GeneticActiveLife[] {
     const reproductionEnergy = 80
     if (this._energy < (reproductionEnergy * 1.5)) {
       return []
@@ -121,7 +141,7 @@ export class GeneticLife extends Life {
     this._energy = energyAfterReproduction
 
     const position = this.position.add(this.velocity.sized(this.size * -2))
-    const offspring = new GeneticLife(position, this.gene.mutated(), this.size, energyAfterReproduction)
+    const offspring = new GeneticActiveLife(position, this.gene.mutated(), this.size, energyAfterReproduction)
     offspring.velocity = this.velocity.sized(-1)
 
     return [offspring]
