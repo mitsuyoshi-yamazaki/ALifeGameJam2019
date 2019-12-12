@@ -6,11 +6,93 @@
 
 // System
 bool DEBUG = false;
+
+// Parameters
 bool artMode = false;
+int populationSize = 1000;
+float mutationRate = 0.01;
+bool useSingleGene = true;
+float fieldWidth = 1000;
+float fieldHeight = 500;
+int screenshotInterval = 1000;
+bool screenshotEnabled = false;
+
+
+bool isLinearMode=false;
+bool isTorusMode=false;
+bool isCircumMode=false;
+bool isNormalMode=false;
+bool isRotateMode=false;
+
+
+// Parse URL Parameter
+String rawQuery = document.location.search;
+String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
+Object parameters = {};
+for (int i = 0; i < queries.length; i++) {
+  String[] pair = queries[i].split('=');
+  parameters[pair[0]] = pair[1];
+}
+console.log(parameters);
+
+if (parameters['art_mode'] != null) {
+  artMode = int(parameters['art_mode']);
+}
+if (parameters['population_size'] != null) {
+  populationSize = int(parameters['population_size']);
+}
+if (parameters['mutation_rate'] != null) {
+  mutationRate = float(parameters['mutation_rate']);
+}
+if (parameters['single_gene'] != null) {
+  useSingleGene = int(parameters['single_gene']);
+}
+if (parameters['mode'] != null) {
+
+		switch (parameters['mode']) {
+			case 'linear':
+					isLinearMode = true;
+			  break;
+			case 'torus':
+					isTorusMode = true;
+			  break;
+			case 'circum':
+					isCircumMode = true;
+			  break;
+			case 'rotate':
+					isRotateMode = true;
+			  break;
+			default:
+					isNormalMode = true;
+			  break;
+		}
+} else {
+	 isNormalMode = true;
+}
+if (parameters['field_size'] != null) {
+  fieldWidth = int(parameters['field_size']);
+		if (isTorusMode || isCircumMode || isRotateMode) {
+				fieldHeight = fieldWidth;
+		} else {
+				fieldHeight = Math.floor(fieldWidth * 0.6);
+		}
+}
+if (parameters['screenshot_interval'] != null) {
+  screenshotInterval = int(parameters['screenshot_interval']);
+		screenshotEnabled = true;
+}
+
+
+// Timestamp
+int t = 0;
+String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
+
+// Screenshot
+var link = document.getElementById('link');
+var canvas = document.getElementById('canvas');
 
 // Population
 Life[] lifes;
-int populationSize = 4000;
 int initialResourceSize = 1000;
 int resourceGrowth = 4.01;
 int maxResourceSize = 10000;
@@ -18,22 +100,19 @@ int maxResourceSize = 10000;
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
 float graphHeight = 400;
+bool graphEnabled = true;
+if (artMode) {
+	graphEnabled = false;
+}
+if (!graphEnabled) {
+ graphHeight = 0;
+}
 
 // Field
-float fieldWidth = 1000;
-float fieldHeight = 500;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
-
-bool isLinearMode=false;
-bool isTorusMode=false;
-bool isCircumMode=false;
-bool isNormalMode=true;
-bool isRotateMode=false;
-
 
 bool clickResource = false;
 
@@ -54,7 +133,11 @@ if (isNormalMode) {
 		//new Wall(fieldWidth/2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 		new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 		new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-	]
+	];
+}
+if (artMode) {
+ walls = [];
+	console.log("No walls in artistic mode");
 }
 
 // Color
@@ -84,31 +167,8 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 float eatProbability = 0.9;
 
 // Evolution
-float mutationRate = 0.03;
 bool isScavenger = true;
 
-// Parse URL Parameter
-String rawQuery = document.location.search;
-String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
-Object parameters = {};
-for (int i = 0; i < queries.length; i++) {
-  String[] pair = queries[i].split('=');
-  parameters[pair[0]] = pair[1];
-}
-console.log(parameters);
-
-if (parameters['art_mode'] != null) {
-  artMode = int(parameters['art_mode']);
-}
-if (parameters['population_size'] != null) {
-  populationSize = int(parameters['population_size']);
-}
-if (parameters['mutation_rate'] != null) {
-  mutationRate = float(parameters['mutation_rate']);
-}
-if (parameters['single_gene'] != null) {
-  useSingleGene = int(parameters['single_gene']);
-}
 
 // Artistics Mode
 if (artMode) {
@@ -543,7 +603,7 @@ class Life {
 
   static Life makeResource(float x, float y, float size, Gene gene) {
     gene.size = resourceSize;
-    Life resource = new Life(x, y, resourceSize, 0, gene);
+    Life resource = new LifeKlass(x, y, resourceSize, 0, gene);
     resource.bodyEnergy *= 100;
     resource.type = 'Resource';
 
@@ -703,7 +763,7 @@ class Life {
     }
   }
   Life replicate(int x, int y, int size, int energy, Gene g){
-    return (new Life(x, y, size, energy, g))
+    return (new LifeKlass(x, y, size, energy, g))
   }
 
   Life[] reproduce(){
@@ -745,7 +805,7 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void setup()
+void defaultSetup()
 {
   size(appFieldWidth, appFieldHeight);
   background(0xff);
@@ -774,7 +834,7 @@ void setup()
                                       defaultEnergy,
                                       initialGenesArray[g_i]);
           } if(isNormalMode) {
-            lifes[lifes.length] = new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
+            lifes[lifes.length] = new LifeKlass(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isTorusMode){
             lifes[lifes.length] = new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy, initialGenesArray[g_i]);
           } if(isRotateMode){
@@ -792,7 +852,7 @@ void setup()
                                        defaultEnergy,
                                        Gene.randomGene());
       }if(isNormalMode){
-        lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+        lifes[lifes.length]=new LifeKlass(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       }if(isTorusMode){
         lifes[lifes.length]=new TorusLife(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
       } if(isRotateMode){
@@ -809,14 +869,28 @@ void setup()
     if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2 * Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isTorusMode || isRotateMode){
-      lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+						PVector position;
+						while (true) {
+							bool contained = false;
+							position = new PVector(random(10,fieldWidth - 10),random(10, fieldHeight - 10));
+							for (int j = 0; j < walls.length; j++) {
+								if (walls[j].contains(position)) {
+									contained = true;
+									break;
+								}
+							}
+							if (contained == false) {
+								break;
+							}
+						}
+      lifes[lifes.length] = Life.makeResource(position.x, position.y, resourceSize, Gene.randomGene());
     } if(isTorusMode){
     }
   }
 }
 
 int populationOfResource = 0;
-void draw(){
+void defaultDraw(){
   // Refresh Game Field
   fill(0xff, backgroundTransparency);
   /*if(second()%30==0){
@@ -931,13 +1005,25 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraph();
+		if (graphEnabled) {
+  	drawGraph();
+		}
 
   //console.log("frameRate: " + frameRate);
+
+		if (screenshotEnabled && (t % screenshotInterval == 0)) {
+			String num = ('000000' + (t / screenshotInterval)).slice(-6);
+			String filename = '' + launchTime + '__' + num + '.png';	// template literal not working sucks
+			link.setAttribute('download', filename);
+			link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+			link.click();
+			console.log('Saved: ' + filename);
+		}
+		t += 1;
 }
 
 void drawGraph(){
-  strokeWeight(3);
+  strokeWeight(2);
   var t;
   var unit;
 
@@ -977,45 +1063,22 @@ void addResources() {
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isRotateMode || isTorusMode){
-      lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, g);
+
+					 PVector position;
+						while (true) {
+							bool contained = false;
+							position = new PVector(random(10,fieldWidth - 10),random(10, fieldHeight - 10));
+							for (int j = 0; j < walls.length; j++) {
+								if (walls[j].contains(position)) {
+									contained = true;
+									break;
+								}
+							}
+							if (contained == false) {
+								break;
+							}
+						}
+      lifes[lifes.length] = Life.makeResource(position.x, position.y, resourceSize, Gene.randomGene());
     }
-  }
-}
-
-void mouseClicked(){
-  PVector m_pos = new PVector(mouseX, mouseY);
-  Life found = lifes.find(function(l){
-    return ((PVector.sub(m_pos, l.position)).mag() <= l.size)
-    });
-  if(found != undefined){
-    console.log(found.show());
-  }
-  else{
-//    lifes[lifes.length] = new Life(mouseX, mouseY, lifeRadius, defaultEnergy, new Gene(0xf, 0x2));
-  if(clickResource){
-      for(int i=0; i!=10;i++){
-      lifes[lifes.length] = Life.makeResource(mouseX+random(-lifeRadius, lifeRadius), mouseY+random(-lifeRadius, lifeRadius), resourceSize*10, Gene.randomGene());
-      //TODO:クリック後、その場所に継続的にエサを与え続ける
-      }
-    }
-  }
-}
-
-void keyPressed (){
-  if(key == 32){
-    noLoop();
-    fill(0xff);
-      console.log("start");
-      console.log("length:" + populationPerSpecies.length);
-    populationPerSpecies.forEach(function(var e, var key){
-      console.log("gene:" + Gene.fromWholeGene(key).showBinary() + " " + key + " " + e);
-    });
-      console.log("end");
-  }
-}
-
-void keyReleased (){
-  if(key == 32){
-    loop();
   }
 }

@@ -1,2 +1,50 @@
-<script src="processing.js"></script>
-<canvas data-processing-sources="main.pde"></canvas>
+<html>
+	<head>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+			integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	</head>
+	<body>
+		<ul class="list-group">
+			<li class="list-group-item">
+				Main
+				<ul class="list-group">
+					<li class="list-group-item">
+						<a href="pages/main.html?art_mode=1&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000">
+							Artistic mode
+						</a>
+					</li>
+					<li class="list-group-item">
+						<a href="pages/main.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000">
+							Non-Artistic mode (Artificial Life ecosystem)
+						</a>
+					</li>
+				</ul>
+			</li>
+			<li class="list-group-item">
+				Demo
+				<ul class="list-group">
+					<li class="list-group-item">
+						<a href="pages/orbital_motion.html">
+							Orbital motion
+						</a>
+					</li>
+					<li class="list-group-item">
+						<a href="pages/gravitational_field.html">
+							Gravitational field
+						</a>
+					</li>
+				</ul>
+			</li>
+			<li class="list-group-item">
+				Experimental
+				<ul class="list-group">
+					<li class="list-group-item">
+						<a href="pages/main.html?art_mode=0&population_size=1000&mutation_rate=0.01&single_gene=1&mode=rotate&field_size=1000">
+							Rotation
+						</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</body>
+	</html>
