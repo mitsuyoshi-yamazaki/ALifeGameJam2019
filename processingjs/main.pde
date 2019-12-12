@@ -147,7 +147,6 @@ bool disableResourceColor = false;
 
 // Life Parameter
 float lifeRadius = 7;
-float initialLifeRadius = 3;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
@@ -156,6 +155,8 @@ float visualSizeCoeff = 1;
 
 bool enableMeaningfulSize =false;
 bool enableReproduction=true;
+bool droppingsEnabled = false;
+bool mutatingSizeEnabled = false;
 
 // Gene Parameter
 int geneLength = 4;
@@ -238,7 +239,7 @@ class Gene {
   int predatorGene;
   int preyGene;
   int droppingsGene;
-  float size = initialLifeRadius;
+  float size = lifeRadius * 0.4;
   Color geneColor;
 
   Gene(int _predatorGene, int _preyGene, int _droppingsGene) {
@@ -592,7 +593,11 @@ class Life {
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
-    size = _gene.size;
+				if (mutatingSizeEnabled) {
+     size = _gene.size;
+				} else {
+     size = _size;
+				}
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
@@ -641,6 +646,9 @@ class Life {
     other.eaten();
   }
   void leftDroppings(float e){
+			 if (droppingsEnabled == false) {
+     return;
+				}
     if(populationOfResource > maxResourceSize) {
      return;
     }
@@ -805,8 +813,11 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void defaultSetup()
+void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled)
 {
+  droppingsEnabled = _droppingsEnabled;
+		mutatingSizeEnabled = _mutatingSizeEnabled;
+
   size(appFieldWidth, appFieldHeight);
   background(0xff);
 
