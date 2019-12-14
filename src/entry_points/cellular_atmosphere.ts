@@ -18,7 +18,7 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    if (t % 60 !== 0) {
+    if (t % 10 !== 0) {
       t += 1
 
       return
@@ -52,7 +52,7 @@ const main = (p: p5) => {
       row.forEach(cell => {
         cell.next()
       })
-      // console.log(`${String(row.map(cell => cell.currentState.pressure))}`)
+      console.log(`${String(row.map(cell => cell.currentState.pressure))}`)
     })
 
     for (let y = 0; y < cells.length; y += 1) {
@@ -71,30 +71,53 @@ const main = (p: p5) => {
           }
         }
 
-        const sameMaterialCells = neighbourCells.filter(c => {
-          return c.currentState.material === cell.currentState.material
-        })
+        if (cell.currentState.material === Material.Vacuum) {
+          const pressures = new Map<Material, number>()
+          neighbourCells.forEach(neighbour => {
+            // tslint:disable-next-line: strict-boolean-expressions
+            const pressure = pressures.get(neighbour.currentState.material) || 0
+            pressures.set(neighbour.currentState.material, pressure + neighbour.currentState.pressure)
+          })
 
-        sameMaterialCells.forEach(neighbour => {
-          if (neighbour.currentState.pressure > cell.currentState.pressure) { // 絶対値の小さい方に floor しなければ気圧が負数をとりうるため
-            const pressureDifference = (neighbour.currentState.pressure - cell.currentState.pressure) / numberOfNeighbors
-            const transferAmount = Math.floor(transferAmountOf(cell.currentState.material, pressureDifference))
-            if (transferAmount < 1) {
-              return
+          let largestPressure = 0
+          let largestPressureMaterial: Material | null
+          pressures.forEach((pressure, material) => {
+            if (pressure > largestPressure) {
+              largestPressureMaterial = material
+              largestPressure = pressure
             }
-            cell.nextState.pressure += transferAmount
-            // console.log(`${cell.currentState.pressure} + ${transferAmount}`)
-          } else {
-            const pressureDifference = (cell.currentState.pressure - neighbour.currentState.pressure) / numberOfNeighbors
-            const transferAmount = Math.floor(transferAmountOf(cell.currentState.material, pressureDifference))
-            if (transferAmount < 1) {
-              return
-            }
-            cell.nextState.pressure -= transferAmount
-            // console.log(`${cell.currentState.pressure} - ${transferAmount}`)
+          })
+
+          if (largestPressureMaterial != undefined) {
+            cell.nextState.material = largestPressureMaterial
+            cell.nextState.pressure = 0
           }
-          // console.log(`${cell.nextState.pressure}`)
-        })
+        } else {
+          const sameMaterialCells = neighbourCells.filter(c => {
+            return c.currentState.material === cell.currentState.material
+          })
+
+          sameMaterialCells.forEach(neighbour => {
+            if (neighbour.currentState.pressure > cell.currentState.pressure) { // 絶対値の小さい方に floor しなければ気圧が負数をとりうるため
+              const pressureDifference = (neighbour.currentState.pressure - cell.currentState.pressure) / numberOfNeighbors
+              const transferAmount = Math.floor(transferAmountOf(cell.currentState.material, pressureDifference))
+              if (transferAmount < 1) {
+                return
+              }
+              cell.nextState.pressure += transferAmount
+              // console.log(`${cell.currentState.pressure} + ${transferAmount}`)
+            } else {
+              const pressureDifference = (cell.currentState.pressure - neighbour.currentState.pressure) / numberOfNeighbors
+              const transferAmount = Math.floor(transferAmountOf(cell.currentState.material, pressureDifference))
+              if (transferAmount < 1) {
+                return
+              }
+              cell.nextState.pressure -= transferAmount
+              // console.log(`${cell.currentState.pressure} - ${transferAmount}`)
+            }
+            // console.log(`${cell.nextState.pressure}`)
+          })
+        }
       }
     }
   }
@@ -103,8 +126,7 @@ const main = (p: p5) => {
     for (let y = 0; y < size; y += 1) {
       const row: Cell[] = []
       for (let x = 0; x < size; x += 1) {
-        const state = new State()
-        state.pressure = Math.floor(random(maxPressure))
+        const state = State.random()
         const cell = new Cell(state)
         row.push(cell)
       }
@@ -202,7 +224,6 @@ class Cell {
 class FixedCell extends Cell {
   public next(): void {
     this._nextState = this.currentState.clone()
-    console.log(`hoge`)
   }
 }
 
@@ -227,8 +248,8 @@ class State {
     const materials: Material[] = [
       Material.Vacuum,
       Material.Hydrogen,
-      Material.Nitrogen,
-      Material.CarbonDioxide,
+      // Material.Nitrogen,
+      // Material.CarbonDioxide,
     ]
 
     state.material = materials[Math.floor(random(materials.length))]
