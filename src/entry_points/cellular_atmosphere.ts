@@ -5,6 +5,7 @@ const main = (p: p5) => {
   let states: State[][] = []
   const size = 100
   const cellSize = 10
+  const maxPressure = 20
 
   p.setup = () => {
     const fieldSize = size * cellSize
@@ -19,6 +20,8 @@ const main = (p: p5) => {
 
   function draw(): void {
     p.noStroke()
+    const white = p.color(255)
+
     for (let y = 0; y < states.length; y += 1) {
       const row = states[y]
       for (let x = 0; x < row.length; x += 1) {
@@ -26,7 +29,9 @@ const main = (p: p5) => {
         const xx = x * cellSize
         const yy = y * cellSize
 
-        p.fill(state.color(p))
+        const progress = Math.min(state.pressure / maxPressure, 1)
+        const color = p.lerpColor(white, state.color(p), progress)
+        p.fill(color)
         p.rect(xx, yy, cellSize, cellSize)
       }
     }
@@ -46,7 +51,10 @@ const main = (p: p5) => {
     for (let y = 0; y < size; y += 1) {
       const row: State[] = []
       for (let x = 0; x < size; x += 1) {
-        row.push(State.random())
+        // row.push(State.random())
+        const state = new State()
+        state.pressure = random(maxPressure, 0)
+        row.push(state)
       }
       states.push(row)
     }
@@ -105,5 +113,5 @@ class State {
 
   public color(p: p5): p5.Color {
       return colorOf(this.material, p)
-    }
+  }
 }
