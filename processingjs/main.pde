@@ -93,9 +93,9 @@ var canvas = document.getElementById('canvas');
 
 // Population
 Life[] lifes;
-int initialResourceSize = 500;
+int initialResourceSize = 1000;
 int resourceGrowth = 4.01;
-
+int maxResourceSize = 10000;
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
@@ -114,6 +114,8 @@ float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置か
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
 
+bool clickResource = false;
+
 // Walls
 int wallWidth = 40;
 int space = fieldHeight / 10;
@@ -121,8 +123,16 @@ Wall[] walls = [];
 
 if (isNormalMode) {
 	walls = [
-		new Wall((fieldWidth - wallWidth) / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		new Wall((fieldWidth - wallWidth) / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		//new Wall(fieldWidth /6 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3*2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		//new Wall(fieldWidth/6*5 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/6 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		//new Wall(fieldWidth/2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 	];
 }
 if (artMode) {
@@ -132,7 +142,7 @@ if (artMode) {
 
 // Color
 float backgroundTransparency = 0xff;
-bool enableEatColor = true;
+bool enableEatColor = false;
 bool disableResourceColor = false;
 
 // Life Parameter
@@ -145,9 +155,11 @@ float visualSizeCoeff = 1;
 
 bool enableMeaningfulSize =false;
 bool enableReproduction=true;
+bool droppingsEnabled = false;
+bool mutatingSizeEnabled = false;
 
 // Gene Parameter
-int geneLength = 3;
+int geneLength = 4;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -226,11 +238,14 @@ class Color {
 class Gene {
   int predatorGene;
   int preyGene;
+  int droppingsGene;
+  float size = lifeRadius * 0.4;
   Color geneColor;
 
-  Gene(int _predatorGene, int _preyGene) {
+  Gene(int _predatorGene, int _preyGene, int _droppingsGene) {
     predatorGene = _predatorGene % (Math.pow(2, geneLength));
     preyGene = _preyGene % (Math.pow(2, geneLength));
+    droppingsGene = _droppingsGene ;
 
     var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
       if(shiftLength > 0){
@@ -241,11 +256,11 @@ class Gene {
         }
       });
 
-    geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
+    geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength) , 0xff);
   }
 
   static Gene randomGene() {
-    return new Gene(Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)));
+    return new Gene(Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)));
   }
 
   Gene mutantGene(){
@@ -253,17 +268,22 @@ class Gene {
     int childwholegene = (this.getWholeGene()) ^ mutation;
     return fromWholeGene(childwholegene);
   }
+  float sizeRate = 1;
   Gene childGene(){
     if (mutationRate > random(0.0, 1.0)){
-      return mutantGene();
+      Gene g = mutantGene();
+      g.size = max(2,sizeRate - random(0,sizeRate*2) + size);
+      return g;
     } else {
-      return new Gene(predatorGene, preyGene);
+      Gene g = new Gene(predatorGene, preyGene, droppingsGene);
+      g.size = max(2,sizeRate/2 - random(0,sizeRate) + size);
+      return g;
     }
   }
   string showBinary(){
     String str = "";
     for(int i=0; i!=wholeLength;i++){
-      console.log(((getWholeGene() >> i) & 0x01));
+//      console.log(((getWholeGene() >> i) & 0x01));
       str+=((getWholeGene() >> i) & 0x01);
     }
     return str;
@@ -280,13 +300,16 @@ class Gene {
 
   static Gene fromWholeGene(int w){
     var good_w = w % (Math.pow(2, wholeLength));
-    Gene g = new Gene(good_w >> geneLength, good_w & (wholeMax >> geneLength));
+    Gene g = new Gene(good_w >> geneLength, good_w & (wholeMax >> geneLength), Math.round(random(0, geneMaxValue)));
     g.setWholeGene(good_w);
     return g;
   }
 
   float canEat(Gene other) {
     int diff = 0;
+    if(size + 2 < other.size) {
+      return 0;
+    }
 
     for (int i = 0; i < geneLength; i++) {
       if (((predatorGene >> i) & 0x01) == ((other.preyGene >> i) & 0x01)) {
@@ -297,7 +320,7 @@ class Gene {
   }
 
   String description() {
-    return '' + predatorGene + ' | ' + preyGene
+    return '' + predatorGene + ' | ' + preyGene + ' | ' + droppingsGene + ' | ' + round(size)
   }
 }
 
@@ -570,7 +593,11 @@ class Life {
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
-    size=_size;
+				if (mutatingSizeEnabled) {
+     size = _gene.size;
+				} else {
+     size = _size;
+				}
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
@@ -580,8 +607,9 @@ class Life {
   }
 
   static Life makeResource(float x, float y, float size, Gene gene) {
-    Life resource = new LifeKlass(x, y, size, 0, gene);
-    resource.bodyEnergy *= 20;
+    gene.size = resourceSize;
+    Life resource = new LifeKlass(x, y, resourceSize, 0, gene);
+    resource.bodyEnergy *= 100;
     resource.type = 'Resource';
 
     return resource;
@@ -617,6 +645,32 @@ class Life {
     other.bodyEnergy = 0;
     other.eaten();
   }
+  void leftDroppings(float e){
+			 if (droppingsEnabled == false) {
+     return;
+				}
+    if(populationOfResource > maxResourceSize) {
+     return;
+    }
+    if(random(0,1)<=0.0001){
+
+//      for (int i = 0; i < 2; i++) {
+        float vx = random(-defaultMoveDistance, defaultMoveDistance);
+        float vy = random(-defaultMoveDistance, defaultMoveDistance);
+        float positionx = position.x + vx;
+        float positiony = position.y + vy;
+        positionx = min(positionx, fieldWidth-10);
+        positionx = max(positionx, 10);
+        positiony = min(positiony, fieldHeight-10);
+        positiony = max(positiony, 10);
+        Gene g = new Gene(gene.droppingsGene,gene.droppingsGene,0);
+        g.size = resourceSize;
+        Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, g);
+        res.bodyEnergy = e * 10000;
+        lifes[lifes.length] = res;
+//     }
+    }
+  }
 
   void eaten() {
     isEaten = true;
@@ -628,20 +682,21 @@ class Life {
     // r += customizedRandom(-6, 6);
     // float vx = Math.cos(r) * v;
     // float vy = Math.sin(r) * v;
-
-    float vx = random(-defaultMoveDistance, defaultMoveDistance);
-    float vy = random(-defaultMoveDistance, defaultMoveDistance);
-
+    float sizeRatio = size / lifeRadius;
+    float moveDistance = defaultMoveDistance * sizeRatio;
+    float vx = random(-moveDistance, moveDistance);
+    float vy = random(-moveDistance, moveDistance);
     position.x += vx;
     position.y += vy;
 
-    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate ;
 
-    position.x = min(position.x, fieldWidth)
-    position.x = max(position.x, 0)
-    position.y = min(position.y, fieldHeight)
-    position.y = max(position.y, 0)
+    position.x = min(position.x, fieldWidth);
+    position.x = max(position.x, 0);
+    position.y = min(position.y, fieldHeight);
+    position.y = max(position.y, 0);
 
+    leftDroppings(energyConsumption/2);
     energy -= energyConsumption;
   }
   void draw(){
@@ -723,7 +778,7 @@ class Life {
     float birthEnergy = size * size;
 
     if(!enableReproduction) return [];
-    if (energy > birthEnergy) {
+    if (energy > birthEnergy * 2) {
       float energyAfterBirth = (energy - birthEnergy) / 2;
       float radian = random(0, 2.0 * PI);
 
@@ -758,8 +813,11 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void defaultSetup()
+void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled)
 {
+  droppingsEnabled = _droppingsEnabled;
+		mutatingSizeEnabled = _mutatingSizeEnabled;
+
   size(appFieldWidth, appFieldHeight);
   background(0xff);
 
@@ -771,7 +829,7 @@ void defaultSetup()
   int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene[] initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
+  Gene[] initialGenesArray = [new Gene(0, 0, 0)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
     if (useSingleGene) {
       float dice;
@@ -814,7 +872,8 @@ void defaultSetup()
     }
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    Gene g1 = new Gene(0, 0);
+    Gene g1 = new Gene(0, 0, 0);
+    g1.size = resourceSize;
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
     }
@@ -860,7 +919,7 @@ void defaultDraw(){
   });
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
-  populationOfResource = 0;
+  int nextPopulationOfResource = 0;
 
 		for (int ii = 0; ii < walls.length; ii++) {
 			Wall wall = walls[ii]
@@ -881,7 +940,7 @@ void defaultDraw(){
     Life focus = lifes[i];
 
     if (lifes[i].type == "Resource"){
-      populationOfResource += 1;
+      nextPopulationOfResource += 1;
     }
     if(lifes[i].alive()){
       born = born.concat(lifes[i].update());
@@ -946,6 +1005,7 @@ void defaultDraw(){
     }
     lifes[i].draw();
   }
+  populationOfResource = nextPopulationOfResource;
 
   lifes = lifes.filter( function( el ) { //死
     return killed.indexOf( el ) < 0;
@@ -1002,14 +1062,19 @@ void clearGraph(){
 var timer = makeTimer();
 
 void addResources() {
+  if(populationOfResource > maxResourceSize) {
+    return
+  }
   int numberOfResources = int(random(0, resourceGrowth));
-  Gene g = new Gene(0, 0);
+//  Gene g = new Gene(0, 0, 0);
+  Gene g = Gene.randomGene();
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(10,fieldWidth - 10),random(10, fieldHeight - 10), resourceSize, Gene.randomGene());
     } if (isCircumMode){
       lifes[lifes.length] = CircumLife.makeResource(random(0, 2*Math.PI), resourceSize, Gene.randomGene());
     } if(isNormalMode || isRotateMode || isTorusMode){
+
 					 PVector position;
 						while (true) {
 							bool contained = false;
