@@ -3,7 +3,7 @@ import { random } from "../utilities"
 
 let t = 0
 const cells: Cell[][] = []
-const size = 6
+const size = 100
 const cellSize = 1000 / size
 const maxPressure = 1000
 const radius = 1
@@ -52,6 +52,7 @@ const main = (p: p5) => {
       row.forEach(cell => {
         cell.next()
       })
+      // console.log(`${String(row.map(cell => cell.currentState.pressure))}`)
     })
 
     for (let y = 0; y < cells.length; y += 1) {
@@ -65,31 +66,34 @@ const main = (p: p5) => {
             if ((i === 0) && (j === 0)) {
               continue
             }
-            const neighbour = cells[(j + size) % size][(i + size) % size]
+            const neighbour = cells[(y + j + size) % size][(x + i + size) % size]
             neighbourCells.push(neighbour)
           }
         }
 
-        const cellsWithSameMaterial = neighbourCells.filter(c => {
+        const sameMaterialCells = neighbourCells.filter(c => {
           return c.currentState.material === cell.currentState.material
         })
 
-        cellsWithSameMaterial.forEach(neighbour => {
+        sameMaterialCells.forEach(neighbour => {
           if (neighbour.currentState.pressure > cell.currentState.pressure) { // 絶対値の小さい方に floor しなければ気圧が負数をとりうるため
             const pressureDifference = (neighbour.currentState.pressure - cell.currentState.pressure) / numberOfNeighbors
-            const transferAmount = transferAmountOf(cell.currentState.material, pressureDifference)
+            const transferAmount = Math.floor(transferAmountOf(cell.currentState.material, pressureDifference))
             if (transferAmount < 1) {
               return
             }
             cell.nextState.pressure += transferAmount
+            // console.log(`${cell.currentState.pressure} + ${transferAmount}`)
           } else {
             const pressureDifference = (cell.currentState.pressure - neighbour.currentState.pressure) / numberOfNeighbors
-            const transferAmount = transferAmountOf(cell.currentState.material, pressureDifference)
+            const transferAmount = Math.floor(transferAmountOf(cell.currentState.material, pressureDifference))
             if (transferAmount < 1) {
               return
             }
-            cell.nextState.pressure -= pressureDifference
+            cell.nextState.pressure -= transferAmount
+            // console.log(`${cell.currentState.pressure} - ${transferAmount}`)
           }
+          // console.log(`${cell.nextState.pressure}`)
         })
       }
     }
@@ -106,6 +110,12 @@ const main = (p: p5) => {
       }
       cells.push(row)
     }
+
+    const maxPressureState = new State()
+    maxPressureState.pressure = maxPressure
+    const fixedCell = new FixedCell(maxPressureState)
+    const centerIndex = Math.round(size / 2)
+    cells[centerIndex][centerIndex] = fixedCell
   }
 }
 
@@ -144,22 +154,22 @@ function transferAmountOf(material: Material, pressureDifference: number): numbe
       return 0
 
     case Material.Hydrogen:
-      flowRate = 1
+      flowRate = 2
       break
 
     case Material.Nitrogen:
-      flowRate = 1.5
+      flowRate = 3
       break
 
     case Material.CarbonDioxide:
-      flowRate = 2
+      flowRate = 4
       break
 
     default:
       return 0
   }
 
-  const maxTransferAmount = maxPressure / 100
+  const maxTransferAmount = maxPressure / 50
 
   return Math.min(pressureDifference / flowRate, maxTransferAmount)
 }
@@ -171,8 +181,8 @@ class Cell {
   public get nextState(): State {
     return this._nextState
   }
-  private _currentState: State
-  private _nextState: State
+  protected _currentState: State
+  protected _nextState: State
 
   public constructor(state: State) {
     this._currentState = state
@@ -189,16 +199,23 @@ class Cell {
   }
 }
 
+class FixedCell extends Cell {
+  public next(): void {
+    this._nextState = this.currentState.clone()
+    console.log(`hoge`)
+  }
+}
+
 class State {
   public static minimumPressure = 1
   public material = Material.Hydrogen
   private _pressure = 0
   public set pressure(value: number) {
-    // if (value <= 0) {
-    //   this._pressure = 0
+    if (value <= 0) {
+      this._pressure = 0
 
-    //   return
-    // }
+      return
+    }
     this._pressure = value
   }
   public get pressure(): number {
