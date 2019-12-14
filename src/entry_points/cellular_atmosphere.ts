@@ -76,14 +76,16 @@ const main = (p: p5) => {
 
         cellsWithSameMaterial.forEach(neighbour => {
           if (neighbour.currentState.pressure > cell.currentState.pressure) { // 絶対値の小さい方に floor しなければ気圧が負数をとりうるため
-            const pressureDifference = Math.floor((neighbour.currentState.pressure - cell.currentState.pressure) / numberOfNeighbors)
-            if (pressureDifference < 1) {
+            const pressureDifference = (neighbour.currentState.pressure - cell.currentState.pressure) / numberOfNeighbors
+            const transferAmount = transferAmountOf(cell.currentState.material, pressureDifference)
+            if (transferAmount < 1) {
               return
             }
-            cell.nextState.pressure += pressureDifference
+            cell.nextState.pressure += transferAmount
           } else {
-            const pressureDifference = Math.floor((cell.currentState.pressure - neighbour.currentState.pressure) / numberOfNeighbors)
-            if (pressureDifference < 1) {
+            const pressureDifference = (cell.currentState.pressure - neighbour.currentState.pressure) / numberOfNeighbors
+            const transferAmount = transferAmountOf(cell.currentState.material, pressureDifference)
+            if (transferAmount < 1) {
               return
             }
             cell.nextState.pressure -= pressureDifference
@@ -133,6 +135,33 @@ function colorOf(material: Material, p: p5): p5.Color {
     default:
       return p.color(0)
   }
+}
+
+function transferAmountOf(material: Material, pressureDifference: number): number {
+  let flowRate: number
+  switch (material) {
+    case Material.Vacuum:
+      return 0
+
+    case Material.Hydrogen:
+      flowRate = 1
+      break
+
+    case Material.Nitrogen:
+      flowRate = 1.5
+      break
+
+    case Material.CarbonDioxide:
+      flowRate = 2
+      break
+
+    default:
+      return 0
+  }
+
+  const maxTransferAmount = maxPressure / 100
+
+  return Math.min(pressureDifference / flowRate, maxTransferAmount)
 }
 
 class Cell {
