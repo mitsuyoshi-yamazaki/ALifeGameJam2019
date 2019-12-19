@@ -22,7 +22,7 @@ float graphHeight = 700;
 // Field
 float fieldWidth = 1000;
 float fieldHeight = 700;
-float initialPopulationFieldSize = 2000; // 起動時に生まれるLifeの置かれる場所の大きさ
+float initialPopulationFieldSize = 300; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
@@ -56,7 +56,7 @@ int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
-bool predator_prey_mode = true;
+bool predator_prey_mode = false;
 
 // Fight
 float eatProbability = 0.9999999;
@@ -854,7 +854,11 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraphXY();
+  if(predator_prey_mode){
+    drawGraphXY();
+  } else {
+    drawGraph();
+  }
 
   //console.log("frameRate: " + frameRate);
 }
