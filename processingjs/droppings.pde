@@ -1,7 +1,7 @@
 var LifeKlass = Life;
 bool droppingsEnabled = true;
 bool mutatingSizeEnabled = true;
-float _backgroundTransparency = 0xff;
+float _backgroundTransparency = null;
 
 void setup() {
 	defaultSetup(droppingsEnabled, mutatingSizeEnabled, _backgroundTransparency);

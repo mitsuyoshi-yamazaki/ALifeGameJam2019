@@ -813,7 +813,9 @@ void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _back
 {
   droppingsEnabled = _droppingsEnabled;
 		mutatingSizeEnabled = _mutatingSizeEnabled;
- 	backgroundTransparency = _backgroundTransparency;
+		if (_backgroundTransparency != null) {
+  	backgroundTransparency = _backgroundTransparency;
+		}
 
   size(appFieldWidth, appFieldHeight);
   background(0xff);
