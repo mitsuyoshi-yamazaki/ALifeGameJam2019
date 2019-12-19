@@ -107,6 +107,10 @@ if(detailedView){
   resourceGrowth = 1 + 2.1;
 }
 
+if(predator_prey_mode){
+  geneLength = 1;
+}
+
 // --
 
 void log(String data) {
