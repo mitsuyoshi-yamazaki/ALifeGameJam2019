@@ -10,7 +10,7 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 1000;
+int populationSize = 50;
 int initialResourceSize = 500;
 int resourceGrowth = 1 + 4.01;
 
@@ -769,10 +769,10 @@ void draw(){
   Life[] killed = [];
   Life[] born = [];
 
-  Life[] sortedX = lifes.slice(0, lifes.length);
-  sortedX.sort(function(lhs, rhs) {
+  //Life[] sortedX = lifes.slice(0, lifes.length);
+  /* sortedX.sort(function(lhs, rhs) {
     return lhs.position.x - rhs.position.x;
-  });
+  }); */
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
   populationOfResource = 0;
@@ -798,7 +798,7 @@ void draw(){
       Life life = lifes[i];
       Life[] compareTo = [];
 
-      int xIndex = sortedX.indexOf(life);
+     /* int xIndex = sortedX.indexOf(life);
 
       float maxX = life.position.x + life.size / 2;
       float minX = life.position.x - life.size / 2;
@@ -814,10 +814,13 @@ void draw(){
           break;
         }
         compareTo[compareTo.length] = sortedX[k];
-      }
+      } */
+
+      compareTo[0] = lifes[int(random(0, lifes.length))];
 
       for (int j = 0; j < compareTo.length; j++){
         if(i==j) continue;
+        var isCollision = (function(x, y){return (30 > random(0,100));});
         if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
