@@ -17,4 +17,5 @@ function saveScreenshot() {	// called on link click
 	link.setAttribute('download', filename);
 	link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
 	link.click();
+	console.log('Saved: ' + filename);
 }
