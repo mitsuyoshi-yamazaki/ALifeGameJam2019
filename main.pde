@@ -20,10 +20,10 @@ float graphSize = 0.4;
 float graphHeight = 700;
 
 // Field
-float fieldWidth = 1000;
-float fieldHeight = 700;
-float initialPopulationFieldSize = 300; // 起動時に生まれるLifeの置かれる場所の大きさ
-bool useSingleGene = true;
+float fieldWidth = 700;
+float fieldHeight = 500;
+float initialPopulationFieldSize = 500; // 起動時に生まれるLifeの置かれる場所の大きさ
+bool useSingleGene = false;
 
 float appFieldWidth = fieldWidth;
 float appFieldHeight = fieldHeight + graphHeight;
@@ -51,7 +51,7 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 3;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -59,10 +59,10 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 bool predator_prey_mode = false;
 
 // Fight
-float eatProbability = 0.9999999;
+float eatProbability = 0.7;
 
 // Evolution
-float mutationRate = 0.03;
+float mutationRate = 0.00;
 bool isScavenger = true;
 
 // Parse URL Parameter
@@ -109,6 +109,7 @@ if(detailedView){
 
 if(predator_prey_mode){
   geneLength = 1;
+  useSingleGene = 1;
 }
 
 // --
@@ -183,7 +184,7 @@ class Gene {
   string showBinary(){
     String str = "";
     for(int i=0; i!=wholeLength;i++){
-      console.log(((getWholeGene() >> i) & 0x01));
+      //console.log(((getWholeGene() >> i) & 0x01));
       str+=((getWholeGene() >> i) & 0x01);
     }
     return str;
@@ -206,14 +207,18 @@ class Gene {
   }
 
   float canEat(Gene other) {
-    int diff = 0;
+    /*int diff = 0;
 
     for (int i = 0; i < geneLength; i++) {
       if (((predatorGene >> i) & 0x01) == ((other.preyGene >> i) & 0x01)) {
         diff += 1;
       }
     }
-    return float(diff) / float(geneLength)
+    return float(diff) / float(geneLength)*/
+    var konnen = 1-(abs(predatorGene - other.preyGene)/(geneMaxValue));
+    var rgb = function (color){ return "r: " + color.r +", g: " + color.g +", b: " + color.b; }
+    console.log("me: " + this.showBinary(), "other:" + other.showBinary(), konnen);
+    return konnen;
   }
 
   String description() {
