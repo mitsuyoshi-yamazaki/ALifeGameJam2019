@@ -809,10 +809,11 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled)
+void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _backgroundTransparency)
 {
   droppingsEnabled = _droppingsEnabled;
 		mutatingSizeEnabled = _mutatingSizeEnabled;
+ 	backgroundTransparency = _backgroundTransparency;
 
   size(appFieldWidth, appFieldHeight);
   background(0xff);
