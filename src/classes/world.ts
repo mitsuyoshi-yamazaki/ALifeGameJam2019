@@ -70,8 +70,6 @@ export class VanillaWorld implements World {
   }
 
   public draw(p: p5): void {
-    p.background(220)
-
     this.terrains.forEach(terrain => {
       terrain.draw(p)
     })

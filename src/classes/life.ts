@@ -60,6 +60,7 @@ export class PassiveLife extends Life {
 }
 
 export class GeneticLife extends Life {
+  public shouldDraw = true
   protected _energy: number
   public get energy(): number {
     return this._energy
@@ -81,9 +82,13 @@ export class GeneticLife extends Life {
   }
 
   public draw(p: p5): void {
+    if (this.shouldDraw === false) {
+      return
+    }
     p.noStroke()
-    p.fill(this.gene.color.p5(p))
-    const diameter = this.size * 2
+    const color = this.gene.color.p5(p)
+    p.fill(color)
+    const diameter = this.size * 0.5
     p.rect(this.position.x - this.size, this.position.y - this.size, diameter, diameter)
   }
 
@@ -93,6 +98,7 @@ export class GeneticLife extends Life {
 }
 
 export class GeneticActiveLife extends GeneticLife {
+  public mutationRate = 0.01
   public get isAlive(): boolean {
     return this.energy > 0
   }
@@ -141,7 +147,9 @@ export class GeneticActiveLife extends GeneticLife {
     this._energy = energyAfterReproduction
 
     const position = this.position.add(this.velocity.sized(this.size * -2))
-    const offspring = new GeneticActiveLife(position, this.gene.mutated(), this.size, energyAfterReproduction)
+    const isMutating = random(1) < this.mutationRate
+    const gene = isMutating ? this.gene.mutated() : this.gene.clone()
+    const offspring = new GeneticActiveLife(position, gene, this.size, energyAfterReproduction)
     offspring.velocity = this.velocity.sized(-1)
 
     return [offspring]

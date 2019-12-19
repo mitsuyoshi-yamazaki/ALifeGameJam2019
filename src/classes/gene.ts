@@ -62,6 +62,10 @@ export class Gene {
     return new Gene(Math.round(random(maxLength, 0)), Math.round(random(maxLength, 0)))
   }
 
+  public clone(): Gene {
+    return new Gene(this._predatorGene, this._preyGene)
+  }
+
   public toString(): string {
     return `${this.predatorGene.toString(16)}|${this.preyGene.toString(16)}`
   }

@@ -1,7 +1,7 @@
 import * as p5 from "p5"
 import { Gene } from "../classes/gene"
 import { GeneticActiveLife, GeneticLife, Life } from "../classes/life"
-import { calculateOrbitalVelocity, Vector } from "../classes/physics"
+import { Vector } from "../classes/physics"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { random } from "../utilities"
@@ -13,7 +13,6 @@ const main = (p: p5) => {
   const fieldWidth = 1200
   const fieldHeight = Math.floor(fieldWidth * 1)
   const worldSize = new Vector(fieldWidth, fieldHeight)
-  const gravityCenter = worldSize.mult(0.5)
   const initialEnergy = 100
   const lifeSize = 6
 
@@ -29,8 +28,8 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    p.fill(0xFF)
-    p.rect(0, 0, fieldWidth, fieldHeight) // background() では動作しない
+    // p.fill(0xFF)
+    // p.rect(0, 0, fieldWidth, fieldHeight) // background() では動作しない
 
     const resources: GeneticLife[] = []
     const resourceSize = lifeSize * 0.6
@@ -38,6 +37,7 @@ const main = (p: p5) => {
     for (let i = 0; i < 1; i += 1) {
       const position = Vector.random(fieldWidth * 0.9, fieldWidth * 0.1)
       const resource = new GeneticLife(position, Gene.random(), resourceSize, resourceEnergy)
+      // resource.shouldDraw = false
       resources.push(resource)
     }
 
@@ -53,7 +53,7 @@ const main = (p: p5) => {
 
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x * 0.7, positionSpace.x * 0.3), random(positionSpace.x * 0.6, positionSpace.x * 0.4))
-      const gene = startsWithSingleGene ? initialGene : Gene.random()
+      const gene = startsWithSingleGene ? initialGene.clone() : Gene.random()
       lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy))
     }
 
