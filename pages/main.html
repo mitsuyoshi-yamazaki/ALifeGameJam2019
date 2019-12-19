@@ -11,11 +11,14 @@
 		gtag('config', 'UA-154586552-1');
 	</script>
 	<script src="../processing.js"></script>
+	<script src="../processingjs/screenshot.js"></script>
 </head>
 
-<body>
+<body onload="setupScreenshotLink()">
+	<a id="link_screenshot" href="javascript:void(0);" onclick="saveScreenshot();">Save Screenshot</a>
+	<br>
 	<canvas id="canvas" data-processing-sources="../processingjs/main.pde ../processingjs/default.pde"></canvas>
-	<a id="link"></a> <!-- used for saving screenshots -->
+	<a id="link"></a> <!-- used for saving screenshots automatically -->
 </body>
 
 </html>

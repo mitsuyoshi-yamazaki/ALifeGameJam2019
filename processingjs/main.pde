@@ -1030,6 +1030,7 @@ void defaultDraw(){
 			link.click();
 			console.log('Saved: ' + filename);
 		}
+		setTimestamp(t);	// see screenshot.js
 		t += 1;
 }
 
