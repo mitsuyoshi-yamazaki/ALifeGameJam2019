@@ -57,9 +57,12 @@ int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
 bool predator_prey_mode = true;
+int predator1 = (new Gene(1, 1)).getWholeGene();
+int prey1 = (new Gene(0, 1)).getWholeGene();
+int plant1 = (new Gene(0, 0)).getWholeGene();
 
 // Fight
-float eatProbability = 0.9999999;
+float eatProbability = 0.9;
 
 // Evolution
 float mutationRate = 0.03;
@@ -130,14 +133,14 @@ class Color {
   }
 }
 
-var shiftInt = (function(shiftee, shiftLength) { //負の数のとき逆向きになる<<
+function shiftInt(shiftee, shiftLength) { //負の数のとき逆向きになる<<
       if(shiftLength > 0){
         return (shiftee << shiftLength);
         }
       else{
         return (shiftee >> (-shiftLength));
         }
-      });
+      };
 
 Color gene2Color(int predatorGene, int preyGene){
   return new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength), 0xff);
@@ -689,7 +692,7 @@ void setup()
 
   Gene[] initialGenesArray;
   if(predator_prey_mode){
-    initialGenesArray = [new Gene(1, 0)]; //[Gene.randomGene()];
+    initialGenesArray = [Gene.fromWholeGene(prey1)]; //[Gene.randomGene()];
   } else {
     initialGenesArray = [new Gene(0, 0), new Gene(1, 0)]; //[Gene.randomGene()];
   }
@@ -737,9 +740,9 @@ void setup()
   for (int i = 0; i < initialResourceSize; i++) {
     Gene g1;
     if(predator_prey_mode){
-      g1 = new Gene(1, 1);
+      g1 = Gene.fromWholeGene(plant1);
     } else {
-      g1 = new Gene(0, 0);
+      g1 = Gene.fromWholeGene(plant1);
     }
     if(isLinearMode){
       lifes[lifes.length] = LinearLife.makeResource(random(paddingWidth,fieldWidth - paddingWidth),resourceSize, Gene.randomGene());
@@ -820,7 +823,7 @@ void draw(){
 
       for (int j = 0; j < compareTo.length; j++){
         if(i==j) continue;
-        var isCollision = (function(x, y){return (30 > random(0,100));});
+        var isCollision = (function(x, y){return (10 > random(0,100));});
         if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
@@ -892,8 +895,8 @@ void drawGraphXY(){
   strokeWeight(3);
 
   if(populationPerSpecies.keys().length < 2){ return ;}
-  first = 0;
-  second = 2;
+  first = predator1;
+  second = prey1;
 
   t= timer();
 
@@ -940,7 +943,7 @@ var timer = makeTimer();
 void addResources() {
   int numberOfResources = int(random(0, resourceGrowth));
   Gene g;
-  if(predator_prey_mode){g=new Gene(1, 1);}
+  if(predator_prey_mode){g=Gene.fromWholeGene(plant1);}
   else {g=new Gene(0, 0);}
   for (int i = 0; i < numberOfResources; i++) {
     if(isLinearMode){
