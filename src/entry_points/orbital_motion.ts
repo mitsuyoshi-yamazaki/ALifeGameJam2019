@@ -9,6 +9,7 @@ const main = (p: p5) => {
   let world: World
   const size = 800
   const worldSize = new Vector(size, size)
+  const lifeSize = 20
   const numberOfLives = 60
   const gravityCenter = worldSize.mult(0.5)
   const gravity = 200
@@ -33,7 +34,8 @@ const main = (p: p5) => {
     const positionSpace = size * 0.9
     const lives: PassiveLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
-      lives.push(new PassiveLife(new Vector(random(positionSpace), random(positionSpace))))
+      const position = new Vector(random(positionSpace), random(positionSpace))
+      lives.push(new PassiveLife(position, lifeSize))
     }
     lives.forEach(life => {
       life.velocity = calculateOrbitalVelocity(life.position, gravityCenter, gravity)
