@@ -42,6 +42,7 @@ const main = (p: p5) => {
 
   function next(): void {
     objects.forEach(obj => {
+      obj.isColliding = false
       obj.next()
 
       const radius = obj.size / 2
@@ -53,6 +54,25 @@ const main = (p: p5) => {
       const x = Math.max(Math.min(obj.position.x, xMax), xMin)
       const y = Math.max(Math.min(obj.position.y, yMax), yMin)
       obj.position = new Vector(x, y)
+    })
+
+    for (let i = 0; i < objects.length; i += 1) {
+      const obj = objects[i]
+
+      for (let j = i + 1; j < objects.length; j += 1) {
+        const other = objects[j]
+
+        if (obj.isCollidingWith(other)) {
+          obj.isColliding = true
+          other.isColliding = true
+        }
+      }
+    }
+
+    objects.forEach(obj => {
+      if (obj.isColliding) {
+        obj.direction += Math.PI / 300
+      }
     })
   }
 
@@ -68,6 +88,7 @@ const main = (p: p5) => {
 class Circle {
   public position: Vector
   public direction: number  // 0 ~ 2pi
+  public isColliding = false
   private readonly speed = 1
 
   public constructor(public readonly size: number, position: Vector, direction: number) {
@@ -88,6 +109,16 @@ class Circle {
     p.circle(this.position.x, this.position.y, this.size)
 
     this.drawDirectionArrow(p)
+
+    if (this.isColliding) {
+      this.drawChangingDirectionArrow(p)
+    }
+  }
+
+  public isCollidingWith(other: Circle): boolean {
+    const distance = this.position.dist(other.position)
+
+    return distance < ((this.size + other.size) / 2)
   }
 
   private drawDirectionArrow(p: p5): void {
@@ -95,7 +126,16 @@ class Circle {
     const head = (new Vector(Math.cos(this.direction), Math.sin(this.direction)))
       .sized(radius)
       .add(this.position)
+
     drawArrow(p, this.position, head)
+  }
+
+  private drawChangingDirectionArrow(p: p5): void {
+    const fromRadian = this.direction + Math.PI / 2
+    const toRadian = this.direction - Math.PI
+    const arcDiameter = this.size / 2
+
+    drawArcArrow(p, this.position, arcDiameter, fromRadian, toRadian)
   }
 }
 
@@ -105,6 +145,15 @@ function drawArrow(p: p5, from: Vector, to: Vector): void {
   p.strokeWeight(1)
 
   p.line(from.x, from.y, to.x, to.y)
+  // TODO:
+}
+
+function drawArcArrow(p: p5, center: Vector, radius: number, fromRadian: number, toRadian: number): void {
+  p.noFill()
+  p.stroke(255)
+  p.strokeWeight(1)
+
+  p.arc(center.x, center.y, radius, radius, fromRadian, toRadian)
   // TODO:
 }
 
