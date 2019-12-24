@@ -24,7 +24,8 @@ const main = (p: p5) => {
     for (let i = 0; i < numberOfObjects; i += 1) {
       const objectSize = random(objectMaxSize, objectMinSize)
       const position = canvasSize.randomized()
-      const obj = new Circle(objectSize, position)
+      const direction = random(Math.PI * 2)
+      const obj = new Circle(objectSize, position, direction)
       objects.push(obj)
     }
   }
@@ -44,9 +45,11 @@ const main = (p: p5) => {
 
 class Circle {
   public position: Vector
+  public direction: number  // 0 ~ 2pi
 
-  public constructor(public readonly size: number, position: Vector) {
+  public constructor(public readonly size: number, position: Vector, direction: number) {
     this.position = position
+    this.direction = direction
   }
 
   public next(): void {
@@ -59,7 +62,26 @@ class Circle {
     p.strokeWeight(1)
 
     p.circle(this.position.x, this.position.y, this.size)
+
+    this.drawDirectionArrow(p)
   }
+
+  private drawDirectionArrow(p: p5): void {
+    const radius = this.size / 2
+    const head = (new Vector(Math.cos(this.direction), Math.sin(this.direction)))
+      .sized(radius)
+      .add(this.position)
+    drawArrow(p, this.position, head)
+  }
+}
+
+function drawArrow(p: p5, from: Vector, to: Vector): void {
+  p.noFill()
+  p.stroke(255)
+  p.strokeWeight(1)
+
+  p.line(from.x, from.y, to.x, to.y)
+  // TODO:
 }
 
 const sketch = new p5(main)
