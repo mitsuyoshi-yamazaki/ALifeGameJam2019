@@ -1,10 +1,22 @@
 var LifeKlass = NoDrawingLife;
 bool droppingsEnabled = false;
 bool mutatingSizeEnabled = false;
-float _backgroundTransparency = 0x01;
-bool grayscaled = true;
+float _backgroundTransparency = 0x00;
+bool grayscaled = false;
 
 void setup() {
+	String rawQuery = document.location.search;
+ String queries = rawQuery.slice(rawQuery.indexOf('?') + 1).split('&');
+ Object parameters = {};
+ for (int i = 0; i < queries.length; i++) {
+  String[] pair = queries[i].split('=');
+  parameters[pair[0]] = pair[1];
+ }
+
+ if (parameters['grayscale'] != null) {
+  grayscaled = int(parameters['grayscale']) == 1;
+ }
+
 	defaultSetup(droppingsEnabled, mutatingSizeEnabled, _backgroundTransparency);
 }
 
@@ -25,7 +37,8 @@ class NoDrawingLife extends Life {
     }
     strokeWeight(0.5);
     if (grayscaled) {
-      stroke(gene.geneColor.r * 0.2126 + gene.geneColor.g * 0.7152 + gene.geneColor.b * 0.0722);
+					 float gray = gene.geneColor.r * 0.2126 + gene.geneColor.g * 0.7152 + gene.geneColor.b * 0.0722;
+      stroke(gray);
     } else {
       stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
     }
