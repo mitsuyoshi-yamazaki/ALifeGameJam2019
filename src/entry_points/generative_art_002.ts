@@ -1,8 +1,9 @@
 import * as p5 from "p5"
-import { Vector } from "../classes/physics"
+import { Force, Vector } from "../classes/physics"
 import { random } from "../utilities"
 
 /*
+* https://vimeo.com/22955812
 * Element 1
 *
 * F1: Circle
@@ -42,7 +43,6 @@ const main = (p: p5) => {
 
   function next(): void {
     objects.forEach(obj => {
-      obj.isColliding = false
       obj.next()
 
       const radius = obj.size / 2
@@ -54,6 +54,10 @@ const main = (p: p5) => {
       const x = Math.max(Math.min(obj.position.x, xMax), xMin)
       const y = Math.max(Math.min(obj.position.y, yMax), yMin)
       obj.position = new Vector(x, y)
+
+      //
+      obj.isColliding = false
+      obj.forces = []
     })
 
     for (let i = 0; i < objects.length; i += 1) {
@@ -62,9 +66,17 @@ const main = (p: p5) => {
       for (let j = i + 1; j < objects.length; j += 1) {
         const other = objects[j]
 
-        if (obj.isCollidingWith(other)) {
+        const distance = obj.position.dist(other.position)
+        const minDistance = (obj.size + other.size) / 2
+        const isColliding = distance < minDistance
+
+        if (isColliding) {
           obj.isColliding = true
           other.isColliding = true
+
+          const forceMagnitude = ((minDistance - distance) / minDistance) * 10
+          obj.forces.push(obj.position.sub(other.position).sized(forceMagnitude))
+          other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
         }
       }
     }
@@ -89,6 +101,7 @@ class Circle {
   public position: Vector
   public direction: number  // 0 ~ 2pi
   public isColliding = false
+  public forces: Vector[] = []
   private readonly speed = 1
 
   public constructor(public readonly size: number, position: Vector, direction: number) {
@@ -97,7 +110,14 @@ class Circle {
   }
 
   public next(): void {
-    const move = new Vector(Math.cos(this.direction), Math.sin(this.direction)).sized(this.speed)
+    const directionalMove = new Vector(Math.cos(this.direction), Math.sin(this.direction)).sized(this.speed)
+    const affectedForces = this.forces.concat(directionalMove)
+
+    const sumForces = (result: Vector, value: Vector) => {
+      return result.add(value)
+    }
+    const move = affectedForces.reduce(sumForces, Vector.zero())
+
     this.position = this.position.add(move)
   }
 
@@ -109,16 +129,11 @@ class Circle {
     p.circle(this.position.x, this.position.y, this.size)
 
     this.drawDirectionArrow(p)
+    this.drawSeparationArrows(p)
 
     if (this.isColliding) {
       this.drawChangingDirectionArrow(p)
     }
-  }
-
-  public isCollidingWith(other: Circle): boolean {
-    const distance = this.position.dist(other.position)
-
-    return distance < ((this.size + other.size) / 2)
   }
 
   private drawDirectionArrow(p: p5): void {
@@ -136,6 +151,18 @@ class Circle {
     const arcDiameter = this.size / 2
 
     drawArcArrow(p, this.position, arcDiameter, fromRadian, toRadian)
+  }
+
+  private drawSeparationArrows(p: p5): void {
+    const arrowSize = this.size / 8
+
+    this.forces.forEach(force => {
+      const head = force
+        .sized(arrowSize)
+        .add(this.position)
+
+      drawArrow(p, this.position, head)
+    })
   }
 }
 
