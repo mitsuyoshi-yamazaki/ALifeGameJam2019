@@ -1,3 +1,5 @@
+import { random } from "../utilities"
+
 export class Vector {
 
   public get transposed(): Vector {
@@ -13,6 +15,10 @@ export class Vector {
 
   public static zero(): Vector {
     return new Vector(0, 0)
+  }
+
+  public static random(max: number, min: number): Vector {
+    return new Vector(random(max, min), random(max, min))
   }
 
   public toString(): string {
@@ -50,6 +56,10 @@ export class Vector {
     const y = this.x * Math.sin(radian) + this.y * Math.cos(radian)
 
     return new Vector(x, y)
+  }
+
+  public randomized(): Vector {
+    return new Vector(random(this.x), random(this.y))
   }
 }
 
