@@ -2,6 +2,16 @@ import * as p5 from "p5"
 import { Vector } from "../classes/physics"
 import { random } from "../utilities"
 
+/*
+* Element 1
+*
+* F1: Circle
+* B1: Move in a straight line
+* B2: Constrain to surface
+* B3: Change direction while touching another Element
+* B4: Move away from an overlapping Element
+*/
+
 const main = (p: p5) => {
   const size = 800
   const canvasSize = new Vector(size, size * 0.6)
@@ -33,6 +43,16 @@ const main = (p: p5) => {
   function next(): void {
     objects.forEach(obj => {
       obj.next()
+
+      const radius = obj.size / 2
+      const xMin = radius
+      const xMax = canvasSize.x - radius
+      const yMin = radius
+      const yMax = canvasSize.y - radius
+
+      const x = Math.max(Math.min(obj.position.x, xMax), xMin)
+      const y = Math.max(Math.min(obj.position.y, yMax), yMin)
+      obj.position = new Vector(x, y)
     })
   }
 
