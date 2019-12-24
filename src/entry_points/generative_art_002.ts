@@ -31,7 +31,9 @@ const main = (p: p5) => {
   }
 
   function next(): void {
-
+    objects.forEach(obj => {
+      obj.next()
+    })
   }
 
   function draw(p: p5): void {
@@ -46,6 +48,7 @@ const main = (p: p5) => {
 class Circle {
   public position: Vector
   public direction: number  // 0 ~ 2pi
+  private readonly speed = 1
 
   public constructor(public readonly size: number, position: Vector, direction: number) {
     this.position = position
@@ -53,7 +56,8 @@ class Circle {
   }
 
   public next(): void {
-
+    const move = new Vector(Math.cos(this.direction), Math.sin(this.direction)).sized(this.speed)
+    this.position = this.position.add(move)
   }
 
   public draw(p: p5): void {
