@@ -79,13 +79,11 @@ const main = (p: p5) => {
           other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
         }
       }
-    }
 
-    objects.forEach(obj => {
       if (obj.isColliding) {
         obj.direction += Math.PI / 300
       }
-    })
+    }
   }
 
   function draw(p: p5): void {
