@@ -82,6 +82,7 @@ export class VanillaTerrain extends Terrain {
 }
 
 export class GravitationalTerrain extends Terrain {
+  public isAtmosphereEnabled = true
   private readonly atmosphereHeight: number
 
   public constructor(public readonly size: Vector, public readonly center: Vector, public readonly gravity: number) {
@@ -91,6 +92,9 @@ export class GravitationalTerrain extends Terrain {
 
   public frictionAt(position: Vector): number {
     // 大気圏
+    if (!this.isAtmosphereEnabled) {
+      return 1
+    }
     const distance = Math.max(this.center.dist(position), 0.1)
     if (distance > this.atmosphereHeight) {
       return 1
@@ -114,20 +118,11 @@ export class GravitationalTerrain extends Terrain {
     const size = Math.max(this.gravity / 10, 4)
     p.ellipse(this.center.x, this.center.y, size, size)
 
-    p.noFill()
-    p.stroke(142, 141, 176)
-    p.circle(this.center.x, this.center.y, this.atmosphereHeight)
-
-       // "大気圏" の厚さの表現
-    // p.noStroke()
-    // const from = p.color(80)
-    // const to = p.color(80, 0)
-    // for (let i = 0; i < this.atmosphereHeight; i += 2) {
-    //   const position = 1 - Math.pow((i - this.atmosphereHeight) / this.atmosphereHeight, 2)
-    //   const color = p.lerpColor(from, to, position)
-    //   p.fill(color)
-    //   p.ellipse(this.center.x, this.center.y, i, i)
-    // }
+    if (this.isAtmosphereEnabled) {
+      p.noFill()
+      p.stroke(142, 141, 176)
+      p.circle(this.center.x, this.center.y, this.atmosphereHeight)
+    }
   }
 }
 

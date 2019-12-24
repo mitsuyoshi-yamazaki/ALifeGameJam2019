@@ -17,13 +17,12 @@ const main = (p: p5) => {
   p.setup = () => {
     const canvas = p.createCanvas(worldSize.x, worldSize.y)
     if (isThumbnail) {
-      canvas.parent("canvas-parent")
+      canvas.parent("orbital-motion-canvas")
     }
 
-    const terrains: Terrain[] = [
-      new GravitationalTerrain(worldSize, gravityCenter, gravity),
-    ]
-    world = new VanillaWorld(worldSize, terrains)
+    const terrain = new GravitationalTerrain(worldSize, gravityCenter, gravity)
+    terrain.isAtmosphereEnabled = !isThumbnail
+    world = new VanillaWorld(worldSize, [terrain])
 
     const lives = randomLives()
     world.addLives(lives)
@@ -37,7 +36,7 @@ const main = (p: p5) => {
   function randomLives(): Life[] {
     const lives: PassiveLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
-      const position = worldSize.randomized()
+      const position = isThumbnail ? Vector.random(140, 0).add(new Vector(70, 10)) : worldSize.randomized()
       lives.push(new PassiveLife(position, lifeSize))
     }
     lives.forEach(life => {
