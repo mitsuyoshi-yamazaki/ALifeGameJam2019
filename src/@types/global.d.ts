@@ -1,1 +1,1 @@
-declare let hoge: boolean | undefined
+declare let isThumbnail: boolean

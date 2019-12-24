@@ -9,8 +9,14 @@
 
 			gtag('config', 'UA-154586552-1');
 		</script>
+		<script>
+			// This script should be placed earlier than others.
+			var isThumbnail = true;
+		</script>
 		<script src="processing.js"></script>
 		<script src="processingjs/screenshot.js"></script>
+	 <script src="p5.min.js"></script>
+		<script src="dist/orbital_motion.js"></script>
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
 			integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 		<style>
@@ -75,7 +81,7 @@
 			<div class="row">
 				<div class="col-4">
 					<div class="card">
-						<img class="card-img-top" src="" style="background-color: lightgrey;">
+						<div id="canvas-parent" style="height: 160px;"></div>
 						<div class="card-body">
 							<h5 class="card-title">Orbital motion</h5>
 							<p class="card-text">

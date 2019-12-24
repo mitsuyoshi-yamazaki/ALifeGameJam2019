@@ -8,14 +8,18 @@ import { random } from "../utilities"
 const main = (p: p5) => {
   let world: World
   const size = 800
-  const worldSize = new Vector(size, size)
+  const worldSize = isThumbnail ? new Vector(280, 160) : new Vector(size, size)
   const lifeSize = 20
-  const numberOfLives = 60
+  const numberOfLives = isThumbnail ? 6 : 60
   const gravityCenter = worldSize.mult(0.5)
   const gravity = 200
 
   p.setup = () => {
-    p.createCanvas(size, size)
+    const canvas = p.createCanvas(worldSize.x, worldSize.y)
+    if (isThumbnail) {
+      canvas.parent("canvas-parent")
+    }
+
     const terrains: Terrain[] = [
       new GravitationalTerrain(worldSize, gravityCenter, gravity),
     ]
@@ -31,10 +35,9 @@ const main = (p: p5) => {
   }
 
   function randomLives(): Life[] {
-    const positionSpace = size * 0.9
     const lives: PassiveLife[] = []
     for (let i = 0; i < numberOfLives; i += 1) {
-      const position = new Vector(random(positionSpace), random(positionSpace))
+      const position = worldSize.randomized()
       lives.push(new PassiveLife(position, lifeSize))
     }
     lives.forEach(life => {
