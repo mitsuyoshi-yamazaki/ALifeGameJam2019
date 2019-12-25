@@ -22,7 +22,7 @@ float graphHeight = 700;
 // Field
 float fieldWidth = 1000;
 float fieldHeight = 700;
-float initialPopulationFieldSize = 300; // 起動時に生まれるLifeの置かれる場所の大きさ
+float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 
 float appFieldWidth = fieldWidth;
@@ -51,7 +51,7 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 3;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -59,7 +59,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 bool predator_prey_mode = false;
 
 // Fight
-float eatProbability = 0.9999999;
+float eatProbability = 0.7;
 
 // Evolution
 float mutationRate = 0.03;
@@ -822,6 +822,7 @@ void draw(){
 
       for (int j = 0; j < compareTo.length; j++){
         if(i==j) continue;
+        function isCollision(l1, l2){return true};
         if(isCollision(lifes[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
