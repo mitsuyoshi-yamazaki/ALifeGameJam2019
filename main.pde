@@ -12,7 +12,7 @@ bool artMode = false;
 Life[] lifes;
 int populationSize = 1000;
 int initialResourceSize = 500;
-int resourceGrowth = 1 + 4.01;
+int resourceGrowth = 1 + 5.01;
 
 // Inspector
 int[] populationPerSpecies = [];
@@ -51,7 +51,7 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 3;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -59,7 +59,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 bool predator_prey_mode = false;
 
 // Fight
-float eatProbability = 0.9999999;
+float eatProbability = 0.7;
 
 // Evolution
 float mutationRate = 0.03;
@@ -774,8 +774,20 @@ void draw(){
   Life[] born = [];
 
   Life[] sortedX = lifes.slice(0, lifes.length);
+  PVector center = new PVector(fieldWidth/2, fieldHeight/2);
+
+  function disFromCenter(life){
+    return PVector.sub(center, life.position).mag();
+  }
+  function angleFromCenter(life){
+    return PVector.sub(center, life.position).heading();
+  }
+
   sortedX.sort(function(lhs, rhs) {
-    return lhs.position.x - rhs.position.x;
+    float dis_1 = angleFromCenter(lhs);
+    float dis_2 = angleFromCenter(rhs);
+
+    return dis_1 - dis_2;
   });
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
@@ -804,21 +816,26 @@ void draw(){
 
       int xIndex = sortedX.indexOf(life);
 
-      float maxX = life.position.x + life.size / 2;
-      float minX = life.position.x - life.size / 2;
+      float maxX = angleFromCenter(life) + PI/20;
+      float minX = angleFromCenter(life) - PI/20;
 
       for (int k = xIndex + 1; k < sortedX.length; k++) {
-        if (sortedX[k].position.x > maxX) {
+        if (angleFromCenter(sortedX[k]) > maxX) {
           break;
         }
         compareTo[compareTo.length] = sortedX[k];
       }
       for (int k = xIndex - 1; k >= 0; k--) {
-        if (sortedX[k].position.x < minX) {
+        if (angleFromCenter(sortedX[k]) < minX) {
           break;
         }
         compareTo[compareTo.length] = sortedX[k];
       }
+      function isCollision(l1, l2){
+        float dis_1 = angleFromCenter(l1);
+        float dis_2 = angleFromCenter(l2);
+        return (abs(dis_1 - dis_2) < PI/20);
+      };
 
       for (int j = 0; j < compareTo.length; j++){
         if(i==j) continue;
