@@ -163,6 +163,24 @@ const main = (p: p5) => {
         const x = Math.max(Math.min(obj.position.x, xMax), xMin)
         const y = Math.max(Math.min(obj.position.y, yMax), yMin)
         obj.position = new Vector(x, y)
+
+      } else if (element.B5) {
+        let x = obj.position.x
+        let y = obj.position.y
+
+        if (x < 0) {
+          x += canvasSize.x
+        } else if (x > canvasSize.x) {
+          x -= canvasSize.x
+        }
+
+        if (y < 0) {
+          y += canvasSize.y
+        } else if (y > canvasSize.y) {
+          y -= canvasSize.y
+        }
+
+        obj.position = new Vector(x, y)
       }
 
       //
