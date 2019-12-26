@@ -13,22 +13,59 @@ import { random } from "../utilities"
 * B4: Move away from an overlapping Element
 */
 
+enum DrawMode {
+  Backend = "backend",
+  Artistic = "artistic",
+}
+
+const rawQuery = document.location.search
+const queries = rawQuery
+  .slice(rawQuery.indexOf("?") + 1)
+  .split("&")
+const parameters = { }
+
+for (const query of queries) {
+  const pair = query.split("=")
+  parameters[pair[0]] = pair[1]
+}
+console.log(parameters)
+
+// tslint:disable: no-string-literal
+const drawMode: DrawMode = parameters["draw_mode"] ? parameters["draw_mode"] : DrawMode.Artistic
+const numberOfObjects = parameters["objects"] ? parameters["objects"] : 50
+// const interval = parameters["i"] ? parameters["i"] : 200
+// tslint:enable: no-string-literal
+
 const main = (p: p5) => {
+  let t = 0
   const size = 800
   const canvasSize = new Vector(size, size * 0.6)
   const objects: Circle[] = []
-  const numberOfObjects = 20
   const objectMinSize = 60
   const objectMaxSize = objectMinSize * 2
 
   p.setup = () => {
     p.createCanvas(canvasSize.x, canvasSize.y)
     createObjects()
+
+    if (drawMode === DrawMode.Artistic) {
+      p.background(0)
+    }
   }
 
   p.draw = () => {
+    t += 1
     next()
     draw(p)
+
+    // if (t % interval === 0) {
+    //   const objectSize = random(objectMaxSize * 3, objectMinSize * 3)
+    //   const position = canvasSize.randomized()
+    //   const direction = random(Math.PI * 2)
+    //   const obj = new Circle(objectSize, position, direction)
+    //   objects.push(obj)
+    //   console.log("add")
+    // }
   }
 
   function createObjects() {
@@ -74,9 +111,19 @@ const main = (p: p5) => {
           obj.isColliding = true
           other.isColliding = true
 
-          const forceMagnitude = ((minDistance - distance) / minDistance) * 10
+          const normalizedDistance = ((minDistance - distance) / minDistance)
+          const forceMagnitude = normalizedDistance * 10
           obj.forces.push(obj.position.sub(other.position).sized(forceMagnitude))
           other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
+
+          if (drawMode === DrawMode.Artistic) {
+            p.noFill()
+
+            p.stroke(255 * normalizedDistance, 128)
+            p.strokeWeight(0.5)
+
+            p.line(obj.position.x, obj.position.y, other.position.x, other.position.y)
+          }
         }
       }
 
@@ -87,11 +134,13 @@ const main = (p: p5) => {
   }
 
   function draw(p: p5): void {
-    p.background(0)
+    if (drawMode === DrawMode.Backend) {
+      p.background(0)
 
-    objects.forEach(obj => {
-      obj.draw(p)
-    })
+      objects.forEach(obj => {
+        obj.draw(p)
+      })
+    }
   }
 }
 
