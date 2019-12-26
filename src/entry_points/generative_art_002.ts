@@ -4,18 +4,70 @@ import { random } from "../utilities"
 
 /*
 * https://vimeo.com/22955812
-* Element 1
 *
 * F1: Circle
+* F2: Line
+*
 * B1: Move in a straight line
 * B2: Constrain to surface
 * B3: Change direction while touching another Element
 * B4: Move away from an overlapping Element
+* B5: Enter from the opposite edge after moving off the surface
+* B6: Orient toward the direction of an Element that is touching
+* B7: Deviate from the current direction
+*
+* E1: F1 + B1 + B2 + B3 + B4
+* E2: F1 + B1 + B5
+* E3: F2 + B1 + B3 + B5
+* E4: F1 + B1 + B2 + B3
+* E5: F2 + B1 + B5 + B6 + B7
 */
 
 enum DrawMode {
   Backend = "backend",
   Artistic = "artistic",
+}
+
+enum Form {
+  F1,
+  F2,
+}
+
+enum Behavior {
+  B1,
+  B2,
+  B3,
+  B4,
+  B5,
+  B6,
+  B7,
+}
+
+class Element {
+  public get B1(): boolean {
+    return this.behavior.indexOf(Behavior.B1) >= 0
+  }
+  public get B2(): boolean {
+    return this.behavior.indexOf(Behavior.B2) >= 0
+  }
+  public get B3(): boolean {
+    return this.behavior.indexOf(Behavior.B3) >= 0
+  }
+  public get B4(): boolean {
+    return this.behavior.indexOf(Behavior.B4) >= 0
+  }
+  public get B5(): boolean {
+    return this.behavior.indexOf(Behavior.B5) >= 0
+  }
+  public get B6(): boolean {
+    return this.behavior.indexOf(Behavior.B6) >= 0
+  }
+  public get B7(): boolean {
+    return this.behavior.indexOf(Behavior.B7) >= 0
+  }
+
+  public constructor(public readonly form: Form, public readonly behavior: Behavior[]) {
+  }
 }
 
 const rawQuery = document.location.search
@@ -33,8 +85,27 @@ console.log(parameters)
 // tslint:disable: no-string-literal
 const drawMode: DrawMode = parameters["draw_mode"] ? parameters["draw_mode"] : DrawMode.Artistic
 const numberOfObjects = parameters["objects"] ? parameters["objects"] : 50
+const behavior: Behavior[] = (() => {
+  const given = parameters["behavior"]
+  if (given == undefined) {
+    return [
+      Behavior.B1,
+      Behavior.B2,
+      Behavior.B3,
+      Behavior.B4,
+    ]
+  }
+
+  return given.split(",")
+    .map((e: string) => {
+      return Behavior[e]
+    })
+})()
 // const interval = parameters["i"] ? parameters["i"] : 200
 // tslint:enable: no-string-literal
+
+const element1 = new Element(Form.F1, behavior)
+const element = element1
 
 const main = (p: p5) => {
   let t = 0
@@ -82,15 +153,17 @@ const main = (p: p5) => {
     objects.forEach(obj => {
       obj.next()
 
-      const radius = obj.size / 2
-      const xMin = radius
-      const xMax = canvasSize.x - radius
-      const yMin = radius
-      const yMax = canvasSize.y - radius
+      if (element.B2) {
+        const radius = obj.size / 2
+        const xMin = radius
+        const xMax = canvasSize.x - radius
+        const yMin = radius
+        const yMax = canvasSize.y - radius
 
-      const x = Math.max(Math.min(obj.position.x, xMax), xMin)
-      const y = Math.max(Math.min(obj.position.y, yMax), yMin)
-      obj.position = new Vector(x, y)
+        const x = Math.max(Math.min(obj.position.x, xMax), xMin)
+        const y = Math.max(Math.min(obj.position.y, yMax), yMin)
+        obj.position = new Vector(x, y)
+      }
 
       //
       obj.isColliding = false
@@ -127,7 +200,7 @@ const main = (p: p5) => {
         }
       }
 
-      if (obj.isColliding) {
+      if (element.B3 && obj.isColliding) {
         obj.direction += Math.PI / 300
       }
     }
@@ -158,7 +231,8 @@ class Circle {
 
   public next(): void {
     const directionalMove = new Vector(Math.cos(this.direction), Math.sin(this.direction)).sized(this.speed)
-    const affectedForces = this.forces.concat(directionalMove)
+    const separationForces: Vector[] = element.B4 ? this.forces : []
+    const affectedForces = element.B1 ? separationForces.concat(directionalMove) : separationForces
 
     const sumForces = (result: Vector, value: Vector) => {
       return result.add(value)
@@ -184,6 +258,9 @@ class Circle {
   }
 
   private drawDirectionArrow(p: p5): void {
+    if (!element.B1) {
+      return
+    }
     const radius = this.size / 2
     const head = (new Vector(Math.cos(this.direction), Math.sin(this.direction)))
       .sized(radius)
@@ -193,6 +270,10 @@ class Circle {
   }
 
   private drawChangingDirectionArrow(p: p5): void {
+    if (!element.B3) {
+      return
+    }
+
     const fromRadian = this.direction + Math.PI / 2
     const toRadian = this.direction - Math.PI
     const arcDiameter = this.size / 2
@@ -201,6 +282,9 @@ class Circle {
   }
 
   private drawSeparationArrows(p: p5): void {
+    if (!element.B4) {
+      return
+    }
     const arrowSize = this.size / 8
 
     this.forces.forEach(force => {
