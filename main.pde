@@ -916,7 +916,7 @@ void drawGraphXY(){
 
   // colorMode(HSB);
   strokeWeight(2);
-  stroke(cos(populationOfResource/1000)*256, sin(populationOfResource/1000)*256, 190);
+  stroke(cos(t/300)*256, sin(t/300)*256, 190);
 
   PVector newPoint;
   if(!visualizeResource){
