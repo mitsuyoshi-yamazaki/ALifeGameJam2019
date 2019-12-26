@@ -6,15 +6,15 @@ import { random } from "../utilities"
 * https://vimeo.com/22955812
 *
 * F1: Circle
-* F2: Line
+* F2: Line  // Not implemented
 *
 * B1: Move in a straight line
 * B2: Constrain to surface
 * B3: Change direction while touching another Element
 * B4: Move away from an overlapping Element
 * B5: Enter from the opposite edge after moving off the surface
-* B6: Orient toward the direction of an Element that is touching
-* B7: Deviate from the current direction
+* B6: Orient toward the direction of an Element that is touching  // Not implemented
+* B7: Deviate from the current direction                          // Not implemented
 *
 * E1: F1 + B1 + B2 + B3 + B4
 * E2: F1 + B1 + B5
