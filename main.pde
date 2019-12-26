@@ -51,18 +51,18 @@ bool enableMeaningfulSize =false;
 bool enableReproduction=true;
 
 // Gene Parameter
-int geneLength = 1;
+int geneLength = 4;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
-bool predator_prey_mode = true;
+bool predator_prey_mode = false;
 int predator1 = (new Gene(1, 1)).getWholeGene();
 int prey1 = (new Gene(0, 1)).getWholeGene();
 int plant1 = (new Gene(0, 0)).getWholeGene();
 
 // Fight
-float eatProbability = 0.9;
+float eatProbability = 0.7;
 
 // Evolution
 float mutationRate = 0.03;
@@ -833,7 +833,9 @@ void draw(){
           if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
             predator = lifes[i];
             prey = compareTo[j];
-
+            strokeWeight(1);
+            stroke(predator.gene.geneColor.r, predator.gene.geneColor.g, predator.gene.geneColor.b);
+            line(predator.position.x, predator.position.y, prey.position.x, prey.position.y);
           } else {
             continue;
           }
@@ -856,7 +858,7 @@ void draw(){
   addResources();
 
 // Draw Graph
-  drawGraphXY();
+  drawGraph();
 
   //console.log("frameRate: " + frameRate);
 }
