@@ -211,7 +211,7 @@ const main = (p: p5) => {
           other.isColliding = true
 
           const normalizedDistance = ((minDistance - distance) / minDistance)
-          const forceMagnitude = normalizedDistance * 2
+          const forceMagnitude = normalizedDistance * 1
           obj.forces.push(obj.position.sub(other.position).sized(forceMagnitude))
           other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
 
@@ -234,6 +234,12 @@ const main = (p: p5) => {
 
   function draw(): void {
     switch (drawMode) {
+      case DrawMode.Artistic:
+        p.noStroke()
+        p.fill(0, 2)
+        p.rect(0, 0, canvasSize.x, canvasSize.y)
+        break
+
       case DrawMode.Backend:
         p.background(0)
 
@@ -244,6 +250,9 @@ const main = (p: p5) => {
 
       case DrawMode.Both:
         p.noStroke()
+        p.fill(0, 10)
+        p.rect(0, 0, canvasSize.x, canvasSize.y)
+
         p.fill(0)
         p.rect(0, canvasSize.y - 1, canvasSize.x, canvasSize.y)
 
