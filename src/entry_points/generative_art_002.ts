@@ -150,7 +150,7 @@ const main = (p: p5) => {
       const position = canvasSize.randomized()
       const direction = random(Math.PI * 2)
       const obj = new Circle(objectSize, position, direction)
-      if (random(1) > 0.5) {
+      if (random(1) > 1) {
         obj.ignoreB4 = true
       }
       objects.push(obj)
