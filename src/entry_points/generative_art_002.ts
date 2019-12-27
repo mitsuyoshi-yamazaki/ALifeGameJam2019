@@ -26,6 +26,7 @@ import { random } from "../utilities"
 enum DrawMode {
   Backend = "backend",
   Artistic = "artistic",
+  Both = "both",
 }
 
 enum Form {
@@ -116,10 +117,14 @@ const objectMaxSize = objectMinSize * 2
 
 const main = (p: p5) => {
   p.setup = () => {
-    p.createCanvas(canvasSize.x, canvasSize.y)
+    if (drawMode === DrawMode.Both) {
+      p.createCanvas(canvasSize.x, canvasSize.y * 2)
+    } else {
+      p.createCanvas(canvasSize.x, canvasSize.y)
+    }
     createObjects()
 
-    if (drawMode === DrawMode.Artistic) {
+    if (drawMode === DrawMode.Artistic || drawMode === DrawMode.Both) {
       p.background(0)
     }
   }
@@ -127,7 +132,7 @@ const main = (p: p5) => {
   p.draw = () => {
     t += 1
     next()
-    draw(p)
+    draw()
 
     // if (t % interval === 0) {
     //   const objectSize = random(objectMaxSize * 3, objectMinSize * 3)
@@ -210,7 +215,7 @@ const main = (p: p5) => {
           obj.forces.push(obj.position.sub(other.position).sized(forceMagnitude))
           other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
 
-          if (drawMode === DrawMode.Artistic) {
+          if (drawMode === DrawMode.Artistic || drawMode === DrawMode.Both) {
             p.noFill()
 
             p.stroke(255 * normalizedDistance, 128)
@@ -227,13 +232,28 @@ const main = (p: p5) => {
     }
   }
 
-  function draw(p: p5): void {
-    if (drawMode === DrawMode.Backend) {
-      p.background(0)
+  function draw(): void {
+    switch (drawMode) {
+      case DrawMode.Backend:
+        p.background(0)
 
-      objects.forEach(obj => {
-        obj.draw(p)
-      })
+        objects.forEach(obj => {
+          obj.draw(p)
+        })
+        break
+
+      case DrawMode.Both:
+        p.noStroke()
+        p.fill(0)
+        p.rect(0, canvasSize.y - 1, canvasSize.x, canvasSize.y)
+
+        objects.forEach(obj => {
+          obj.draw(p)
+        })
+        break
+
+      default:
+        break
     }
   }
 }
@@ -269,29 +289,31 @@ class Circle {
     p.stroke(255)
     p.strokeWeight(0.5)
 
-    p.circle(this.position.x, this.position.y, this.size)
+    const position = drawMode == DrawMode.Both ? new Vector(this.position.x, this.position.y + canvasSize.y) : this.position
 
-    this.drawDirectionArrow(p)
-    this.drawSeparationArrows(p)
+    p.circle(position.x, position.y, this.size)
+
+    this.drawDirectionArrow(p, position)
+    this.drawSeparationArrows(p, position)
 
     if (this.isColliding) {
-      this.drawChangingDirectionArrow(p)
+      this.drawChangingDirectionArrow(p, position)
     }
   }
 
-  private drawDirectionArrow(p: p5): void {
+  private drawDirectionArrow(p: p5, position: Vector): void {
     if (!element.B1) {
       return
     }
     const radius = this.size / 2
     const head = (new Vector(Math.cos(this.direction), Math.sin(this.direction)))
       .sized(radius)
-      .add(this.position)
+      .add(position)
 
-    drawArrow(p, this.position, head)
+    drawArrow(p, position, head)
   }
 
-  private drawChangingDirectionArrow(p: p5): void {
+  private drawChangingDirectionArrow(p: p5, position: Vector): void {
     if (!element.B3) {
       return
     }
@@ -300,10 +322,10 @@ class Circle {
     const toRadian = this.direction - Math.PI
     const arcDiameter = this.size / 2
 
-    drawArcArrow(p, this.position, arcDiameter, fromRadian, toRadian)
+    drawArcArrow(p, position, arcDiameter, fromRadian, toRadian)
   }
 
-  private drawSeparationArrows(p: p5): void {
+  private drawSeparationArrows(p: p5, position: Vector): void {
     if (!element.B4 || this.ignoreB4) {
       return
     }
@@ -312,9 +334,9 @@ class Circle {
     this.forces.forEach(force => {
       const head = force
         .sized(arrowSize)
-        .add(this.position)
+        .add(position)
 
-      drawArrow(p, this.position, head)
+      drawArrow(p, position, head)
     })
   }
 }
