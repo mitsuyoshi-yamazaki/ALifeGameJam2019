@@ -107,14 +107,14 @@ const behavior: Behavior[] = (() => {
 const element1 = new Element(Form.F1, behavior)
 const element = element1
 
-const main = (p: p5) => {
-  let t = 0
-  const size = 800
-  const canvasSize = new Vector(size, size * 0.6)
-  const objects: Circle[] = []
-  const objectMinSize = 60
-  const objectMaxSize = objectMinSize * 2
+let t = 0
+const size = 800
+const canvasSize = new Vector(size, size * 0.6)
+const objects: Circle[] = []
+const objectMinSize = 20
+const objectMaxSize = objectMinSize * 2
 
+const main = (p: p5) => {
   p.setup = () => {
     p.createCanvas(canvasSize.x, canvasSize.y)
     createObjects()
@@ -145,6 +145,9 @@ const main = (p: p5) => {
       const position = canvasSize.randomized()
       const direction = random(Math.PI * 2)
       const obj = new Circle(objectSize, position, direction)
+      if (random(1) > 0.5) {
+        obj.ignoreB4 = true
+      }
       objects.push(obj)
     }
   }
@@ -240,7 +243,8 @@ class Circle {
   public direction: number  // 0 ~ 2pi
   public isColliding = false
   public forces: Vector[] = []
-  private readonly speed = 1
+  public ignoreB4 = false
+  private readonly speed = (1 / 60) * objectMinSize
 
   public constructor(public readonly size: number, position: Vector, direction: number) {
     this.position = position
@@ -249,7 +253,7 @@ class Circle {
 
   public next(): void {
     const directionalMove = new Vector(Math.cos(this.direction), Math.sin(this.direction)).sized(this.speed)
-    const separationForces: Vector[] = element.B4 ? this.forces : []
+    const separationForces: Vector[] = (element.B4 && !this.ignoreB4) ? this.forces : []
     const affectedForces = element.B1 ? separationForces.concat(directionalMove) : separationForces
 
     const sumForces = (result: Vector, value: Vector) => {
@@ -263,7 +267,7 @@ class Circle {
   public draw(p: p5): void {
     p.noFill()
     p.stroke(255)
-    p.strokeWeight(1)
+    p.strokeWeight(0.5)
 
     p.circle(this.position.x, this.position.y, this.size)
 
@@ -300,7 +304,7 @@ class Circle {
   }
 
   private drawSeparationArrows(p: p5): void {
-    if (!element.B4) {
+    if (!element.B4 || this.ignoreB4) {
       return
     }
     const arrowSize = this.size / 8
@@ -318,7 +322,7 @@ class Circle {
 function drawArrow(p: p5, from: Vector, to: Vector): void {
   p.noFill()
   p.stroke(255)
-  p.strokeWeight(1)
+  p.strokeWeight(0.5)
 
   p.line(from.x, from.y, to.x, to.y)
   // TODO:
@@ -327,7 +331,7 @@ function drawArrow(p: p5, from: Vector, to: Vector): void {
 function drawArcArrow(p: p5, center: Vector, radius: number, fromRadian: number, toRadian: number): void {
   p.noFill()
   p.stroke(255)
-  p.strokeWeight(1)
+  p.strokeWeight(0.5)
 
   p.arc(center.x, center.y, radius, radius, fromRadian, toRadian)
   // TODO:
