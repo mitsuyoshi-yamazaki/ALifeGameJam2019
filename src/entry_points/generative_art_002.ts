@@ -26,6 +26,7 @@ import { random } from "../utilities"
 enum DrawMode {
   Backend = "backend",
   Artistic = "artistic",
+  Both = "both",
 }
 
 enum Form {
@@ -107,19 +108,23 @@ const behavior: Behavior[] = (() => {
 const element1 = new Element(Form.F1, behavior)
 const element = element1
 
-const main = (p: p5) => {
-  let t = 0
-  const size = 800
-  const canvasSize = new Vector(size, size * 0.6)
-  const objects: Circle[] = []
-  const objectMinSize = 60
-  const objectMaxSize = objectMinSize * 2
+let t = 0
+const size = 800
+const canvasSize = new Vector(size, size * 0.6)
+const objects: Circle[] = []
+const objectMinSize = 20
+const objectMaxSize = objectMinSize * 2
 
+const main = (p: p5) => {
   p.setup = () => {
-    p.createCanvas(canvasSize.x, canvasSize.y)
+    const canvasHeight = drawMode === DrawMode.Both ? canvasSize.y * 2 : canvasSize.y
+    const canvas = p.createCanvas(canvasSize.x, canvasHeight)
+    canvas.id("canvas")
+    canvas.parent("canvas-parent")
+
     createObjects()
 
-    if (drawMode === DrawMode.Artistic) {
+    if (drawMode === DrawMode.Artistic || drawMode === DrawMode.Both) {
       p.background(0)
     }
   }
@@ -127,7 +132,7 @@ const main = (p: p5) => {
   p.draw = () => {
     t += 1
     next()
-    draw(p)
+    draw()
 
     // if (t % interval === 0) {
     //   const objectSize = random(objectMaxSize * 3, objectMinSize * 3)
@@ -145,6 +150,9 @@ const main = (p: p5) => {
       const position = canvasSize.randomized()
       const direction = random(Math.PI * 2)
       const obj = new Circle(objectSize, position, direction)
+      if (random(1) > 1) {
+        obj.ignoreB4 = true
+      }
       objects.push(obj)
     }
   }
@@ -203,11 +211,11 @@ const main = (p: p5) => {
           other.isColliding = true
 
           const normalizedDistance = ((minDistance - distance) / minDistance)
-          const forceMagnitude = normalizedDistance * 10
+          const forceMagnitude = normalizedDistance * 1
           obj.forces.push(obj.position.sub(other.position).sized(forceMagnitude))
           other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
 
-          if (drawMode === DrawMode.Artistic) {
+          if (drawMode === DrawMode.Artistic || drawMode === DrawMode.Both) {
             p.noFill()
 
             p.stroke(255 * normalizedDistance, 128)
@@ -224,13 +232,37 @@ const main = (p: p5) => {
     }
   }
 
-  function draw(p: p5): void {
-    if (drawMode === DrawMode.Backend) {
-      p.background(0)
+  function draw(): void {
+    switch (drawMode) {
+      case DrawMode.Artistic:
+        p.noStroke()
+        p.fill(0, 2)
+        p.rect(0, 0, canvasSize.x, canvasSize.y)
+        break
 
-      objects.forEach(obj => {
-        obj.draw(p)
-      })
+      case DrawMode.Backend:
+        p.background(0)
+
+        objects.forEach(obj => {
+          obj.draw(p)
+        })
+        break
+
+      case DrawMode.Both:
+        p.noStroke()
+        p.fill(0, 10)
+        p.rect(0, 0, canvasSize.x, canvasSize.y)
+
+        p.fill(0)
+        p.rect(0, canvasSize.y - 1, canvasSize.x, canvasSize.y)
+
+        objects.forEach(obj => {
+          obj.draw(p)
+        })
+        break
+
+      default:
+        break
     }
   }
 }
@@ -240,7 +272,8 @@ class Circle {
   public direction: number  // 0 ~ 2pi
   public isColliding = false
   public forces: Vector[] = []
-  private readonly speed = 1
+  public ignoreB4 = false
+  private readonly speed = (1 / 60) * objectMinSize
 
   public constructor(public readonly size: number, position: Vector, direction: number) {
     this.position = position
@@ -249,7 +282,7 @@ class Circle {
 
   public next(): void {
     const directionalMove = new Vector(Math.cos(this.direction), Math.sin(this.direction)).sized(this.speed)
-    const separationForces: Vector[] = element.B4 ? this.forces : []
+    const separationForces: Vector[] = (element.B4 && !this.ignoreB4) ? this.forces : []
     const affectedForces = element.B1 ? separationForces.concat(directionalMove) : separationForces
 
     const sumForces = (result: Vector, value: Vector) => {
@@ -263,31 +296,33 @@ class Circle {
   public draw(p: p5): void {
     p.noFill()
     p.stroke(255)
-    p.strokeWeight(1)
+    p.strokeWeight(0.5)
 
-    p.circle(this.position.x, this.position.y, this.size)
+    const position = drawMode == DrawMode.Both ? new Vector(this.position.x, this.position.y + canvasSize.y) : this.position
 
-    this.drawDirectionArrow(p)
-    this.drawSeparationArrows(p)
+    p.circle(position.x, position.y, this.size)
+
+    this.drawDirectionArrow(p, position)
+    this.drawSeparationArrows(p, position)
 
     if (this.isColliding) {
-      this.drawChangingDirectionArrow(p)
+      this.drawChangingDirectionArrow(p, position)
     }
   }
 
-  private drawDirectionArrow(p: p5): void {
+  private drawDirectionArrow(p: p5, position: Vector): void {
     if (!element.B1) {
       return
     }
     const radius = this.size / 2
     const head = (new Vector(Math.cos(this.direction), Math.sin(this.direction)))
       .sized(radius)
-      .add(this.position)
+      .add(position)
 
-    drawArrow(p, this.position, head)
+    drawArrow(p, position, head)
   }
 
-  private drawChangingDirectionArrow(p: p5): void {
+  private drawChangingDirectionArrow(p: p5, position: Vector): void {
     if (!element.B3) {
       return
     }
@@ -296,11 +331,11 @@ class Circle {
     const toRadian = this.direction - Math.PI
     const arcDiameter = this.size / 2
 
-    drawArcArrow(p, this.position, arcDiameter, fromRadian, toRadian)
+    drawArcArrow(p, position, arcDiameter, fromRadian, toRadian)
   }
 
-  private drawSeparationArrows(p: p5): void {
-    if (!element.B4) {
+  private drawSeparationArrows(p: p5, position: Vector): void {
+    if (!element.B4 || this.ignoreB4) {
       return
     }
     const arrowSize = this.size / 8
@@ -308,9 +343,9 @@ class Circle {
     this.forces.forEach(force => {
       const head = force
         .sized(arrowSize)
-        .add(this.position)
+        .add(position)
 
-      drawArrow(p, this.position, head)
+      drawArrow(p, position, head)
     })
   }
 }
@@ -318,7 +353,7 @@ class Circle {
 function drawArrow(p: p5, from: Vector, to: Vector): void {
   p.noFill()
   p.stroke(255)
-  p.strokeWeight(1)
+  p.strokeWeight(0.5)
 
   p.line(from.x, from.y, to.x, to.y)
   // TODO:
@@ -327,7 +362,7 @@ function drawArrow(p: p5, from: Vector, to: Vector): void {
 function drawArcArrow(p: p5, center: Vector, radius: number, fromRadian: number, toRadian: number): void {
   p.noFill()
   p.stroke(255)
-  p.strokeWeight(1)
+  p.strokeWeight(0.5)
 
   p.arc(center.x, center.y, radius, radius, fromRadian, toRadian)
   // TODO:
