@@ -23,6 +23,11 @@ const main = (p: p5) => {
       const obj = new Ant(position)
       objects.push(obj)
     }
+    for (let i = 0; i < 40; i += 1) {
+      const position = canvasSize.randomized()
+      const obj = new Material(position)
+      objects.push(obj)
+    }
   }
 
   function next(): void {
@@ -64,9 +69,28 @@ class Ant implements WorldObject {
   public draw(p: p5): void {
     p.noFill()
     p.stroke(255)
-    p.strokeWeight(1)
+    p.strokeWeight(0.5)
 
     p.circle(this.position.x, this.position.y, 60)
+  }
+}
+
+class Material implements WorldObject {
+  public position: Vector
+
+  public constructor(position: Vector) {
+    this.position = position
+  }
+
+  public next(): void {
+
+  }
+
+  public draw(p: p5): void {
+    p.noStroke()
+    p.fill(255, 0, 0)
+
+    p.circle(this.position.x, this.position.y, 20)
   }
 }
 
