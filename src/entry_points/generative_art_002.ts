@@ -117,11 +117,11 @@ const objectMaxSize = objectMinSize * 2
 
 const main = (p: p5) => {
   p.setup = () => {
-    if (drawMode === DrawMode.Both) {
-      p.createCanvas(canvasSize.x, canvasSize.y * 2)
-    } else {
-      p.createCanvas(canvasSize.x, canvasSize.y)
-    }
+    const canvasHeight = drawMode === DrawMode.Both ? canvasSize.y * 2 : canvasSize.y
+    const canvas = p.createCanvas(canvasSize.x, canvasHeight)
+    canvas.id("canvas")
+    canvas.parent("canvas-parent")
+
     createObjects()
 
     if (drawMode === DrawMode.Artistic || drawMode === DrawMode.Both) {
