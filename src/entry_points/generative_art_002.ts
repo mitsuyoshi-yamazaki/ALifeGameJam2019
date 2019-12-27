@@ -211,7 +211,7 @@ const main = (p: p5) => {
           other.isColliding = true
 
           const normalizedDistance = ((minDistance - distance) / minDistance)
-          const forceMagnitude = normalizedDistance * 10
+          const forceMagnitude = normalizedDistance * 2
           obj.forces.push(obj.position.sub(other.position).sized(forceMagnitude))
           other.forces.push(other.position.sub(obj.position).sized(forceMagnitude))
 
