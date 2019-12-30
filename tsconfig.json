@@ -8,6 +8,9 @@
 		"downlevelIteration": true,
 		"removeComments": false,
 		"baseUrl": "./",
+		"typeRoots": [
+			"src/@types"
+		]
 	},
 	"include": [
 		"src/**/*"

@@ -87,10 +87,6 @@ if (parameters['screenshot_interval'] != null) {
 int t = 0;
 String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
 
-// Screenshot
-var link = document.getElementById('link');
-var canvas = document.getElementById('canvas');
-
 // Population
 Life[] lifes;
 int initialResourceSize = 1000;
@@ -817,10 +813,13 @@ bool isCollision(Life l1, Life l2){
   return (abs(distance) <= (l1.size + l2.size)/2);
 }
 
-void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled)
+void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _backgroundTransparency)
 {
   droppingsEnabled = _droppingsEnabled;
 		mutatingSizeEnabled = _mutatingSizeEnabled;
+		if (_backgroundTransparency != null) {
+  	backgroundTransparency = _backgroundTransparency;
+		}
 
   size(appFieldWidth, appFieldHeight);
   background(0xff);
@@ -1026,13 +1025,9 @@ void defaultDraw(){
 
   //console.log("frameRate: " + frameRate);
 
+		setTimestamp(t);	// see screenshot.js
 		if (screenshotEnabled && (t % screenshotInterval == 0)) {
-			String num = ('000000' + (t / screenshotInterval)).slice(-6);
-			String filename = '' + launchTime + '__' + num + '.png';	// template literal not working sucks
-			link.setAttribute('download', filename);
-			link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
-			link.click();
-			console.log('Saved: ' + filename);
+			saveScreenshot();
 		}
 		t += 1;
 }

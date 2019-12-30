@@ -37,7 +37,7 @@ Parameters for `main.html`
 
 - `art_mode`
   - 1(enable) or 0(disable)
-  - Enables drawing mode
+  - Enables artistic drawing mode
 - `population_size`
   - number(1\~)
   - Initial population size
@@ -46,7 +46,7 @@ Parameters for `main.html`
   - Starts with only one species
 - `mutation_rate`
   - number(0\~1), 0.001\~0.03 recommended
-  - The mutation rate when they reproduce
+  - The mutation rate
 - `field_size`
   - number(1\~), around 1000 recommended
   - The simulation field size
