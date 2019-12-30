@@ -19,7 +19,9 @@ const numberOfNeighbors = (radius + 1) * radius * 4
 const main = (p: p5) => {
   p.setup = () => {
     const fieldSize = size * cellSize
-    p.createCanvas(fieldSize, fieldSize)
+    const canvas = p.createCanvas(fieldSize, fieldSize)
+    canvas.id("canvas")
+    canvas.parent("canvas-parent")
     setupCells()
   }
 
@@ -32,6 +34,7 @@ const main = (p: p5) => {
     update()
     draw()
     t += 1
+    setTimestamp(t)
   }
 
   function draw(): void {
