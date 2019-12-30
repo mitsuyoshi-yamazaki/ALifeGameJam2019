@@ -93,28 +93,30 @@ const main = (p: p5) => {
           }
         }
 
-        const differenceMaterialCells = neighbourCells.filter(c => {
-          return c.currentState.material !== cell.currentState.material
+        let additionalPressure = 0
+        neighbourCells.forEach(c => {
+          if (c.currentState.material === cell.currentState.material) {
+            additionalPressure -= Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
+          } else {
+            additionalPressure += Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
+          }
         })
-        // let additionalPressure = 0
-        // neighbourCells.forEach(c => {
-        //   if (c.currentState.material === cell.currentState.material) {
-        //     additionalPressure -= Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
-        //   } else {
-        //     additionalPressure += Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
-        //   }
+        // const differenceMaterialCells = neighbourCells.filter(c => {
+        //   return c.currentState.material !== cell.currentState.material
         // })
-        const additionalPressure = differenceMaterialCells
-          .map((c: Cell): number => {
-            return c.currentState.pressure
-          })
-          .reduce(
-            (previousValue, currentValue) => {
-              return previousValue + Math.max((currentValue - cell.currentState.pressure), 0)
-            },
-            0,
-          )
-        cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
+        // const additionalPressure = differenceMaterialCells
+        //   .map((c: Cell): number => {
+        //     return c.currentState.pressure
+        //   })
+        //   .reduce(
+        //     (previousValue, currentValue) => {
+        //       return previousValue + Math.max((currentValue - cell.currentState.pressure), 0)
+        //     },
+        //     0,
+        //   )
+        // if (additionalPressure > 0) {
+          cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
+        // }
       }
     }
     if (DEBUG) {
@@ -263,7 +265,7 @@ function transferAmountOf(material: Material, pressureDifference: number): numbe
       return 0
   }
 
-  const maxTransferAmount = maxPressure / 5
+  const maxTransferAmount = maxPressure / 50
 
   return Math.min(pressureDifference / flowRate, maxTransferAmount)
 }
