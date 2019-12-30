@@ -252,7 +252,11 @@ class Gene {
         }
       });
 
+<<<<<<< Updated upstream
     geneColor = new Color(shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength) , 0xff);
+=======
+    geneColor = new Color(0xff, shiftInt(predatorGene, 8-geneLength), shiftInt(preyGene, 8-geneLength));
+>>>>>>> Stashed changes
   }
 
   static Gene randomGene() {

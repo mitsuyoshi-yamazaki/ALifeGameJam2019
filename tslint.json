@@ -86,7 +86,14 @@
 					"no-void-expression": true,
 					"restrict-plus-operands": true,
 					"static-this": true,
-					"strict-boolean-expressions": true,
+					"strict-boolean-expressions": [
+						true,
+						"allow-null-union",
+						"allow-undefined-union",
+						"allow-string",
+						"allow-enum",
+						"allow-number"
+					],
 					"strict-comparisons": [
 						true,
 						{
@@ -163,7 +170,7 @@
 					],
 					"max-line-length": [
 						true,
-						120
+						140
 					],
 					"newline-before-return": true,
 					"new-parens": true,

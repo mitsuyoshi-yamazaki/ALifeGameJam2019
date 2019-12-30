@@ -18,3 +18,19 @@ export class Color {
     return p.color(this.r, this.g, this.b)
   }
 }
+
+export function parsedQueries(): object {
+  const rawQuery = document.location.search
+  const queries = rawQuery
+    .slice(rawQuery.indexOf("?") + 1)
+    .split("&")
+  const parameters = { }
+
+  for (const query of queries) {
+    const pair = query.split("=")
+    parameters[pair[0]] = pair[1]
+  }
+  console.log(parameters)
+
+  return parameters
+}
