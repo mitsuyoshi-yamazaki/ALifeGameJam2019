@@ -37,6 +37,10 @@ const main = (p: p5) => {
   function draw(): void {
     p.noStroke()
     const white = p.color(255)
+    const textSize = cellSize / 10
+    const cellRadius = cellSize / 2
+    const indicatorRectSize = cellSize / 10
+    const showDebugInfo = DEBUG && (indicatorRectSize > 5)
 
     for (let y = 0; y < cells.length; y += 1) {
       const row = cells[y]
@@ -50,12 +54,12 @@ const main = (p: p5) => {
         p.fill(color)
         p.rect(xx, yy, cellSize, cellSize)
 
-        if (DEBUG) {
-          p.textSize(cellSize / 10)
+        if (showDebugInfo) {
+          p.textSize(textSize)
           p.fill(0)
-          p.text(`${cell.currentState.pressure}, ${cell.imaginaryPressure}`, xx, yy + cellSize / 2)
+          p.text(`${cell.currentState.pressure}, ${cell.imaginaryPressure}`, xx, yy + cellRadius)
           p.fill(cell.currentState.color(p))
-          p.rect(xx, yy, cellSize / 10, cellSize / 10)
+          p.rect(xx, yy, indicatorRectSize, indicatorRectSize)
         }
       }
     }
@@ -115,7 +119,7 @@ const main = (p: p5) => {
         //     0,
         //   )
         // if (additionalPressure > 0) {
-          cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
+        cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
         // }
       }
     }
