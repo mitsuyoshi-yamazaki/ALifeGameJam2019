@@ -1,11 +1,11 @@
 import * as p5 from "p5"
 import { random } from "../utilities"
 
-const DEBUG = true
+const DEBUG = false
 
 let t = 0
 const cells: Cell[][] = []
-const size = 10
+const size = 100
 const cellSize = 1000 / size
 const maxPressure = 1000
 const radius = 1
@@ -51,24 +51,32 @@ const main = (p: p5) => {
           p.fill(0)
           p.text(`${cell.currentState.pressure}, ${cell.imaginaryPressure}`, xx, yy + cellSize / 2)
           p.fill(cell.currentState.color(p))
-          p.rect(xx, yy, 10, 10)
+          p.rect(xx, yy, cellSize / 100, cellSize / 100)
         }
       }
     }
   }
 
   function update(): void {
+    let mass = 0
+
     cells.forEach(row => {
       row.forEach(cell => {
         cell.next()
       })
-      console.log(`${String(row.map(cell => cell.currentState.pressure))}`)
+      // console.log(`${String(row.map(cell => cell.currentState.pressure))}`)
     })
 
     for (let y = 0; y < cells.length; y += 1) {
       const row = cells[y]
       for (let x = 0; x < row.length; x += 1) {
         const cell = row[x]
+        mass += cell.currentState.pressure
+
+        if (cell.currentState.material === Material.Vacuum) {
+          cell.imaginaryPressure = 0
+          continue
+        }
 
         const neighbourCells: Cell[] = []
         for (let j = -radius; j <= radius; j += 1) {
@@ -84,6 +92,14 @@ const main = (p: p5) => {
         const differenceMaterialCells = neighbourCells.filter(c => {
           return c.currentState.material !== cell.currentState.material
         })
+        // let additionalPressure = 0
+        // neighbourCells.forEach(c => {
+        //   if (c.currentState.material === cell.currentState.material) {
+        //     additionalPressure -= Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
+        //   } else {
+        //     additionalPressure += Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
+        //   }
+        // })
         const additionalPressure = differenceMaterialCells
           .map((c: Cell): number => {
             return c.currentState.pressure
@@ -96,6 +112,9 @@ const main = (p: p5) => {
           )
         cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
       }
+    }
+    if (DEBUG) {
+      console.log(`Mass: ${mass}`)
     }
 
     for (let y = 0; y < cells.length; y += 1) {
@@ -144,20 +163,19 @@ const main = (p: p5) => {
             if (neighbour.imaginaryPressure > cell.imaginaryPressure) { // 絶対値の小さい方に floor しなければ気圧が負数をとりうるため
               const pressureDifference = (neighbour.imaginaryPressure - cell.imaginaryPressure)
               const transferAmount = Math.min(transferAmountOf(cell.currentState.material, pressureDifference), neighbour.currentState.pressure) / numberOfNeighbors
-              if (transferAmount < 1) {
-                return
-              }
               cell.nextState.pressure += Math.floor(transferAmount)
               // console.log(`${pressure} + ${transferAmount}`)
             } else {
               const pressureDifference = (cell.imaginaryPressure - neighbour.imaginaryPressure)
               const transferAmount = Math.min(transferAmountOf(cell.currentState.material, pressureDifference), cell.currentState.pressure) / numberOfNeighbors
-              if (transferAmount < 1) {
-                return
-              }
               cell.nextState.pressure -= Math.floor(transferAmount)
               // console.log(`${pressure} - ${transferAmount}`)
             }
+            if ((cell.nextState.pressure < numberOfNeighbors) && (cell.imaginaryPressure > maxPressure)) {
+              cell.nextState.pressure = 0
+              cell.nextState.material = Material.Vacuum
+            }
+
             // console.log(`${cell.nextState.pressure}`)
           })
         }
@@ -170,11 +188,11 @@ const main = (p: p5) => {
       const row: Cell[] = []
       for (let x = 0; x < size; x += 1) {
         const state = State.random()
-        if (x > size * 0.25 && x < size * 0.75 && y > size * 0.25 && y < size * 0.75) {
-          state.material = Material.Hydrogen
-        } else {
-          state.material = Material.Nitrogen
-        }
+        // if (x > size * 0.25 && x < size * 0.75 && y > size * 0.25 && y < size * 0.75) {
+        //   state.material = Material.Hydrogen
+        // } else {
+        //   state.material = Material.Nitrogen
+        // }
         const cell = new Cell(state)
         row.push(cell)
       }
@@ -182,7 +200,7 @@ const main = (p: p5) => {
     }
 
     const maxPressureState = new State()
-    maxPressureState.pressure = maxPressure
+    maxPressureState.pressure = maxPressure * 10
     const fixedCell = new FixedCell(maxPressureState)
     const centerIndex = Math.round(size / 2)
     cells[centerIndex][centerIndex] = fixedCell
@@ -239,7 +257,7 @@ function transferAmountOf(material: Material, pressureDifference: number): numbe
       return 0
   }
 
-  const maxTransferAmount = maxPressure / 50
+  const maxTransferAmount = maxPressure / 5
 
   return Math.min(pressureDifference / flowRate, maxTransferAmount)
 }
