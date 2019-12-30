@@ -1,11 +1,15 @@
 import * as p5 from "p5"
-import { random } from "../utilities"
+import { parsedQueries, random } from "../utilities"
 
-const DEBUG = false
+const parameters = parsedQueries()
+// tslint:disable: no-string-literal
+const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
+const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
+const isSpringEnabled = parameters["spring"] ? true : false
+// tslint:enable: no-string-literal
 
 let t = 0
 const cells: Cell[][] = []
-const size = 100
 const cellSize = 1000 / size
 const maxPressure = 1000
 const radius = 1
@@ -51,7 +55,7 @@ const main = (p: p5) => {
           p.fill(0)
           p.text(`${cell.currentState.pressure}, ${cell.imaginaryPressure}`, xx, yy + cellSize / 2)
           p.fill(cell.currentState.color(p))
-          p.rect(xx, yy, cellSize / 100, cellSize / 100)
+          p.rect(xx, yy, cellSize / 10, cellSize / 10)
         }
       }
     }
@@ -199,11 +203,13 @@ const main = (p: p5) => {
       cells.push(row)
     }
 
-    const maxPressureState = new State()
-    maxPressureState.pressure = maxPressure * 10
-    const fixedCell = new FixedCell(maxPressureState)
-    const centerIndex = Math.round(size / 2)
-    cells[centerIndex][centerIndex] = fixedCell
+    if (isSpringEnabled) {
+      const maxPressureState = new State()
+      maxPressureState.pressure = maxPressure * 10
+      const fixedCell = new FixedCell(maxPressureState)
+      const centerIndex = Math.round(size / 2)
+      cells[centerIndex][centerIndex] = fixedCell
+    }
   }
 }
 
