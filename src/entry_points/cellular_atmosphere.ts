@@ -177,19 +177,15 @@ const main = (p: p5) => {
               const pressureDifference = (neighbour.imaginaryPressure - cell.imaginaryPressure)
               const transferAmount = Math.min(transferAmountOf(cell.currentState.material, pressureDifference), neighbour.currentState.pressure) / numberOfNeighbors
               cell.nextState.pressure += Math.floor(transferAmount)
-              // console.log(`${pressure} + ${transferAmount}`)
             } else {
               const pressureDifference = (cell.imaginaryPressure - neighbour.imaginaryPressure)
               const transferAmount = Math.min(transferAmountOf(cell.currentState.material, pressureDifference), cell.currentState.pressure) / numberOfNeighbors
               cell.nextState.pressure -= Math.floor(transferAmount)
-              // console.log(`${pressure} - ${transferAmount}`)
             }
-            if ((cell.nextState.pressure < numberOfNeighbors) && (cell.imaginaryPressure > maxPressure)) {
+            if ((cell.nextState.pressure < numberOfNeighbors) && (cell.imaginaryPressure > 0)) {
               cell.nextState.pressure = 0
               cell.nextState.material = Material.Vacuum
             }
-
-            // console.log(`${cell.nextState.pressure}`)
           })
         }
       }
