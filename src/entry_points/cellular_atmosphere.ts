@@ -253,24 +253,22 @@ function transferAmountOf(material: Material, pressureDifference: number): numbe
       return 0
 
     case Material.Hydrogen:
-      flowRate = 2
+      flowRate = 20
       break
 
     case Material.Nitrogen:
-      flowRate = 3
+      flowRate = 30
       break
 
     case Material.CarbonDioxide:
-      flowRate = 4
+      flowRate = 40
       break
 
     default:
       return 0
   }
 
-  const maxTransferAmount = maxPressure / 50
-
-  return Math.min(pressureDifference / flowRate, maxTransferAmount)
+  return pressureDifference / flowRate
 }
 
 class Cell {
