@@ -14,7 +14,8 @@ const parameters = parsedQueries()
 const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
 const isSpringEnabled = parameters["spring"] ? true : false
-const radius = parameters["r"] ? parseInt(parameters["r"], 10) : 1  // FixMe: Not working (r >= 2)
+const radius = 1 // parameters["r"] ? parseInt(parameters["r"], 10) : 1  // FixMe: Not working when r > 1
+const gravity = parameters["gravity"] ? parseInt(parameters["gravity"], 10) : 1
 const materials: Material[] = (() => {
   const given = parameters["materials"]
   if (given == undefined) {
@@ -116,6 +117,7 @@ const main = (p: p5) => {
           continue
         }
 
+        let additionalPressure = 0
         const neighbourCells: Cell[] = []
         for (let j = -radius; j <= radius; j += 1) {
           for (let i = -radius; i <= radius; i += 1) {
@@ -127,10 +129,14 @@ const main = (p: p5) => {
               continue
             }
             neighbourCells.push(neighbour)
+
+            if (j < 0) {
+              // 重力
+              additionalPressure += neighbour.currentState.pressure * gravity
+            }
           }
         }
 
-        let additionalPressure = 0
         neighbourCells.forEach(c => {
           if (c.currentState.material === cell.currentState.material) {
             additionalPressure -= Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
