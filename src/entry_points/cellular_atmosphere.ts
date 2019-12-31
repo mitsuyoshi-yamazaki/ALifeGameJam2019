@@ -106,7 +106,7 @@ const main = (p: p5) => {
       const row = cells[y]
       for (let x = 0; x < row.length; x += 1) {
         const cell = row[x]
-        mass += cell.currentState.pressure
+        mass += cell.currentState.mass
 
         if (!cell.isActive) {
           continue
@@ -132,7 +132,7 @@ const main = (p: p5) => {
 
             if (j < 0) {
               // 重力
-              additionalPressure += neighbour.currentState.pressure * gravity
+              // additionalPressure += neighbour.currentState.pressure * gravity
             }
           }
         }
@@ -207,7 +207,7 @@ const main = (p: p5) => {
 
           if (largestPressureMaterial != undefined) {
             cell.nextState.material = largestPressureMaterial
-            cell.nextState.pressure = 0
+            cell.nextState.mass = 0
           }
         } else {  // Not Vaccum
           const sameMaterialCells = neighbourCells.filter(c => {
@@ -218,14 +218,14 @@ const main = (p: p5) => {
             if (neighbour.imaginaryPressure > cell.imaginaryPressure) { // 絶対値の小さい方に floor しなければ気圧が負数をとりうるため
               const pressureDifference = (neighbour.imaginaryPressure - cell.imaginaryPressure)
               const transferAmount = Math.min(transferAmountOf(cell.currentState.material, pressureDifference), neighbour.currentState.pressure) / numberOfNeighbors
-              cell.nextState.pressure += Math.floor(transferAmount)
+              cell.nextState.mass += Math.floor(transferAmount)
             } else {
               const pressureDifference = (cell.imaginaryPressure - neighbour.imaginaryPressure)
               const transferAmount = Math.min(transferAmountOf(cell.currentState.material, pressureDifference), cell.currentState.pressure) / numberOfNeighbors
-              cell.nextState.pressure -= Math.floor(transferAmount)
+              cell.nextState.mass -= Math.floor(transferAmount)
             }
             if ((cell.nextState.pressure < numberOfNeighbors) && (cell.imaginaryPressure > 0)) {
-              cell.nextState.pressure = 0
+              cell.nextState.mass = 0
               cell.nextState.material = Material.Vacuum
             }
           })
@@ -252,7 +252,7 @@ const main = (p: p5) => {
 
     if (isSpringEnabled) {
       const maxPressureState = new State()
-      maxPressureState.pressure = maxPressure
+      maxPressureState.mass = maxPressure
       const fixedCell = new FixedCell(maxPressureState)
       const centerIndex = Math.round(size / 2)
       cells[centerIndex][centerIndex] = fixedCell
@@ -322,6 +322,28 @@ function transferAmountOf(material: Material, pressureDifference: number): numbe
   return pressureDifference / flowRate
 }
 
+function pressurePerMass(material: Material): number {
+  switch (material) {
+    case Material.Wall:
+      return 0
+
+    case Material.Vacuum:
+      return 0
+
+    case Material.Hydrogen:
+      return 1
+
+    case Material.Nitrogen:
+      return 0.5
+
+    case Material.CarbonDioxide:
+      return 0.001
+
+    default:
+      return 0
+  }
+}
+
 class Cell {
   public get currentState(): State {
     return this._currentState
@@ -334,6 +356,7 @@ class Cell {
   }
 
   public imaginaryPressure = 0
+  public gravityPressure = 0
   protected _currentState: State
   protected _nextState: State
 
@@ -357,7 +380,7 @@ class FixedCell extends Cell {
     const state = new State()
 
     state.material = Material.Wall
-    state.pressure = maxPressure / 2
+    state.mass = maxPressure / 2
 
     return new FixedCell(state)
   }
@@ -368,19 +391,17 @@ class FixedCell extends Cell {
 }
 
 class State {
-  public material = Material.Hydrogen
-  private _pressure = 0
-  public set pressure(value: number) {
-    if (value <= 0) {
-      this._pressure = 0
-
-      return
-    }
-    this._pressure = value
+  public set mass(value: number) {
+    this._mass = value
+  }
+  public get mass(): number {
+    return this._mass
   }
   public get pressure(): number {
-    return this._pressure
+    return this.mass * pressurePerMass(this.material)
   }
+  public material = Material.Hydrogen
+  private _mass = 0
 
   public static random(): State {
     const state = new State()
@@ -388,7 +409,8 @@ class State {
     state.material = materials[Math.floor(random(materials.length))]
 
     const isVacuum = state.material === Material.Vacuum
-    state.pressure = isVacuum ? 0 : Math.floor(random(maxPressure))
+    const pressure = isVacuum ? 0 : Math.floor(random(maxPressure))
+    state.setPressure(pressure)
 
     return state
   }
@@ -400,18 +422,12 @@ class State {
   public clone(): State {
     const state = new State()
     state.material = this.material
-    state.pressure = this.pressure
+    state.mass = this.mass
 
     return state
   }
+
+  private setPressure(pressure: number): void {
+    this.mass = pressure / pressurePerMass(this.material)
+  }
 }
-
-function pressureOf(state: State, surroundings: State[]): number {
-   return 0	// TODO: materialが異なれば与えるpressureが異なる？
-}
-
-// function transference(to: State, from: State, pressure): number {
-//   if (to.material != ) {
-
-//     }
-// }
