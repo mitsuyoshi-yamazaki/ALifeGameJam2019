@@ -2,6 +2,7 @@ import * as p5 from "p5"
 import { parsedQueries, random } from "../utilities"
 
 enum Material {
+  Wall,
   Vacuum,
   Hydrogen,
   Nitrogen,
@@ -89,6 +90,7 @@ const main = (p: p5) => {
     }
   }
 
+  // tslint:disable-next-line: cyclomatic-complexity
   function update(): void {
     let mass = 0
 
@@ -105,6 +107,10 @@ const main = (p: p5) => {
         const cell = row[x]
         mass += cell.currentState.pressure
 
+        if (!cell.isActive) {
+          continue
+        }
+
         if (cell.currentState.material === Material.Vacuum) {
           cell.imaginaryPressure = 0
           continue
@@ -117,6 +123,9 @@ const main = (p: p5) => {
               continue
             }
             const neighbour = cells[(y + j + size) % size][(x + i + size) % size]
+            if (!neighbour.isActive) {
+              continue
+            }
             neighbourCells.push(neighbour)
           }
         }
@@ -155,6 +164,9 @@ const main = (p: p5) => {
       const row = cells[y]
       for (let x = 0; x < row.length; x += 1) {
         const cell = row[x]
+        if (!cell.isActive) {
+          continue
+        }
 
         const neighbourCells: Cell[] = []
         for (let j = -radius; j <= radius; j += 1) {
@@ -163,6 +175,9 @@ const main = (p: p5) => {
               continue
             }
             const neighbour = cells[(y + j + size) % size][(x + i + size) % size]
+            if (!neighbour.isActive) {
+              continue
+            }
             neighbourCells.push(neighbour)
           }
         }
@@ -236,6 +251,16 @@ const main = (p: p5) => {
       const centerIndex = Math.round(size / 2)
       cells[centerIndex][centerIndex] = fixedCell
     }
+
+    const isWallEnabled = true
+    if (isWallEnabled) {
+      const y = size - 1
+      const row = cells[y]
+
+      for (let x = 0; x < row.length; x += 1) {
+        cells[y][x] = FixedCell.wall()
+      }
+    }
   }
 }
 
@@ -243,6 +268,9 @@ const sketch = new p5(main)
 
 function colorOf(material: Material, p: p5): p5.Color {
   switch (material) {
+    case Material.Wall:
+      return p.color(128)
+
     case Material.Vacuum:
       return p.color(255)
 
@@ -263,6 +291,9 @@ function colorOf(material: Material, p: p5): p5.Color {
 function transferAmountOf(material: Material, pressureDifference: number): number {
   let flowRate: number
   switch (material) {
+    case Material.Wall:
+      return 0
+
     case Material.Vacuum:
       return 0
 
@@ -292,6 +323,10 @@ class Cell {
   public get nextState(): State {
     return this._nextState
   }
+  public get isActive(): boolean {
+    return this.currentState.material !== Material.Wall
+  }
+
   public imaginaryPressure = 0
   protected _currentState: State
   protected _nextState: State
@@ -312,13 +347,21 @@ class Cell {
 }
 
 class FixedCell extends Cell {
+  public static wall(): FixedCell {
+    const state = new State()
+
+    state.material = Material.Wall
+    state.pressure = maxPressure / 2
+
+    return new FixedCell(state)
+  }
+
   public next(): void {
     this._nextState = this.currentState.clone()
   }
 }
 
 class State {
-  public static minimumPressure = 1
   public material = Material.Hydrogen
   private _pressure = 0
   public set pressure(value: number) {
