@@ -6,13 +6,13 @@ const parameters = parsedQueries()
 const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
 const isSpringEnabled = parameters["spring"] ? true : false
+const radius = parameters["r"] ? parseInt(parameters["r"], 10) : 1  // FixMe: Not working (r >= 2)
 // tslint:enable: no-string-literal
 
 let t = 0
 const cells: Cell[][] = []
 const cellSize = 1000 / size
 const maxPressure = 1000
-const radius = 1
 const diameter = radius * 2 + 1
 const numberOfNeighbors = (radius + 1) * radius * 4
 
@@ -214,7 +214,7 @@ const main = (p: p5) => {
 
     if (isSpringEnabled) {
       const maxPressureState = new State()
-      maxPressureState.pressure = maxPressure * 10
+      maxPressureState.pressure = maxPressure
       const fixedCell = new FixedCell(maxPressureState)
       const centerIndex = Math.round(size / 2)
       cells[centerIndex][centerIndex] = fixedCell
