@@ -1,12 +1,33 @@
 import * as p5 from "p5"
 import { parsedQueries, random } from "../utilities"
 
+enum Material {
+  Vacuum,
+  Hydrogen,
+  Nitrogen,
+  CarbonDioxide,
+}
+
 const parameters = parsedQueries()
 // tslint:disable: no-string-literal
 const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
 const isSpringEnabled = parameters["spring"] ? true : false
 const radius = parameters["r"] ? parseInt(parameters["r"], 10) : 1  // FixMe: Not working (r >= 2)
+const materials: Material[] = (() => {
+  const given = parameters["materials"]
+  if (given == undefined) {
+    return [
+      Material.Hydrogen,
+      Material.Nitrogen,
+    ]
+  }
+
+  return given.split(",")
+    .map((e: string) => {
+      return Material[e]
+    })
+})()
 // tslint:enable: no-string-literal
 
 let t = 0
@@ -220,13 +241,6 @@ const main = (p: p5) => {
 
 const sketch = new p5(main)
 
-enum Material {
-  Vacuum = 0,
-  Hydrogen = 1,
-  Nitrogen = 2,
-  CarbonDioxide = 3,
-}
-
 function colorOf(material: Material, p: p5): p5.Color {
   switch (material) {
     case Material.Vacuum:
@@ -321,12 +335,6 @@ class State {
 
   public static random(): State {
     const state = new State()
-    const materials: Material[] = [
-      // Material.Vacuum,
-      Material.Hydrogen,
-      Material.Nitrogen,
-      // Material.CarbonDioxide,
-    ]
 
     state.material = materials[Math.floor(random(materials.length))]
 
