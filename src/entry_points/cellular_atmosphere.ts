@@ -131,11 +131,11 @@ const main = (p: p5) => {
             }
             neighbourCells.push(neighbour)
 
+            // 重力
             if (j < 0) {
-              // 重力
+              // i == 0 に限定しないのは、圧を分散させるため
               cell.gravityPressure += neighbour.currentState.mass * gravity
               cell.gravityPressure += neighbour.gravityPressure // r > 1 だと再帰して余計に計上する
-              // additionalPressure += gravity * (size - y) // それっぽいふるまい
             }
           }
         }
@@ -159,6 +159,7 @@ const main = (p: p5) => {
           }
         })
 
+        // cell.currentState.mass で割るのは、セルオートマトンでは考慮できない、自セルの質量にかかる重力を表している
         let additionalPressure = (cell.currentState.mass > 0) ? cell.gravityPressure / cell.currentState.mass : 0
         if (largestPressureMaterial != undefined) {
           // tslint:disable-next-line: strict-boolean-expressions
