@@ -112,6 +112,7 @@ const main = (p: p5) => {
           continue
         }
 
+        // TODO: updateVacuum(), updateGas() に分割する
         if (cell.currentState.material === Material.Vacuum) {
           cell.imaginaryPressure = 0
           continue
@@ -137,29 +138,32 @@ const main = (p: p5) => {
           }
         }
 
-        neighbourCells.forEach(c => {
-          if (c.currentState.material === cell.currentState.material) {
-            additionalPressure -= Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
-          } else {
-            additionalPressure += Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
+        const pressures = new Map<Material, number>()
+        neighbourCells.forEach(neighbour => {
+          // tslint:disable-next-line: strict-boolean-expressions
+          const pressure = pressures.get(neighbour.currentState.material) || 0
+          pressures.set(neighbour.currentState.material, pressure + neighbour.currentState.pressure)
+        })
+
+        let largestPressure = 0
+        let largestPressureMaterial: Material | null
+        pressures.forEach((pressure, material) => {
+          if (material === cell.currentState.material) {
+            return
+          }
+          if (pressure > largestPressure) {
+            largestPressureMaterial = material
+            largestPressure = pressure
           }
         })
-        // const differenceMaterialCells = neighbourCells.filter(c => {
-        //   return c.currentState.material !== cell.currentState.material
-        // })
-        // const additionalPressure = differenceMaterialCells
-        //   .map((c: Cell): number => {
-        //     return c.currentState.pressure
-        //   })
-        //   .reduce(
-        //     (previousValue, currentValue) => {
-        //       return previousValue + Math.max((currentValue - cell.currentState.pressure), 0)
-        //     },
-        //     0,
-        //   )
-        // if (additionalPressure > 0) {
+
+        if (largestPressureMaterial != undefined) {
+          // tslint:disable-next-line: strict-boolean-expressions
+          const currentMaterialPressure = pressures.get(cell.currentState.material) || 0
+          additionalPressure = Math.max(largestPressure - currentMaterialPressure, 0)
+        }
+
         cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
-        // }
       }
     }
     if (DEBUG) {
