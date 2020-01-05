@@ -119,16 +119,16 @@ Wall[] walls = [];
 
 if (isNormalMode) {
 	walls = [
-		//new Wall(fieldWidth /6 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/3 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/3*2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		//new Wall(fieldWidth/6*5 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/6 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/3 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-		//new Wall(fieldWidth/2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
-		new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		// //new Wall(fieldWidth /6 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/3 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/3*2 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		// //new Wall(fieldWidth/6*5 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/6 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/3 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		// //new Wall(fieldWidth/2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
+		// new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 	];
 }
 if (artMode) {
@@ -744,7 +744,10 @@ class Life {
           ellipse(position.x, position.y, size, size);
 
         } else {
-          ellipse(position.x, position.y, size, size);
+          // ellipse(position.x, position.y, size, size);
+										if (random(1) < 0.1) {
+ 										this.drawTriangle(position.x, position.y, size * 3, random(6.28))
+										}
         }
       } else {
         if (disableResourceColor) return;
@@ -765,6 +768,27 @@ class Life {
       }
       rect(position.x, position.y, size, size);
     }
+  }
+
+		  void drawTriangle(int x, int y, int r, float rot) {
+    pushMatrix();
+    translate(x, y);  // 中心となる座標
+    //console.log(degrees(rot));
+    rotate(rot - PI/2);
+
+    // 円を均等に3分割する点を結び、三角形をつくる
+    beginShape();
+      vertex(r*cos(PI/2), r*sin(PI/2));
+      vertex(r*cos(0)/2, rot/4);
+      vertex(r*cos(PI)/2, rot/4);
+    endShape(CLOSE);
+    beginShape();
+      vertex(0, 0);
+      vertex(r*cos(3*PI/2), r*sin(3*PI/2));
+    endShape(CLOSE);
+
+
+    popMatrix();
   }
   Life replicate(int x, int y, int size, int energy, Gene g){
     return (new LifeKlass(x, y, size, energy, g))
