@@ -13,8 +13,7 @@ bool artMode = false;
 int populationSize = 1000;
 float mutationRate = 0.01;
 bool useSingleGene = true;
-float fieldWidth = 1000;
-float fieldHeight = 500;
+
 int screenshotInterval = 1000;
 bool screenshotEnabled = false;
 
@@ -103,8 +102,8 @@ float graphSize = 0.4;
 // Field
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 
-float fieldWidth = 1000;
-float fieldHeight = 700;
+float fieldWidth = 500;
+float fieldHeight = 500;
 bool useSingleGene = true;
 
 float graphHeight = 400;
