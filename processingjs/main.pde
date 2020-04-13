@@ -12,9 +12,6 @@ bool DEBUG = false;
 bool artMode = false;
 int populationSize = 1000;
 float mutationRate = 0.01;
-bool useSingleGene = true;
-float fieldWidth = 1000;
-float fieldHeight = 500;
 int screenshotInterval = 1000;
 bool screenshotEnabled = false;
 
@@ -173,7 +170,7 @@ int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
-bool predator_prey_mode = true;
+bool predator_prey_mode = false;
 
 // Fight
 float eatProbability = 0.9999999;
