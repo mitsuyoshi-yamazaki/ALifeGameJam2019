@@ -173,7 +173,7 @@ int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
 
-bool predator_prey_mode = false;
+bool predator_prey_mode = true;
 
 // Fight
 float eatProbability = 0.9999999;
@@ -902,7 +902,7 @@ void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _back
   for (int i = 0; i < initialResourceSize; i++) {
     Gene g1;
     if(predator_prey_mode){
-      g1 = new Gene(1, 1);
+      g1 = new Gene(1, 1, 0);
     } else {
       g1 = new Gene(0, 0, 0);
     }
@@ -1158,7 +1158,7 @@ void addResources() {
   }
   int numberOfResources = int(random(0, resourceGrowth));
   Gene g;
-  if(predator_prey_mode){g=new Gene(1, 1);}
+  if(predator_prey_mode){g=new Gene(1, 1, 0);}
   //else {g=Gene.randomGene();}
   for (int i = 0; i < numberOfResources; i++) {
     PVector position;
