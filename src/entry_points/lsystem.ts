@@ -8,11 +8,14 @@ const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
 const numberOfAgents = parameters["agents"] ? parseInt(parameters["agents"], 10) : 1
 const maxDepth = parameters["depth"] ? parseInt(parameters["depth"], 10) : 3
-const angle = parameters["angle"] ? parseInt(parameters["angle"], 10) : 40  // Debug parameter
+const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
+const rawConstants = parameters["constants"]  // constants=+:55,-:-55
 // tslint:enable: no-string-literal
 
 const canvasSize = new Vector(size, size)
 const agents: Agent[] = []
+const rules = parseRules(rawRules)
+const constants = parseConstants(rawConstants)
 
 function log(message: string): void {
   if (DEBUG === false) {
@@ -44,14 +47,60 @@ function initializeAgents(): void {
     const diff = new Vector(0, size * 0.1)
     const position = canvasSize.div(2)
       .add(diff)
-    const rules = new Map<string, string>()
-    rules.set("F", "-F++F")
-    const constants = new Map<string, number>()
-    constants.set("+", angle)
-    constants.set("-", -angle)
     const lsystem = new LSystem(rules, constants)
     agents.push(new Agent(position, lsystem))
   }
+}
+
+function parseRules(raw: string | undefined): Map<string, string> {
+  const map = new Map<string, string>()
+  if (raw == undefined) {
+    console.log(`No rule specified`)
+    map.set("A", "-A++A")
+
+    return map
+  }
+  const rawRuleSet = raw.split(",")
+  rawRuleSet.forEach(line => {
+    const keyValue = line.split(":")
+    if (keyValue.length !== 2) {
+      console.log(`[Warning] Parameter "rules" line "${line}" should be "<character>:<string>"`)
+
+      return
+    }
+    map.set(keyValue[0], keyValue[1])
+  })
+
+  return map
+}
+
+function parseConstants(raw: string | undefined): Map<string, number> {
+  const map = new Map<string, number>()
+  if (raw == undefined) {
+    console.log(`No constant specified`)
+    map.set("+", 20)
+    map.set("-", -20)
+
+    return map
+  }
+  const rawRuleSet = raw.split(",")
+  rawRuleSet.forEach(line => {
+    const keyValue = line.split(":")
+    if (keyValue.length !== 2) {
+      console.log(`[Warning] Parameter "constants" line "${line}" should be "<character>:<number>"`)
+
+      return
+    }
+    const angle = parseInt(keyValue[1], 10)
+    if (angle === undefined) {
+      console.log(`[Warning] Parameter "constants" line "${line}" should be "<character>:<number>"`)
+
+      return
+    }
+    map.set(keyValue[0], angle)
+  })
+
+  return map
 }
 
 interface Drawable {
@@ -112,7 +161,7 @@ class Agent implements Drawable {
   }
 
   public draw(p: p5): void {
-    this.lsystem.draw(p, "F", this.position, maxDepth)
+    this.lsystem.draw(p, "A", this.position, maxDepth)
   }
 }
 
