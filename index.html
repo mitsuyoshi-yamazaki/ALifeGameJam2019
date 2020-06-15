@@ -1,159 +1,178 @@
 <html>
-	<head>
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-154586552-1"></script>
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag() { dataLayer.push(arguments); }
-			gtag('js', new Date());
 
-			gtag('config', 'UA-154586552-1');
-		</script>
-		<script>
-			var isThumbnail = true;
-		</script>
-		<script src="processing.js"></script>
-		<script src="processingjs/screenshot.js"></script>
-	 <script src="p5.min.js"></script>
-		<script src="dist/orbital_motion.js"></script>
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-			integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-		<style>
-		.card {
-   width: 280px;
-			margin-top: 20px;
-		}
-		.card-img-top {
-   object-fit: cover;
-			height: 160px;
-		}
-		.card-body {
-   height: 180px;
-		}
-		</style>
-	</head>
-	<body>
-		<div class="container" style="margin-top: 60px;">
-			<h2>Main</h2>
-			<div class="row justify-content-start">
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<img class="card-img-top" src="resources/docs/image001.png">
-						<div class="card-body">
-							<h5 class="card-title">Blind Painter</h5>
-							<p class="card-text">
-								An oil painting like generative art based on artificial life ecosystem.
-							</p>
-   				<a href="pages/main.html?art_mode=1&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000" class="btn btn-primary">Open</a>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<img class="card-img-top" src="resources/docs/image003.gif">
-						<div class="card-body">
-							<h5 class="card-title">ALife Core</h5>
-							<p class="card-text">
-								An artificial life ecosystem.
-							</p>
-							<a href="pages/droppings.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000" class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<h2 style="margin-top: 40px;">Generative Art</h2>
-			<div class="row">
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<img class="card-img-top" src="resources/docs/image004.png">
-						<div class="card-body">
-							<h5 class="card-title">Family Tree</h5>
-							<p class="card-text">
-								Based on ALife Core. The lines connect between a parent and its children.
-							</p>
-							<a href="pages/family_line.html?art_mode=1&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
-								class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<h2 style="margin-top: 40px;">Experimental</h2>
-			<div class="row">
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<div style="height: 160px; background-color: lightgrey;"></div>
-						<div class="card-body">
-							<h5 class="card-title">Atmosphere simulation</h5>
-							<p class="card-text">
-								Cellular automata implementation
-							</p>
-							<a href="pages/cellular_atmosphere.html?size=15&debug=1&spring=" class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<div id="orbital-motion-canvas" style="height: 160px;"></div>
-						<div class="card-body">
-							<h5 class="card-title">Orbital motion</h5>
-							<p class="card-text">
-								Orbital motion & orbital velocity demo
-							</p>
-							<a href="pages/orbital_motion.html" class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<div style="height: 160px; background-color: lightgrey;"></div>
-						<div class="card-body">
-							<h5 class="card-title">Gravitational field</h5>
-							<p class="card-text">
-								Multiple gravity sources.
-							</p>
-							<a href="pages/gravitational_field.html" class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<img class="card-img-top" src="resources/docs/image006.png">
-						<div class="card-body">
-							<h5 class="card-title">ALife another drawing style</h5>
-							<p class="card-text">
-								The circle size represents how long has it been alive.
-							</p>
-							<a href="pages/generative_art_001.html?art_mode=0&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
-								class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<div style="height: 160px; background-color: lightgrey;"></div>
-						<div class="card-body">
-							<h5 class="card-title">ALife Typescript implementation</h5>
-							<p class="card-text">
-								Working on it
-							</p>
-							<a href="pages/ts.html"
-								class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
- 			</div>
-				<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-					<div class="card">
-						<img class="card-img-top" src="resources/docs/image007.png">
-						<div class="card-body">
-							<h5 class="card-title">Process series</h5>
-							<p class="card-text">
-								Copy of Casey Reas process series 
-							</p>
-							<a href="pages/generative_art_002.html?draw_mode=both&objects=320&behavior=B1,B2,B3,B4" class="btn btn-primary align-bottom">Open</a>
-						</div>
-					</div>
-				</div>
-			</div>		
-		</div>
-	</body>
-	</html>
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-154586552-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-154586552-1');
+  </script>
+  <script>
+    var isThumbnail = true;
+  </script>
+  <script src="processing.js"></script>
+  <script src="processingjs/screenshot.js"></script>
+  <script src="p5.min.js"></script>
+  <script src="dist/orbital_motion.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <style>
+    .card {
+      width: 280px;
+      margin-top: 20px;
+    }
+
+    .card-img-top {
+      object-fit: cover;
+      height: 160px;
+    }
+
+    .card-body {
+      height: 180px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" style="margin-top: 60px;">
+    <h2>Main</h2>
+    <div class="row justify-content-start">
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image001.png">
+          <div class="card-body">
+            <h5 class="card-title">Blind Painter</h5>
+            <p class="card-text">
+              An oil painting like generative art based on artificial life ecosystem.
+            </p>
+            <a href="pages/main.html?art_mode=1&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000"
+              class="btn btn-primary">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image003.gif">
+          <div class="card-body">
+            <h5 class="card-title">ALife Core</h5>
+            <p class="card-text">
+              An artificial life ecosystem.
+            </p>
+            <a href="pages/droppings.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000"
+              class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h2 style="margin-top: 40px;">Generative Art</h2>
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image004.png">
+          <div class="card-body">
+            <h5 class="card-title">Family Tree</h5>
+            <p class="card-text">
+              Based on ALife Core. The lines connect between a parent and its children.
+            </p>
+            <a href="pages/family_line.html?art_mode=1&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
+              class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h2 style="margin-top: 40px;">Experimental</h2>
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div style="height: 160px; background-color: lightgrey;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Genotype-Phenotype</h5>
+            <p class="card-text">
+            </p>
+            <a href="pages/lsystem.html?depth=10&angle=40" class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div style="height: 160px; background-color: lightgrey;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Atmosphere simulation</h5>
+            <p class="card-text">
+              Cellular automata implementation
+            </p>
+            <a href="pages/cellular_atmosphere.html?size=15&debug=1&spring="
+              class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div id="orbital-motion-canvas" style="height: 160px;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Orbital motion</h5>
+            <p class="card-text">
+              Orbital motion & orbital velocity demo
+            </p>
+            <a href="pages/orbital_motion.html" class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div style="height: 160px; background-color: lightgrey;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Gravitational field</h5>
+            <p class="card-text">
+              Multiple gravity sources.
+            </p>
+            <a href="pages/gravitational_field.html" class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image006.png">
+          <div class="card-body">
+            <h5 class="card-title">ALife another drawing style</h5>
+            <p class="card-text">
+              The circle size represents how long has it been alive.
+            </p>
+            <a href="pages/generative_art_001.html?art_mode=0&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
+              class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <div style="height: 160px; background-color: lightgrey;"></div>
+          <div class="card-body">
+            <h5 class="card-title">ALife Typescript implementation</h5>
+            <p class="card-text">
+              Working on it
+            </p>
+            <a href="pages/ts.html" class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image007.png">
+          <div class="card-body">
+            <h5 class="card-title">Process series</h5>
+            <p class="card-text">
+              Copy of Casey Reas process series
+            </p>
+            <a href="pages/generative_art_002.html?draw_mode=both&objects=320&behavior=B1,B2,B3,B4"
+              class="btn btn-primary align-bottom">Open</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
