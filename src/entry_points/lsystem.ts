@@ -133,25 +133,21 @@ class LSystem {
     const length = (depth / maxDepth) * 100
 
     for (const c of condition) {
-      const nextCondition = this.rules.get(c)
-      if (nextCondition != undefined) {
-        const radian = newDirection * (Math.PI / 180)
-        const nextPosition = position.moved(radian, length)
-        p.line(position.x, position.y, nextPosition.x, nextPosition.y)
-
-        // log(`${String(position)} to ${String(nextPosition)}`)
-
-        this.recursiveDraw(p, nextCondition, nextPosition, newDirection, depth - 1)
-        continue
-      }
-
       const directionChange = this.constants.get(c)
       if (directionChange != undefined) {
         newDirection += directionChange
         continue
       }
 
-      // log(`End of tree: ${c}`)
+      const radian = newDirection * (Math.PI / 180)
+      const nextPosition = position.moved(radian, length)
+      p.line(position.x, position.y, nextPosition.x, nextPosition.y)
+
+      const nextCondition = this.rules.get(c)
+      if (nextCondition != undefined) {
+        this.recursiveDraw(p, nextCondition, nextPosition, newDirection, depth - 1)
+        continue
+      }
     }
   }
 }
