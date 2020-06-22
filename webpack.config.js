@@ -8,7 +8,8 @@ module.exports = {
     orbital_motion: './src/entry_points/orbital_motion.ts',
     cellular_atmosphere: './src/entry_points/cellular_atmosphere.ts',
     generative_art_002: './src/entry_points/generative_art_002.ts',
-    lsystem: './src/entry_points/lsystem.ts'
+    lsystem: './src/entry_points/lsystem.ts',
+    evo_devo: './src/entry_points/evo_devo.ts'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
