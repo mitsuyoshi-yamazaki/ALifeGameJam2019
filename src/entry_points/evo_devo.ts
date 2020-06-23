@@ -7,6 +7,8 @@ import { parsedQueries } from "../utilities"
  * Cellular Automata の処理を実装する
  * 一定 depth を超えると停止するようにする
  * 適当なGAを実装する
+ * LSystemのルール適用時にランダムで適当な状態になるようにしたら"奇形"ができる
+ * http://0.0.0.0:8000/pages/evo_devo.html?debug=1&speed=100&limit=6&position=0.5,0.5&rules=A:-A++B,B:A&constants=+:20,-:-20
  */
 
 const parameters = parsedQueries()
@@ -21,6 +23,7 @@ const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 1
 const limit = parameters["limit"] ? parseInt(parameters["limit"], 10) : 4 // FixMe: 具体的すぎる
 // tslint:enable: no-string-literal
 
+const staticStates = ["X", "Y", "Z"]
 const canvasSize = new Vector(size, size)
 let node: Node
 let t = 0
@@ -41,7 +44,7 @@ const main = (p: p5) => {
     const system = new LSystem(parseRules(rawRules), parseConstants(rawConstants))
     const position = parsePosition()
     log(`position: ${String(position)}`)
-    node = new Node(system, undefined, "A", position, -90, "")
+    node = new Node(system, undefined, "A", position, -90)
   }
 
   p.draw = () => {
@@ -139,10 +142,17 @@ class Node {
     return this._state
   }
   public get history(): string {
-    return this._history
+    if (this.parent == undefined) {
+      return ""
+    }
+
+    return this.parent.history + this.state
+  }
+  public get age(): number {
+    return this._age
   }
   public get depth(): number {
-    return this.history.length
+    return this._depth
   }
   public get isLeaf(): boolean {
     return this.children.length === 0
@@ -150,79 +160,53 @@ class Node {
   public readonly children: Node[] = []
   private _state: string
   private readonly _history: string
-  private matured = false
+  private _age = 0
+  private readonly _depth: number
   public constructor(
     public readonly system: LSystem,
     public readonly parent: Node | null,
     state: string,
     public readonly position: Vector,
     public readonly direction: number,
-    history: string,
   ) {
     this._state = state
-    this._history = history
+    this._depth = this.history.length
     // log(`[${depth}] ${state}: ${String(position)}`)
+
+    this.stepCellularAutomata()
   }
 
   public fullState(): string {
-    if (this.isLeaf) {
-      return this.state
-    }
+    // if (this.isLeaf) {
+    //   return this.state
+    // }
+
+    // let result = ""
+    // this.children.forEach(child => {
+    //   result += child.fullState()
+    // })
+
+    // return result
 
     let result = ""
     this.children.forEach(child => {
       result += child.fullState()
     })
 
-    return result
+    return this.state + result
   }
 
   public step(): void {
-    // Cellular Automata
-    const numberOfStates = new Map<string, number>()
-    for (const c of this.history) {
-      // tslint:disable-next-line: strict-boolean-expressions
-      const n = numberOfStates.get(c) || 0
-      numberOfStates.set(c, n + 1)
-    }
-    // tslint:disable-next-line: strict-boolean-expressions
-    if ((numberOfStates.get("A") || 0) > limit) {  // FixMe: 具体的すぎる
-      this._state = "Z"
-    }
-    // log(`[${this.history}]: ${String(numberOfStates)}`)
-
-    // L-System
-    if (this.matured === false) {
-      const nextCondition = this.system.rules.get(this.state)
-      if (nextCondition != undefined) {
-        let newDirection = this.direction
-        const length = (1 / (this.depth + 1)) * unitLength
-        const nextHistory = this.history + this.state
-
-        for (const c of nextCondition) {
-          const directionChange = this.system.constants.get(c)
-          if (directionChange != undefined) {
-            newDirection += directionChange
-            continue
-          }
-
-          const radian = newDirection * (Math.PI / 180)
-          const nextPosition = this.position.moved(radian, length)
-
-          this.children.push(new Node(this.system, this, c, nextPosition, newDirection, nextHistory))
-        }
-      }
-      this.matured = true
-    } else {
-      this.children.forEach(child => {
-        child.step()
-      })
-    }
+    this._age += 1
+    this.stepLsystem()
+    this.stepCellularAutomata()
   }
 
   public draw(p: p5): void {
     if (this.parent) {
-      p.strokeWeight(1)
+      const weight = Math.max(Math.min(this.age / 1, (limit - (this.depth + 1) + 2)), 1)
+      // log(`weight: ${weight}, age: ${this.age}`)
+      p.strokeWeight(weight)
       p.noFill()
       p.stroke(0xFF, 0xA0)
       p.line(this.parent.position.x, this.parent.position.y, this.position.x, this.position.y)
@@ -245,13 +229,56 @@ class Node {
   public neighbourhoodStates(): Map<string, number> {
     const result = new Map<string, number>()
 
-    this.neighbourhood().forEach(neighbour => {
-      // tslint:disable-next-line: strict-boolean-expressions
-      const value = (result.get(neighbour.state) || 0) + 1
-      result.set(neighbour.state, value)
-    })
+    this.neighbourhood()
+      .forEach(neighbour => {
+        // tslint:disable-next-line: strict-boolean-expressions
+        const value = (result.get(neighbour.state) || 0) + 1
+        result.set(neighbour.state, value)
+      })
 
     return result
+  }
+
+  private stepLsystem(): void {
+    this.children.forEach(child => {
+      child.step()
+    })
+
+    const nextCondition = this.system.rules.get(this.state)
+    if (nextCondition != undefined) {
+      let newDirection = this.direction
+      const length = (1 / (this.depth + 1)) * unitLength
+
+      for (const c of nextCondition) {
+        const directionChange = this.system.constants.get(c)
+        if (directionChange != undefined) {
+          newDirection += directionChange
+          continue
+        }
+
+        const radian = newDirection * (Math.PI / 180)
+        const nextPosition = this.position.moved(radian, length)
+
+        this.children.push(new Node(this.system, this, c, nextPosition, newDirection))
+      }
+    }
+  }
+
+  private stepCellularAutomata(): void {
+    if (this.age > 0) {
+      this._state = "X"
+    } else {
+      const numberOfStates = new Map<string, number>()
+      for (const c of this.history) {
+        // tslint:disable-next-line: strict-boolean-expressions
+        const n = numberOfStates.get(c) || 0
+        numberOfStates.set(c, n + 1)
+      }
+      // tslint:disable-next-line: strict-boolean-expressions
+      if ((numberOfStates.get("X") || 0) > limit) {  // FixMe: 具体的すぎる
+        this._state = "Z"
+      }
+    }
   }
 }
 
