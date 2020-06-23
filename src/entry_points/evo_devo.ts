@@ -15,6 +15,7 @@ const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
 const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
 const rawConstants = parameters["constants"]  // constants=+:55,-:-55
+const rawPosition = parameters["position"]  // 0.5,0.5
 const speed = parameters["speed"] ? parseInt(parameters["speed"], 10) : 1000
 const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
 const limit = parameters["limit"] ? parseInt(parameters["limit"], 10) : 4 // FixMe: 具体的すぎる
@@ -38,7 +39,8 @@ const main = (p: p5) => {
     canvas.parent("canvas-parent")
 
     const system = new LSystem(parseRules(rawRules), parseConstants(rawConstants))
-    const position = new Vector(canvasSize.x * 0.5, canvasSize.y * 0.9)
+    const position = parsePosition()
+    log(`position: ${String(position)}`)
     node = new Node(system, undefined, "A", position, -90, "")
   }
 
@@ -103,6 +105,25 @@ function parseConstants(raw: string | undefined): Map<string, number> {
   return map
 }
 
+function parsePosition(): Vector {
+  const defaultPosition = new Vector(canvasSize.x * 0.5, canvasSize.y * 0.9)
+  if (rawPosition == undefined) {
+    return defaultPosition
+  }
+  const components = rawPosition.split(",")
+  if (components.length !== 2) {
+    return defaultPosition
+  }
+  const x = parseFloat(components[0])
+  const y = parseFloat(components[1])
+  log(`raw position: ${x}, ${y}`)
+  if (x == undefined || y == undefined) {
+    return defaultPosition
+  }
+
+  return new Vector(canvasSize.x * Math.min(Math.max(x, 0), 1), canvasSize.y * Math.min(Math.max(y, 0), 1))
+}
+
 function step(): void {
   log(node.fullState())
   node.step()
@@ -160,10 +181,12 @@ class Node {
     // Cellular Automata
     const numberOfStates = new Map<string, number>()
     for (const c of this.history) {
-      const n = numberOfStates.get(c) | 0
+      // tslint:disable-next-line: strict-boolean-expressions
+      const n = numberOfStates.get(c) || 0
       numberOfStates.set(c, n + 1)
     }
-    if ((numberOfStates.get("A") | 0) > limit) {  // FixMe: 具体的すぎる
+    // tslint:disable-next-line: strict-boolean-expressions
+    if ((numberOfStates.get("A") || 0) > limit) {  // FixMe: 具体的すぎる
       this._state = "Z"
     }
     // log(`[${this.history}]: ${String(numberOfStates)}`)
@@ -223,7 +246,8 @@ class Node {
     const result = new Map<string, number>()
 
     this.neighbourhood().forEach(neighbour => {
-      const value = (result.get(neighbour.state) | 0) + 1
+      // tslint:disable-next-line: strict-boolean-expressions
+      const value = (result.get(neighbour.state) || 0) + 1
       result.set(neighbour.state, value)
     })
 
