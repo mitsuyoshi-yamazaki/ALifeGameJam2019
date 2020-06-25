@@ -4,6 +4,7 @@ import { parsedQueries } from "../utilities"
 
 /**
  * TODO:
+ * "Dynamic L-System"
  * Cellular Automata の処理を実装する
  * 一定 depth を超えると停止するようにする
  * 適当なGAを実装する
@@ -15,15 +16,18 @@ const parameters = parsedQueries()
 // tslint:disable: no-string-literal
 const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
-const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
-const rawConstants = parameters["constants"]  // constants=+:55,-:-55
+// const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
+// const rawConstants = parameters["constants"]  // constants=+:55,-:-55
 const rawPosition = parameters["position"]  // 0.5,0.5
 const speed = parameters["speed"] ? parseInt(parameters["speed"], 10) : 1000
 const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
-const limit = parameters["limit"] ? parseInt(parameters["limit"], 10) : 4 // FixMe: 具体的すぎる
 // tslint:enable: no-string-literal
 
-const staticStates = ["X", "Y", "Z"]
+const initialState = "A"
+const rawRules = "A:aXbbY,B:cA"
+const rawConstants = "a:20,b:-20,c:10"
+
+const staticStates = ["U", "V", "W", "X", "Y", "Z"]
 const canvasSize = new Vector(size, size)
 let node: Node
 let t = 0
@@ -44,7 +48,7 @@ const main = (p: p5) => {
     const system = new LSystem(parseRules(rawRules), parseConstants(rawConstants))
     const position = parsePosition()
     log(`position: ${String(position)}`)
-    node = new Node(system, undefined, "A", position, -90)
+    node = new Node(system, undefined, initialState, position, -90)
   }
 
   p.draw = () => {
@@ -54,6 +58,7 @@ const main = (p: p5) => {
     p.background(0)
     node.draw(p)
     t += 1
+    setTimestamp(t)
   }
 }
 
@@ -141,6 +146,9 @@ class Node {
   public get state(): string {
     return this._state
   }
+  public get direction(): number {
+    return this._direction
+  }
   public get history(): string {
     if (this.parent == undefined) {
       return ""
@@ -159,6 +167,7 @@ class Node {
   }
   public readonly children: Node[] = []
   private _state: string
+  private _direction: number
   private readonly _history: string
   private _age = 0
   private readonly _depth: number
@@ -167,27 +176,14 @@ class Node {
     public readonly parent: Node | null,
     state: string,
     public readonly position: Vector,
-    public readonly direction: number,
+    direction: number,
   ) {
     this._state = state
+    this._direction = direction
     this._depth = this.history.length
-    // log(`[${depth}] ${state}: ${String(position)}`)
-
-    this.stepCellularAutomata()
   }
 
   public fullState(): string {
-    // if (this.isLeaf) {
-    //   return this.state
-    // }
-
-    // let result = ""
-    // this.children.forEach(child => {
-    //   result += child.fullState()
-    // })
-
-    // return result
-
     let result = ""
     this.children.forEach(child => {
       result += child.fullState()
@@ -204,7 +200,7 @@ class Node {
 
   public draw(p: p5): void {
     if (this.parent) {
-      const weight = Math.max(Math.min(this.age / 1, (limit - (this.depth + 1) + 2)), 1)
+      const weight = Math.max(Math.min(this.age / 1, (10 - (this.depth + 1) + 2)), 1)
       // log(`weight: ${weight}, age: ${this.age}`)
       p.strokeWeight(weight)
       p.noFill()
@@ -218,7 +214,7 @@ class Node {
   }
 
   public neighbourhood(): Node[] {
-    const result: Node[] = this.children
+    const result: Node[] = [].concat(this.children)
     if (this.parent != undefined) {
       result.push(this.parent)
     }
@@ -246,37 +242,59 @@ class Node {
 
     const nextCondition = this.system.rules.get(this.state)
     if (nextCondition != undefined) {
-      let newDirection = this.direction
       const length = (1 / (this.depth + 1)) * unitLength
 
       for (const c of nextCondition) {
         const directionChange = this.system.constants.get(c)
         if (directionChange != undefined) {
-          newDirection += directionChange
+          this._direction += directionChange
           continue
         }
 
-        const radian = newDirection * (Math.PI / 180)
+        const radian = this.direction * (Math.PI / 180)
         const nextPosition = this.position.moved(radian, length)
 
-        this.children.push(new Node(this.system, this, c, nextPosition, newDirection))
+        this.children.push(new Node(this.system, this, c, nextPosition, this.direction))
       }
     }
   }
 
   private stepCellularAutomata(): void {
-    if (this.age > 0) {
-      this._state = "X"
-    } else {
-      const numberOfStates = new Map<string, number>()
+    // TODO: セルオートマトンが駄目なら、シグナルを出してその濃度が一定以下ならどうするというコードを書く
+    if (this.state === "A") {
+      this._state = "Z"
+
+      return
+    }
+    if (this.state === "B") {
+      this._state = "Z"
+
+      return
+    }
+
+    const neighbourhoodStates = this.neighbourhoodStates()
+    // tslint:disable-next-line: strict-boolean-expressions
+    if ((neighbourhoodStates.get("Z") || 0) <= 1) {
+      const historyStates = new Map<string, number>()
       for (const c of this.history) {
-        // tslint:disable-next-line: strict-boolean-expressions
-        const n = numberOfStates.get(c) || 0
-        numberOfStates.set(c, n + 1)
+        const n = historyStates.get(c) | 0
+        historyStates.set(c, n + 1)
       }
+      log(`[${this.history}], ${historyStates.get("Z")}`)
       // tslint:disable-next-line: strict-boolean-expressions
-      if ((numberOfStates.get("X") || 0) > limit) {  // FixMe: 具体的すぎる
-        this._state = "Z"
+      if ((historyStates.get("Z") || 0) > 2) {
+        return
+      }
+
+      if (this.state === "X") {
+        this._state = "A"
+
+        return
+      }
+      if (this.state === "Y") {
+        this._state = "B"
+
+        return
       }
     }
   }
