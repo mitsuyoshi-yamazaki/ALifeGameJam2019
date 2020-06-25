@@ -24,10 +24,10 @@ $ yarn install
 # Compile & build sources
 $ yarn build
 
-# Open Google Chrome with disabling security function (to load local js files)
-$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir
+# Run SimpleHTTPServer (for Python2.x
+$ python -m SimpleHTTPServer 8000
 
-# Open `index.html` on Google Chrome
+# Open `0.0.0.0:8000` on the web browser
 ```
 
 
