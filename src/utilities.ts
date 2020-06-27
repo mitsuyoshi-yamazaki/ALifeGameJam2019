@@ -19,12 +19,13 @@ export class Color {
   }
 }
 
-export function parsedQueries(): object {
+// tslint:disable-next-line:no-any
+export function parsedQueries(): any {
   const rawQuery = document.location.search
   const queries = rawQuery
     .slice(rawQuery.indexOf("?") + 1)
     .split("&")
-  const parameters = { }
+  const parameters = {} as any
 
   for (const query of queries) {
     const pair = query.split("=")

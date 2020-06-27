@@ -21,11 +21,12 @@ const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
 const rawPosition = parameters["position"]  // 0.5,0.5
 const speed = parameters["speed"] ? parseInt(parameters["speed"], 10) : 1000
 const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
+const limit = parameters["limit"] ? parseInt(parameters["limit"], 10) : 6
 // tslint:enable: no-string-literal
 
 const initialState = "A"
-const rawRules = "A:aXbbY,B:cA"
-const rawConstants = "a:20,b:-20,c:10"
+const rawRules = "A:aAbB,B:A"
+const rawConstants = "a:20,b:-40"
 
 const staticStates = ["U", "V", "W", "X", "Y", "Z"]
 const canvasSize = new Vector(size, size)
@@ -53,6 +54,7 @@ const main = (p: p5) => {
 
   p.draw = () => {
     if (t % speed === 0) {
+      log(`t: ${Math.floor(t / speed)}`)
       step()
     }
     p.background(0)
@@ -143,8 +145,11 @@ class LSystem {
 }
 
 class Node {
-  public get state(): string {
-    return this._state
+  public get currentState(): string {
+    return this._currentState
+  }
+  public get nextState(): string {
+    return this._nextState
   }
   public get direction(): number {
     return this._direction
@@ -154,7 +159,7 @@ class Node {
       return ""
     }
 
-    return this.parent.history + this.state
+    return this.parent.history + this.currentState
   }
   public get age(): number {
     return this._age
@@ -166,19 +171,22 @@ class Node {
     return this.children.length === 0
   }
   public readonly children: Node[] = []
-  private _state: string
+  public readonly caStates = new Map<string, number>()
+  private _currentState: string
+  private _nextState: string
   private _direction: number
   private readonly _history: string
   private _age = 0
   private readonly _depth: number
   public constructor(
     public readonly system: LSystem,
-    public readonly parent: Node | null,
+    public readonly parent: Node | undefined,
     state: string,
     public readonly position: Vector,
     direction: number,
   ) {
-    this._state = state
+    this._currentState = state
+    this._nextState = state
     this._direction = direction
     this._depth = this.history.length
   }
@@ -189,13 +197,15 @@ class Node {
       result += child.fullState()
     })
 
-    return this.state + result
+    return this.currentState + result
   }
 
   public step(): void {
     this._age += 1
     this.stepLsystem()
-    this.stepCellularAutomata()
+    // this.stepCellularAutomata()
+
+    this._currentState = this._nextState
   }
 
   public draw(p: p5): void {
@@ -204,7 +214,12 @@ class Node {
       // log(`weight: ${weight}, age: ${this.age}`)
       p.strokeWeight(weight)
       p.noFill()
-      p.stroke(0xFF, 0xA0)
+
+      // tslint:disable-next-line: strict-boolean-expressions
+      const c = this.caStates.get("C") || 0
+      const color = 255 - ((100 / limit) * c)
+
+      p.stroke(color, 0xFF, color, 0xA0)
       p.line(this.parent.position.x, this.parent.position.y, this.position.x, this.position.y)
     }
 
@@ -214,7 +229,7 @@ class Node {
   }
 
   public neighbourhood(): Node[] {
-    const result: Node[] = [].concat(this.children)
+    const result: Node[] = ([] as Node[]).concat(this.children)
     if (this.parent != undefined) {
       result.push(this.parent)
     }
@@ -227,12 +242,64 @@ class Node {
 
     this.neighbourhood()
       .forEach(neighbour => {
-        // tslint:disable-next-line: strict-boolean-expressions
-        const value = (result.get(neighbour.state) || 0) + 1
-        result.set(neighbour.state, value)
+        neighbour.caStates.forEach((value, state) => {
+          // tslint:disable-next-line: strict-boolean-expressions
+          const currentValue = result.get(state) || 0
+          if (currentValue > value) {
+            if (currentValue <= 1) {
+              result.delete(state)
+            } else {
+              result.set(state, currentValue - 1)
+            }
+          } else {
+            if (value <= 1) {
+              result.delete(state)
+            } else {
+              result.set(state, value - 1)
+            }
+          }
+        })
       })
 
     return result
+  }
+
+  public nearbyChildren(state: string, depth: number): boolean {
+    if (this.currentState === state) {
+      return true
+    }
+    if (depth <= 0) {
+      return false
+    }
+    for (const child of this.children) {
+      if (child.nearbyChildren(state, depth - 1) === true) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  public nearbyParent(state: string, depth: number, from: Node): boolean {
+    if (this.currentState === state) {
+      return true
+    }
+    if (depth <= 0) {
+      return false
+    }
+    if ((this.parent != undefined) && (this.parent.nearbyParent(state, depth - 1, this) === true)) {
+      return true
+    }
+    for (const child of this.children) {
+      if (child === from) {
+        continue
+      }
+      if (child.nearbyChildren(state, depth - 1) === true) {
+        return true
+      }
+    }
+
+    return false
   }
 
   private stepLsystem(): void {
@@ -240,7 +307,22 @@ class Node {
       child.step()
     })
 
-    const nextCondition = this.system.rules.get(this.state)
+    if (this.depth > limit) {
+      return
+    }
+
+    if (this.currentState === "B") {
+      const targetState = "A"
+      const depth = limit / 2
+      if ((this.parent != undefined) && (this.nearbyParent(targetState, depth, this) === true)) {
+        return
+      }
+      if (this.nearbyChildren(targetState, depth) === true) {
+        return
+      }
+    }
+
+    const nextCondition = this.system.rules.get(this.currentState)
     if (nextCondition != undefined) {
       const length = (1 / (this.depth + 1)) * unitLength
 
@@ -257,46 +339,56 @@ class Node {
         this.children.push(new Node(this.system, this, c, nextPosition, this.direction))
       }
     }
+
+    if (this.currentState === "A") {
+      this._nextState = "X"
+    }
   }
 
   private stepCellularAutomata(): void {
-    // TODO: セルオートマトンが駄目なら、シグナルを出してその濃度が一定以下ならどうするというコードを書く
-    if (this.state === "A") {
-      this._state = "Z"
-
-      return
-    }
-    if (this.state === "B") {
-      this._state = "Z"
+    if (this.currentState === "C") {
+      this._nextState = "A"
+      this.caStates.set("C", limit)
 
       return
     }
 
     const neighbourhoodStates = this.neighbourhoodStates()
     // tslint:disable-next-line: strict-boolean-expressions
-    if ((neighbourhoodStates.get("Z") || 0) <= 1) {
-      const historyStates = new Map<string, number>()
-      for (const c of this.history) {
-        const n = historyStates.get(c) | 0
-        historyStates.set(c, n + 1)
-      }
-      log(`[${this.history}], ${historyStates.get("Z")}`)
-      // tslint:disable-next-line: strict-boolean-expressions
-      if ((historyStates.get("Z") || 0) > 2) {
-        return
-      }
+    const cValue = (neighbourhoodStates.get("C") || 0)
+    if (cValue <= 0) {
+      this._nextState = "C"
 
-      if (this.state === "X") {
-        this._state = "A"
-
-        return
-      }
-      if (this.state === "Y") {
-        this._state = "B"
-
-        return
-      }
+      return
+    } else {
+      this.caStates.set("C", cValue - 1)
     }
+
+    // const neighbourhoodStates = this.neighbourhoodStates()
+    // // tslint:disable-next-line: strict-boolean-expressions
+    // if ((neighbourhoodStates.get("Z") || 0) <= 1) {
+    //   const historyStates = new Map<string, number>()
+    //   for (const c of this.history) {
+    //     const n = historyStates.get(c) | 0
+    //     historyStates.set(c, n + 1)
+    //   }
+    //   log(`[$ { this.history }], $ { historyStates.get("Z") } `)
+    //   // tslint:disable-next-line: strict-boolean-expressions
+    //   if ((historyStates.get("Z") || 0) > 2) {
+    //     return
+    //   }
+
+    //   if (this.state === "X") {
+    //     this._state = "A"
+
+    //     return
+    //   }
+    //   if (this.state === "Y") {
+    //     this._state = "B"
+
+    //     return
+    //   }
+    // }
   }
 }
 

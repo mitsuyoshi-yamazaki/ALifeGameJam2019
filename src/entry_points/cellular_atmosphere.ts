@@ -155,7 +155,7 @@ const main = (p: p5) => {
           })
 
           let largestPressure = 0
-          let largestPressureMaterial: Material | null
+          let largestPressureMaterial: Material | undefined
           pressures.forEach((pressure, material) => {
             if (pressure > largestPressure) {
               largestPressureMaterial = material
@@ -356,7 +356,7 @@ class State {
 }
 
 function pressureOf(state: State, surroundings: State[]): number {
-   return 0	// TODO: materialが異なれば与えるpressureが異なる？
+  return 0	// TODO: materialが異なれば与えるpressureが異なる？
 }
 
 // function transference(to: State, from: State, pressure): number {
