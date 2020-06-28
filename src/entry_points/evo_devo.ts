@@ -342,6 +342,8 @@ class Node {
 
     if (this.currentState === "A") {
       this._nextState = "X"
+    } else if (this.currentState === "B") {
+      this._nextState = "Y"
     }
   }
 

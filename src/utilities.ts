@@ -25,6 +25,7 @@ export function parsedQueries(): any {
   const queries = rawQuery
     .slice(rawQuery.indexOf("?") + 1)
     .split("&")
+  // tslint:disable-next-line:no-any
   const parameters = {} as any
 
   for (const query of queries) {
