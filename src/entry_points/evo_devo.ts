@@ -61,6 +61,12 @@ const main = (p: p5) => {
     node.draw(p)
     t += 1
     setTimestamp(t)
+
+    if (Math.floor(t / speed) === 15) {
+      log(`POP!!`)
+      node.children[0].children[0].children.splice(0, 1)
+      node.children.splice(1, 1)
+    }
   }
 }
 
@@ -312,19 +318,20 @@ class Node {
     }
 
     if (this.currentState === "B") {
-      const targetState = "A"
-      const depth = limit / 2
-      if ((this.parent != undefined) && (this.nearbyParent(targetState, depth, this) === true)) {
-        return
-      }
-      if (this.nearbyChildren(targetState, depth) === true) {
-        return
+      if (this.parent != undefined) {
+        if (this.nearbyParent("A", limit / 2, this) === true) {
+          return
+        }
+        if (this.nearbyParent("Y", 4, this) === true) {
+          return
+        }
       }
     }
 
     const nextCondition = this.system.rules.get(this.currentState)
     if (nextCondition != undefined) {
-      const length = (1 / (this.depth + 1)) * unitLength
+      // const length = (1 / (this.depth + 1)) * unitLength
+      const length = unitLength - (this.depth * 2)
 
       for (const c of nextCondition) {
         const directionChange = this.system.constants.get(c)
