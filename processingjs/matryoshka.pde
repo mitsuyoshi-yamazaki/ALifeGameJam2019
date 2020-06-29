@@ -46,9 +46,9 @@ int t = 0;
 String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
 
 // Population
-Life[] lifes;
-int initialResourceSize = 1000;
-int resourceGrowth = 4.01;
+Agent[] agents;
+int initialResourceSize = 100;
+int resourceGrowth = 1.01;
 int maxResourceSize = 10000;
 // Inspector
 int[] populationPerSpecies = [];
@@ -171,6 +171,10 @@ class Gene {
     return new Gene(Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)), Math.round(random(0, geneMaxValue)));
   }
 
+  Gene copy() {
+    return new Gene(this.predatorGene, this.preyGene, this.droppingsGene);
+  }
+
   Gene mutantGene(){
     int mutation = (1 << (random(0, wholeLength)));
     int childwholegene = (this.getWholeGene()) ^ mutation;
@@ -240,25 +244,66 @@ var makeTimer = (function(){
     });
 });
 
-class Life {
-
+// class Life {
+class Agent {
   PVector position;
   float v, r;
   float size;
-  float bodyEnergy;
   bool isEaten = false;
   Gene gene;
+
+  Agent collideWith;
+
+  bool alive() {
+    return false;
+  }
+
+  Life[] update(){
+    return [];
+  }
+
+  void draw(){
+  }
+}
+
+class MetaLife extends Agent {
+  Agent[] containedAgents = [];
+
+  MetaLife(float x, float y) {
+    position = new PVector(x, y);
+    size = lifeRadius * 4;
+  }
+
+  void addAgents(Agent[] _agents) {
+    containedAgents = containedAgents.concat(_agents);
+    gene = _agents[0].gene.copy();
+  }
+
+  bool alive() {
+    return true;  // FixMe:
+  }
+
+  void draw(){
+    noFill();
+    strokeWeight(4);
+    stroke(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b,128);
+    ellipse(position.x, position.y, size, size);
+  }
+}
+
+class Life extends Agent {
+  float bodyEnergy;
   float energy;
   float previousEnergy; // 分裂前のエネルギー
   String type = 'Life';
 
-  Life(float x, float y, float _size, float _energy, Gene _gene){
+  Life(float x, float y, float s, float _energy, Gene _gene){
     position = new PVector(x, y);
-				if (mutatingSizeEnabled) {
-     size = _gene.size;
-				} else {
-     size = _size;
-				}
+		if (mutatingSizeEnabled) {
+      size = _gene.size;
+		} else {
+      size = s;
+		}
     energy=_energy;
     gene = _gene;
     bodyEnergy = size * size;
@@ -328,7 +373,7 @@ class Life {
         g.size = resourceSize;
         Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, g);
         res.bodyEnergy = e * 10000;
-        lifes[lifes.length] = res;
+        agents[agents.length] = res;
 //     }
     }
   }
@@ -483,18 +528,18 @@ void setup()
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
 
-  lifes = [];
+  agents = [];
   int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   Gene[] initialGenesArray = [new Gene(0, 0, 0)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
-    lifes[lifes.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
+    agents[agents.length]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
   }
   for (int i = 0; i < initialResourceSize; i++) {
     Gene g1 = new Gene(0, 0, 0);
     g1.size = resourceSize;
-    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10), random(10,fieldHeight - 10), resourceSize, Gene.randomGene());
+    agents[agents.length] = Life.makeResource(random(10,fieldWidth - 10), random(10,fieldHeight - 10), resourceSize, Gene.randomGene());
   }
 }
 
@@ -508,7 +553,7 @@ void draw(){
   Life[] killed = [];
   Life[] born = [];
 
-  Life[] sortedX = lifes.slice(0, lifes.length);
+  Life[] sortedX = agents.slice(0, agents.length);
   sortedX.sort(function(lhs, rhs) {
     return lhs.position.x - rhs.position.x;
   });
@@ -516,17 +561,21 @@ void draw(){
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
   int nextPopulationOfResource = 0;
 
-  for (int i = 0; i < lifes.length; i++){
-    Life focus = lifes[i];
+  for (int i = 0; i < agents.length; i++){
+    agents[i].collideWith = null;
+  }
 
-    if (lifes[i].type == "Resource"){
+  for (int i = 0; i < agents.length; i++){
+    Life focus = agents[i];
+
+    if (agents[i].type == "Resource"){
       nextPopulationOfResource += 1;
     }
-    if(lifes[i].alive()){
-      born = born.concat(lifes[i].update());
+    if(agents[i].alive()){
+      born = born.concat(agents[i].update());
       populationPerSpecies[focus.gene.getWholeGene()] += 1;
 
-      Life life = lifes[i];
+      Life life = agents[i];
 
       Life[] compareTo = [];
 
@@ -550,16 +599,19 @@ void draw(){
 
       for (int j = 0; j < compareTo.length; j++){
         if(i==j) continue;
-        if(isCollision(lifes[i], compareTo[j])) {
+        if(isCollision(agents[i], compareTo[j])) {
           Life predator, prey;
           float threshold = random(eatProbability, 1.0);
           if(!isScavenger){ // スカベンジャーオプションがオフの場合
             if(compareTo[j].type == "Life" && !compareTo[j].alive()) continue;// もし死体なら食べない
           }
-          if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
-            predator = lifes[i];
+          if (agents[i].gene.canEat(compareTo[j].gene) > threshold) {
+            predator = agents[i];
             prey = compareTo[j];
 
+          } else if (agents[i].gene.getWholeGene() == compareTo[j].gene.getWholeGene()) {
+            agents[i].collideWith = compareTo[j];
+            continue;
           } else {
             continue;
           }
@@ -570,15 +622,46 @@ void draw(){
         }
       }
     }
-    lifes[i].draw();
+    agents[i].draw();
   }
   populationOfResource = nextPopulationOfResource;
 
-  lifes = lifes.filter( function( el ) { //死
+  agents = agents.filter( function( el ) { //死
     return killed.indexOf( el ) < 0;
   } );
 
-  lifes = lifes.concat(born); //生
+  int[] collided = [];
+  MetaLife[] addedMetaLives = [];
+  for (int i = 0; i < agents.length; i++){
+    if (collided.indexOf(i) > 0) {
+      continue;
+    }
+
+    Agent agent = agents[i];
+    Agent[] collidedAgents = [agent];
+    while (agent.collideWith) {
+      int j = agents.indexOf(agent.collideWith);
+      if (j > 0) {
+        collided[collided.length] = j;
+      }
+
+      collidedAgents[collidedAgents.length] = agent.collideWith;
+      agent = agent.collideWith;
+    }
+    if (collidedAgents.length >= 2) {
+      MetaLife metaLife = new MetaLife(agent.position.x, agent.position.y);
+      metaLife.addAgents(collidedAgents);
+      addedMetaLives[addedMetaLives.length] = metaLife;
+    }
+  }
+
+  agents = agents.concat(addedMetaLives);
+
+  agents = agents.filter( function( el, i ) {
+    return collided.indexOf(i) == -1;
+  } );
+
+  agents = agents.concat(born); //生
 
   addResources();
 
@@ -586,8 +669,6 @@ void draw(){
 		if (graphEnabled) {
   	drawGraph();
 		}
-
-  //console.log("frameRate: " + frameRate);
 
 		setTimestamp(t);	// see screenshot.js
 		if (screenshotEnabled && (t % screenshotInterval == 0)) {
@@ -632,6 +713,6 @@ void addResources() {
 //  Gene g = new Gene(0, 0, 0);
   Gene g = Gene.randomGene();
   for (int i = 0; i < numberOfResources; i++) {
-    lifes[lifes.length] = Life.makeResource(random(10,fieldWidth - 10), random(10,fieldHeight - 10), resourceSize, Gene.randomGene());
+    agents[agents.length] = Life.makeResource(random(10,fieldWidth - 10), random(10,fieldHeight - 10), resourceSize, Gene.randomGene());
   }
 }
