@@ -125,7 +125,7 @@ export class MetaActiveLife extends GeneticLife {
   }
 
   public get isAlive(): boolean {
-    return true // TODO:
+    return this.containedLives.findIndex(life => life.isAlive) >= 0 // TODO: Gene をチェックして多様過ぎたら死亡するようにする
   }
   private containedLives: GeneticLife[]
 
@@ -169,7 +169,7 @@ export class MetaActiveLife extends GeneticLife {
       }
 
       const next = life.next()
-      const coordinate = this.updateCoordinateFor(life.position, life.velocity, next[0], life.mass)
+      const coordinate = this.updateCoordinateFor(life.position, life.velocity, next[0], life.mass, life.size)
       life.position = coordinate[0]
       life.velocity = coordinate[1]
       const offsprings = next[1] as GeneticLife[]
@@ -212,17 +212,16 @@ export class MetaActiveLife extends GeneticLife {
   }
 
   public draw(p: p5, anchor: Vector): void {
+    const localAnchor = anchor.add(this.position)
+    this.containedLives.forEach(life => {
+      life.draw(p, localAnchor)
+    })
+
     p.fill(this.gene.color.p5(p, 0x20))
     p.strokeWeight(1)
     p.stroke(0x20, 0x80)
     const diameter = this.size
     p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
-
-    const localAnchor = anchor.add(this.position)
-
-    this.containedLives.forEach(life => {
-      life.draw(p, localAnchor)
-    })
   }
 
   public eat(life: GeneticLife): void {
@@ -230,33 +229,22 @@ export class MetaActiveLife extends GeneticLife {
   }
 
   // 返り値は [newPosition: Vector, newVelocity: Vector]
-  private updateCoordinateFor(position: Vector, velocity: Vector, force: Force, mass: number): [Vector, Vector] {
-    const friction = 0.99
+  private updateCoordinateFor(position: Vector, velocity: Vector, force: Force, mass: number, lifeSize: number): [Vector, Vector] {
+    const friction = 0.5
     const acceleration = force.accelerationTo(mass)
 
-    const nextPosition = position.add(velocity)
-    const nextVelocity = velocity.mult(friction)
-      .add(acceleration)
-    let x = nextPosition.x
-    let y = nextPosition.y
-    let dx = nextVelocity.x
-    let dy = nextVelocity.y
-    if (x < 0) {
-      x = 0
-      dx = 0
-    } else if (x > this.size) { // FixMe: 円座標系にする
-      x = this.size
-      dx = 0
-    }
-    if (y < 0) {
-      y = 0
-      dy = 0
-    } else if (y > this.size) { // FixMe: 円座標系にする
-      y = this.size
-      dy = 0
+    let nextPosition = position.add(velocity)
+    let nextVelocity: Vector
+    const radius = (this.size - lifeSize) / 2
+    if (nextPosition.size > radius) {
+      nextPosition = nextPosition.sized(radius)
+      nextVelocity = Vector.zero()
+    } else {
+      nextVelocity = velocity.mult(friction)
+        .add(acceleration)
     }
 
-    return [new Vector(x, y), new Vector(dx, dy)]
+    return [nextPosition, nextVelocity]
   }
 }
 
@@ -326,7 +314,7 @@ export class GeneticActiveLife extends GeneticLife {
       p.stroke(this.gene.color.p5(p, 0x80))
     }
 
-    const diameter = this.size * 2
+    const diameter = this.size
     p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
   }
 
