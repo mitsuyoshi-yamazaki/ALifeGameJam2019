@@ -9,7 +9,8 @@ module.exports = {
     cellular_atmosphere: './src/entry_points/cellular_atmosphere.ts',
     generative_art_002: './src/entry_points/generative_art_002.ts',
     lsystem: './src/entry_points/lsystem.ts',
-    evo_devo: './src/entry_points/evo_devo.ts'
+    evo_devo: './src/entry_points/evo_devo.ts',
+    bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

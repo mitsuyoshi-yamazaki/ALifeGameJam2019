@@ -6,16 +6,15 @@ const parameters = parsedQueries()
 // tslint:disable: no-string-literal
 const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
-const numberOfAgents = parameters["agents"] ? parseInt(parameters["agents"], 10) : 1
-const maxDepth = parameters["depth"] ? parseInt(parameters["depth"], 10) : 3
-const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
-const rawConstants = parameters["constants"]  // constants=+:55,-:-55
-const initialCondition = parameters["condition"]  // condition=A
+const maxDepth = parameters["depth"] ? parseInt(parameters["depth"], 10) : 5
+const rawRules = parameters["rules"]  // rules=F:F[+F]F[-F]F
+const rawConstants = parameters["constants"]  // constants=+:25.7,-:-25.7
+const initialCondition = parameters["condition"]  // condition=F
 const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
 // tslint:enable: no-string-literal
 
 const canvasSize = new Vector(size, size)
-const agents: Agent[] = []
+let agent: Agent
 const rules = parseRules(rawRules)
 const constants = parseConstants(rawConstants)
 
@@ -32,25 +31,16 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
-    initializeAgents()
+    const diff = new Vector(0, size * 0.1)
+    const position = canvasSize.div(2)
+      .add(diff)
+    const lsystem = new BracketedOLSystem(rules, constants)
+    agent = new Agent(position, lsystem)
   }
 
   p.draw = () => {
     p.background(0)
-
-    agents.forEach(agent => {
-      agent.draw(p)
-    })
-  }
-}
-
-function initializeAgents(): void {
-  for (let i = 0; i < numberOfAgents; i += 1) {
-    const diff = new Vector(0, size * 0.1)
-    const position = canvasSize.div(2)
-      .add(diff)
-    const lsystem = new LSystem(rules, constants)
-    agents.push(new Agent(position, lsystem))
+    agent.draw(p)
   }
 }
 
@@ -93,7 +83,7 @@ function parseConstants(raw: string | undefined): Map<string, number> {
 
       return
     }
-    const angle = parseInt(keyValue[1], 10)
+    const angle = parseFloat(keyValue[1])
     if (angle === undefined) {
       console.log(`[Warning] Parameter "constants" line "${line}" should be "<character>:<number>"`)
 
@@ -109,51 +99,82 @@ interface Drawable {
   draw(p: p5): void
 }
 
-class LSystem {
+class Coordinate {
+  public constructor(public readonly direction: number, public readonly position: Vector) {
+  }
+}
+
+class BracketedOLSystem {
   public constructor(public readonly rules: Map<string, string>, public readonly constants: Map<string, number>) {
   }
 
   public draw(p: p5, initialCondition: string, position: Vector, depth: number): void {
     p.noFill()
+    p.strokeWeight(4)
     p.stroke(0xFF, 0x80)
 
-    this.recursiveDraw(p, initialCondition, position, -90, depth)
-  }
+    const state = this.getResult(initialCondition, depth)
+    const stack: Coordinate[] = []
 
-  private recursiveDraw(p: p5, condition: string, position: Vector, direction: number, depth: number): void {
-    if (depth < 1) {
-      return
-    }
+    // TODO: 文字によりlenghtを変える
+    const length = unitLength
 
-    let newDirection = direction
-    const length = unitLength // Math.pow(0.9, maxDepth - depth) * unitLength
+    let currentPosition = position
+    let currentDirection = -90  // 上向き
 
-    for (const c of condition) {
+    for (const c of state) {
+      if (c === "[") {
+        stack.push(new Coordinate(currentDirection, currentPosition))
+        // log(`push ${currentDirection}, ${String(currentPosition)}`)
+        continue
+      }
+      if (c === "]") {
+        const coordinate = stack.pop()
+        if (coordinate == undefined) {
+          log(`ERROR Stack is empty`)
+          continue
+        }
+        // log(`pop ${currentDirection} -> ${coordinate.direction}, ${String(currentPosition)} -> ${String(coordinate.position)}`)
+        currentDirection = coordinate.direction
+        currentPosition = coordinate.position
+        continue
+      }
+
       const directionChange = this.constants.get(c)
       if (directionChange != undefined) {
-        newDirection += directionChange
+        // log(`direction ${currentDirection} -> ${currentDirection + directionChange}`)
+        currentDirection += directionChange
         continue
       }
 
-      const radian = newDirection * (Math.PI / 180)
-      const nextPosition = position.moved(radian, length)
-      const center = nextPosition.add(position)
-        .div(2)
-      p.strokeWeight(4)
-      p.stroke(0xFF, 0x80)
-      p.line(position.x, position.y, nextPosition.x, nextPosition.y)
-
-      const nextCondition = this.rules.get(c)
-      if (nextCondition != undefined) {
-        this.recursiveDraw(p, nextCondition, nextPosition, newDirection, depth - 1)
-        continue
-      }
+      // 文字であった場合
+      const radian = currentDirection * (Math.PI / 180)
+      const nextPosition = currentPosition.moved(radian, length)
+      p.line(currentPosition.x, currentPosition.y, nextPosition.x, nextPosition.y)
+      // log(`draw ${String(currentPosition)} -> ${String(nextPosition)}`)
+      currentPosition = nextPosition
     }
+    // log(`END`)
+  }
+
+  private getResult(condition: string, depth: number): string {
+    if (depth < 1) {
+      return condition
+    }
+
+    let result = condition
+    this.rules.forEach((value, key) => {
+      const components = result.split(key)
+      result = components.join(value)
+    })
+    // log(`getResult "${condition}" -> "${result}"`)
+
+    return this.getResult(result, depth - 1)
   }
 }
 
 class Agent implements Drawable {
-  public constructor(public readonly position: Vector, public readonly lsystem: LSystem) {
+  public constructor(public readonly position: Vector, public readonly lsystem: BracketedOLSystem) {
   }
 
   public draw(p: p5): void {
