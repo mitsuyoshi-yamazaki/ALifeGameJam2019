@@ -70,8 +70,6 @@ export class VanillaWorld implements World {
   }
 
   public draw(p: p5): void {
-    p.background(220)
-
     this.terrains.forEach(terrain => {
       terrain.draw(p)
     })
@@ -83,7 +81,7 @@ export class VanillaWorld implements World {
     })
   }
 
-   // 返り値は [newPosition: Vector, newVelocity: Vector]
+  // 返り値は [newPosition: Vector, newVelocity: Vector]
   protected updateCoordinateFor(position: Vector, velocity: Vector, force: Force, mass: number): [Vector, Vector] {
     const forces: Force[] = this.terrains.map(terrain => {
       return terrain.forceAt(position)
@@ -105,7 +103,7 @@ export class VanillaWorld implements World {
 
     const nextPosition = position.add(velocity)
     const nextVelocity = velocity.mult(friction)
-        .add(acceleration)
+      .add(acceleration)
     let x = nextPosition.x
     let y = nextPosition.y
     let dx = nextVelocity.x
@@ -138,7 +136,7 @@ export class PredPreyWorld extends VanillaWorld {
   public next(): void {
     const eatProbability = 0.9
 
-    const deads: GeneticLife[] = []
+    const killed: GeneticLife[] = []
     const born: GeneticLife[] = []
 
     const sortedX = [...this.lives].sort((lhs, rhs) => {
@@ -185,7 +183,7 @@ export class PredPreyWorld extends VanillaWorld {
                 const predator = life
                 const prey = otherLife
                 predator.eat(prey)
-                deads.push(prey)
+                killed.push(prey)
                 break
 
               } else {
@@ -195,13 +193,12 @@ export class PredPreyWorld extends VanillaWorld {
           }
         } else {
           // Dead
-          deads.push(life)
         }
       }
     }
 
     this._lives = this.lives.filter(l => {
-      return deads.indexOf(l) < 0
+      return killed.indexOf(l) < 0
     })
 
     this.addLives(born)

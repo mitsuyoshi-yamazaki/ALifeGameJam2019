@@ -66,6 +66,10 @@ export class Gene {
     return `${this.predatorGene.toString(16)}|${this.preyGene.toString(16)}`
   }
 
+  public copy(): Gene {
+    return new Gene(this.predatorGene, this.preyGene)
+  }
+
   public mutated(): Gene {
     const mutation = 1 << Math.floor(random(Gene.binaryLength, 0))
     const mutatedBinary = this.binaryRepresentation ^ mutation
@@ -76,12 +80,12 @@ export class Gene {
   public canEat(other: Gene, threshold: number): boolean {
     let diff = 0
 
-    for (let i = 0; i < Gene.geneMaxValue; i += 1) {
+    for (let i = 0; i < Gene.geneLength; i += 1) {
       if (((this.predatorGene >> i) & 0x01) === ((other.preyGene >> i) & 0x01)) {
         diff += 1
       }
     }
 
-    return (diff / Gene.geneMaxValue) > threshold
+    return (diff / Gene.geneLength) > threshold
   }
 }

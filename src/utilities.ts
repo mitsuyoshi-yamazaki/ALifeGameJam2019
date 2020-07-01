@@ -14,8 +14,8 @@ export class Color {
   public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
   }
 
-  public p5(p: p5): p5.Color {
-    return p.color(this.r, this.g, this.b)
+  public p5(p: p5, alpha: number): p5.Color {
+    return p.color(this.r, this.g, this.b, alpha)
   }
 }
 
@@ -24,7 +24,7 @@ export function parsedQueries(): object {
   const queries = rawQuery
     .slice(rawQuery.indexOf("?") + 1)
     .split("&")
-  const parameters = { }
+  const parameters = {}
 
   for (const query of queries) {
     const pair = query.split("=")

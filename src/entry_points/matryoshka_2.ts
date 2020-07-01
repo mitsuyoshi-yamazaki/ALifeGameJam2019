@@ -8,19 +8,21 @@ import { parsedQueries, random } from "../utilities"
 
 const parameters = parsedQueries()
 // tslint:disable: no-string-literal
-const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
+const DEBUG = (parameters["debug"] ? parseInt(parameters["debug"], 10) : 0) > 0
+const artMode = (parameters["art_mode"] ? parseInt(parameters["art_mode"], 10) : 0) > 0
+const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1200
 const lifeSize = parameters["life_size"] ? parseInt(parameters["life_size"], 10) : 6
 const population = parameters["population"] ? parseInt(parameters["population"], 10) : 4000
 const friction = parameters["friction"] ? parseFloat(parameters["friction"]) : 0.99
-const mutationRate = parameters["mutation_rate"] ? parseFloat(parameters["mutation_rate"]) : 0.99
+const mutationRate = parameters["mutation_rate"] ? parseFloat(parameters["mutation_rate"]) : 0.03
 // tslint:enable: no-string-literal
 
 const startsWithSingleGene = true
 
 let world: World
-const backgroundTransparency = 0xFF
-const fieldWidth = 1200
-const fieldHeight = Math.floor(fieldWidth * 1)
+const backgroundTransparency = artMode ? 0x0 : 0xFF
+const fieldWidth = size
+const fieldHeight = Math.floor(fieldWidth * 0.6)
 const worldSize = new Vector(fieldWidth, fieldHeight)
 const gravityCenter = worldSize.mult(0.5)
 const worldCenter = worldSize.div(2)
@@ -45,8 +47,7 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    p.fill(0xFF, backgroundTransparency)
-    p.rect(0, 0, fieldWidth, fieldHeight) // background() では動作しない
+    p.background(0xFF, backgroundTransparency)
 
     const resources: GeneticLife[] = []
     const resourceSize = lifeSize * 0.6
@@ -72,7 +73,7 @@ const main = (p: p5) => {
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x), random(positionSpace.y))
       const gene = startsWithSingleGene ? initialGene : Gene.random()
-      lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy))
+      lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy, mutationRate))
     }
     if (velocity != undefined) {
       lives.forEach(life => {

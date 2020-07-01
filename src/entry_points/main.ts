@@ -62,7 +62,7 @@ const main = (p: p5) => {
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x), random(positionSpace.y))
       const gene = startsWithSingleGene ? initialGene : Gene.random()
-      lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy))
+      lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy, 0.03))
     }
     if (velocity != undefined) {
       lives.forEach(life => {

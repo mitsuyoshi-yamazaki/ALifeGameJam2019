@@ -82,7 +82,7 @@ export class GeneticLife extends Life {
 
   public draw(p: p5): void {
     p.noStroke()
-    p.fill(this.gene.color.p5(p))
+    p.fill(this.gene.color.p5(p, 0xFF))
     const diameter = this.size
     p.rect(this.position.x - this.size, this.position.y - this.size, diameter, diameter)
   }
@@ -97,17 +97,28 @@ export class GeneticActiveLife extends GeneticLife {
     return this.energy > 0
   }
 
-  public constructor(public position: Vector, public readonly gene: Gene, size: number, energy: number) {
+  public constructor(
+    public position: Vector,
+    public readonly gene: Gene,
+    size: number,
+    energy: number,
+    public readonly mutationRate: number,
+  ) {
     super(position, gene, size, energy)
   }
 
   public next(): [Force, WorldObject[]] {
+    if (this.isAlive === false) {
+      return [Force.zero(), []]
+    }
+
+    const energyConsumptionRate = 1 / 40
     const max = 0.1
     const vx = random(max, -max)
     const vy = random(max, -max)
 
     const force = new Force(new Vector(vx, vy))
-    this._energy = Math.max(this.energy - force.consumedEnergyWith(this.mass), 0)
+    this._energy = Math.max(this.energy - (force.consumedEnergyWith(this.mass) * energyConsumptionRate), 0)
 
     const offsprings = this.reproduce()
 
@@ -115,11 +126,17 @@ export class GeneticActiveLife extends GeneticLife {
   }
 
   public draw(p: p5): void {
-    p.noStroke()
-    if (this.energy < 1) {
-      p.fill(255, 0, 0)
+    if (this.isAlive) {
+      p.noStroke()
+      if (this.energy < 1) {
+        p.fill(255, 0, 0)
+      } else {
+        p.fill(this.gene.color.p5(p, 0xFF))
+      }
     } else {
-      p.fill(this.gene.color.p5(p))
+      p.noFill()
+      p.strokeWeight(1)
+      p.stroke(this.gene.color.p5(p, 0x80))
     }
 
     const diameter = this.size * 2
@@ -132,8 +149,8 @@ export class GeneticActiveLife extends GeneticLife {
   }
 
   private reproduce(): GeneticActiveLife[] {
-    const reproductionEnergy = 80
-    if (this._energy < (reproductionEnergy * 1.5)) {
+    const reproductionEnergy = this.size * this.size
+    if (this._energy <= (reproductionEnergy * 2)) {
       return []
     }
 
@@ -141,7 +158,13 @@ export class GeneticActiveLife extends GeneticLife {
     this._energy = energyAfterReproduction
 
     const position = this.position.add(this.velocity.sized(this.size * -2))
-    const offspring = new GeneticActiveLife(position, this.gene.mutated(), this.size, energyAfterReproduction)
+    let gene: Gene
+    if (random(1) < this.mutationRate) {
+      gene = this.gene.mutated()
+    } else {
+      gene = this.gene.copy()
+    }
+    const offspring = new GeneticActiveLife(position, gene, this.size, energyAfterReproduction, this.mutationRate)
     offspring.velocity = this.velocity.sized(-1)
 
     return [offspring]
