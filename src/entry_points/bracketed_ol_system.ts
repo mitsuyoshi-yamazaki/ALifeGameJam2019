@@ -2,6 +2,13 @@ import * as p5 from "p5"
 import { Vector } from "../classes/physics"
 import { parsedQueries } from "../utilities"
 
+/**
+ * ?debug=1&length=5&weight=1&depth=5&rules=F:F[+F]F[-F]F&constants=+:25.7,-:-25.7&condition=F
+ * ?debug=1&length=10&weight=1&depth=5&rules=F:F[+F]F[-F][F]&constants=+:20,-:-20&condition=F
+ * ?debug=1&length=8&weight=1&depth=5&rules=F:FF-[-F+F+F]+[+F-F-F]&constants=+:22.5,-:-22.5&condition=F
+ * ?debug=1&length=1&weight=1&depth=7&rules=X:F[+X][-X]FX,F:FF&constants=+:25.7,-:-25.7&condition=X
+ */
+
 const parameters = parsedQueries()
 // tslint:disable: no-string-literal
 const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
@@ -11,6 +18,7 @@ const rawRules = parameters["rules"]  // rules=F:F[+F]F[-F]F
 const rawConstants = parameters["constants"]  // constants=+:25.7,-:-25.7
 const initialCondition = parameters["condition"]  // condition=F
 const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
+const unitWeight = parameters["weight"] ? parseFloat(parameters["weight"]) : 1
 // tslint:enable: no-string-literal
 
 const canvasSize = new Vector(size, size)
@@ -31,7 +39,7 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
-    const diff = new Vector(0, size * 0.1)
+    const diff = new Vector(0, size * 0.4)
     const position = canvasSize.div(2)
       .add(diff)
     const lsystem = new BracketedOLSystem(rules, constants)
@@ -110,7 +118,7 @@ class BracketedOLSystem {
 
   public draw(p: p5, initialCondition: string, position: Vector, depth: number): void {
     p.noFill()
-    p.strokeWeight(4)
+    p.strokeWeight(unitWeight)
     p.stroke(0xFF, 0x80)
 
     const state = this.getResult(initialCondition, depth)
