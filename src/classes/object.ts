@@ -34,12 +34,12 @@ export class WorldObject {
     return
   }
 
-  public draw(p: p5): void {
+  public draw(p: p5, anchor: Vector): void {
     p.noStroke()
     p.fill(255, 0, 0)
     const radius = 1
     const diameter = radius * 2
-    p.ellipse(this.position.x - radius, this.position.y - radius, diameter, diameter)
+    p.ellipse(this.position.x - radius + anchor.x, this.position.y - radius + anchor.y, diameter, diameter)
   }
 }
 
@@ -50,9 +50,9 @@ export class Wall extends WorldObject {
     super(position)
   }
 
-  public draw(p: p5): void {
+  public draw(p: p5, anchor: Vector): void {
     p.noStroke()
     p.fill(207, 196, 251)
-    p.rect(this.position.x, this.position.y, this.width, this.height)
+    p.rect(this.position.x + anchor.x, this.position.y + anchor.y, this.width, this.height)
   }
 }

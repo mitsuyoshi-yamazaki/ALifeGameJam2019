@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import { Gene } from "../classes/gene"
-import { GeneticActiveLife, GeneticLife, Life } from "../classes/life"
+import { GeneticActiveLife, GeneticLife, GeneticResource, Life, MetaActiveLife } from "../classes/life"
 import { calculateOrbitalVelocity, Vector } from "../classes/physics"
 import { FrictedTerrain, Terrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
@@ -44,6 +44,13 @@ const main = (p: p5) => {
 
     const lives = randomLives(population, worldSize, 1)
     world.addLives(lives)
+
+    const metaLives: MetaActiveLife[] = []
+    for (let i = 0; i < 20; i += 1) {
+      const position = new Vector(random(worldSize.x), random(worldSize.y))
+      metaLives.push(new MetaActiveLife(position, randomLives(3, worldSize, undefined)))
+    }
+    world.addLives(metaLives)
   }
 
   p.draw = () => {
@@ -55,7 +62,7 @@ const main = (p: p5) => {
     const positionSpace = fieldWidth * 0.9
     for (let i = 0; i < 1; i += 1) {
       const position = new Vector(random(positionSpace), random(positionSpace))
-      const resource = new GeneticLife(position, Gene.random(), resourceSize, resourceEnergy)
+      const resource = new GeneticResource(position, Gene.random(), resourceSize, resourceEnergy)
       resource.velocity = calculateOrbitalVelocity(position, gravityCenter, gravity)
       resources.push(resource)
     }
@@ -65,7 +72,7 @@ const main = (p: p5) => {
     world.draw(p)
   }
 
-  function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): Life[] {
+  function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): GeneticActiveLife[] {
     const lives: GeneticActiveLife[] = []
 
     const initialGene = new Gene(0x99, 0x99) // Gene.random()

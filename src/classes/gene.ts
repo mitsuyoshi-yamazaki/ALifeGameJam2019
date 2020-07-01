@@ -56,6 +56,10 @@ export class Gene {
     return new Gene(predatorGene, preyGene)
   }
 
+  public static empty(): Gene {
+    return new Gene(0, 0)
+  }
+
   public static random(): Gene {
     const maxLength = Gene.maxLength
 

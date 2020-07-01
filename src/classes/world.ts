@@ -74,10 +74,10 @@ export class VanillaWorld implements World {
       terrain.draw(p)
     })
     this._objects.forEach(obj => {
-      obj.draw(p)
+      obj.draw(p, Vector.zero())
     })
     this._lives.forEach(life => {
-      life.draw(p)
+      life.draw(p, Vector.zero())
     })
   }
 
