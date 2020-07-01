@@ -29,23 +29,23 @@ export class Gene {
   private readonly _color: Color
 
   public constructor(_predatorGene: number, _preyGene: number) {
-   const geneLength = Gene.geneLength
-   const geneMaxValue = Gene.geneMaxValue
-   this._predatorGene = _predatorGene % geneMaxValue
-   this._preyGene = _preyGene % geneMaxValue
+    const geneLength = Gene.geneLength
+    const geneMaxValue = Gene.geneMaxValue
+    this._predatorGene = _predatorGene % geneMaxValue
+    this._preyGene = _preyGene % geneMaxValue
 
-   const shiftInt = (shiftee: number, shiftLength: number) => {
-     if (shiftLength > 0) {
-       return (shiftee << shiftLength)
-     } else {
-       return (shiftee >> (-shiftLength))
-     }
-   }
+    const shiftInt = (shiftee: number, shiftLength: number) => {
+      if (shiftLength > 0) {
+        return (shiftee << shiftLength)
+      } else {
+        return (shiftee >> (-shiftLength))
+      }
+    }
 
-   const r = shiftInt(this.predatorGene, 8 - geneLength)
-   const g = shiftInt(this.preyGene, 8 - geneLength)
-   const b = 0xFF
-   this._color = new Color(r, g, b)
+    const r = shiftInt(this.predatorGene, 8 - geneLength)
+    const g = shiftInt(this.preyGene, 8 - geneLength)
+    const b = 0xFF
+    this._color = new Color(r, g, b)
   }
 
   public static createWith(binary: number): Gene {

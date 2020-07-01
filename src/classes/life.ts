@@ -33,11 +33,11 @@ export class Life extends WorldObject {
 
 export class PassiveLife extends Life {
   public constructor(public position: Vector, size: number) {
-       super(position)
-       this._size = size
-       const radius = this._size / 2
-       this._mass = (radius * radius) / 100
-   }
+    super(position)
+    this._size = size
+    const radius = this._size / 2
+    this._mass = (radius * radius) / 100
+  }
 
   public next(): [Force, WorldObject[]] {
     return [Force.zero(), []]
@@ -83,7 +83,7 @@ export class GeneticLife extends Life {
   public draw(p: p5): void {
     p.noStroke()
     p.fill(this.gene.color.p5(p))
-    const diameter = this.size * 2
+    const diameter = this.size
     p.rect(this.position.x - this.size, this.position.y - this.size, diameter, diameter)
   }
 
