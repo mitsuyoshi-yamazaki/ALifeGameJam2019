@@ -48,7 +48,7 @@ export class VanillaTerrain extends Terrain {
 
   public forceAt(position: Vector): Force {
     if (this.gravityCenter == undefined) {
-      return
+      return Force.zero()
     }
     const distance = Math.max(this.gravityCenter.dist(position), this.gravity / 10) // ブラックホールは法律で禁止されている
     const magnitude = (1 / (distance * distance)) * this.gravity
