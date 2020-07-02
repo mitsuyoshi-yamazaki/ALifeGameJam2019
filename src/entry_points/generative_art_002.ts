@@ -75,7 +75,7 @@ const rawQuery = document.location.search
 const queries = rawQuery
   .slice(rawQuery.indexOf("?") + 1)
   .split("&")
-const parameters = { }
+const parameters = {} as any
 
 for (const query of queries) {
   const pair = query.split("=")
@@ -97,9 +97,19 @@ const behavior: Behavior[] = (() => {
     ]
   }
 
+  const map = {
+    "B1": Behavior.B1,
+    "B2": Behavior.B2,
+    "B3": Behavior.B3,
+    "B4": Behavior.B4,
+    "B5": Behavior.B5,
+    "B6": Behavior.B6,
+    "B7": Behavior.B7,
+  } as any
+
   return given.split(",")
     .map((e: string) => {
-      return Behavior[e]
+      return map[e]
     })
 })()
 // const interval = parameters["i"] ? parameters["i"] : 200
