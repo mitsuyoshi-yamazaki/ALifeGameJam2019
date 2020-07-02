@@ -68,6 +68,7 @@ export class GeneticLife extends Life {  // Abstruct class
   public get gene(): Gene {
     return Gene.empty()
   }
+  public forces: Vector[] = []
 
   public constructor(public position: Vector) {
     super(position)
