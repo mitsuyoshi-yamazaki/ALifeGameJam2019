@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import { random } from "../utilities"
-import { GeneticActiveLife, GeneticLife, Life } from "./life"
+import { ActiveLife, GeneticActiveLife, GeneticLife, Life } from "./life"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
 import { Terrain } from "./terrain"
@@ -137,7 +137,7 @@ export class PredPreyWorld extends VanillaWorld {
     const eatProbability = 0.9
 
     const killed: GeneticLife[] = []
-    const born: GeneticLife[] = []
+    const newLives: GeneticLife[] = []
 
     const sortedX = [...this.lives].sort((lhs, rhs) => {
       return lhs.position.x - rhs.position.x
@@ -151,9 +151,9 @@ export class PredPreyWorld extends VanillaWorld {
       life.velocity = coordinate[1]
 
       const offsprings = next[1] as GeneticLife[]
-      born.push(...offsprings)
+      newLives.push(...offsprings)
 
-      if (life instanceof GeneticActiveLife) {
+      if (life instanceof ActiveLife) {
         if (life.isAlive) {
           const xIndex = sortedX.indexOf(life)
           const maxX = life.position.x + life.size
@@ -182,7 +182,8 @@ export class PredPreyWorld extends VanillaWorld {
               if (life.gene.canEat(otherLife.gene, threshold)) {
                 const predator = life
                 const prey = otherLife
-                predator.eat(prey)
+                const remainings = predator.eat(prey) as GeneticLife[]
+                newLives.push(...remainings)
                 killed.push(prey)
                 break
 
@@ -201,6 +202,6 @@ export class PredPreyWorld extends VanillaWorld {
       return killed.indexOf(l) < 0
     })
 
-    this.addLives(born)
+    this.addLives(newLives)
   }
 }

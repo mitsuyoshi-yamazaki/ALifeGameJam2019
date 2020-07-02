@@ -82,14 +82,14 @@ export class Gene {
   }
 
   public canEat(other: Gene, threshold: number): boolean {
-    let diff = 0
+    let sameBits = 0
 
     for (let i = 0; i < Gene.geneLength; i += 1) {
       if (((this.predatorGene >> i) & 0x01) === ((other.preyGene >> i) & 0x01)) {
-        diff += 1
+        sameBits += 1
       }
     }
 
-    return (diff / Gene.geneLength) > threshold
+    return (sameBits / Gene.geneLength) > threshold
   }
 }

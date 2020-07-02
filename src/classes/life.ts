@@ -3,7 +3,6 @@ import { random } from "../utilities"
 import { Gene } from "./gene"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
-import { PredPreyWorld } from "./world"
 
 export class Life extends WorldObject {
   public static collisionPriority = 100
@@ -74,7 +73,8 @@ export class GeneticLife extends Life {  // Abstruct class
     super(position)
   }
 
-  public eaten(): void {
+  public eaten(): WorldObject[] {
+    return []
   }
 }
 
@@ -113,50 +113,55 @@ export class GeneticResource extends GeneticLife {
     p.rect(this.position.x - this.size + anchor.x, this.position.y - this.size + anchor.y, diameter, diameter)
   }
 
-  public eaten(): void {
+  public eaten(): WorldObject[] {
     this._energy = 0
+
+    return []
   }
 }
 
-export class MetaActiveLife extends GeneticLife {
+// 抽象クラス
+export class ActiveLife extends GeneticLife {
+  public constructor(public position: Vector) {
+    super(position)
+  }
+
+  public eat(other: GeneticLife): WorldObject[] {
+    return []
+  }
+}
+
+export class MetaActiveLife extends ActiveLife {
 
   public get gene(): Gene {
-    return new Gene(0x99, 0x99) // TODO:
+    return this._gene
   }
 
   public get isAlive(): boolean {
-    return this.containedLives.findIndex(life => life.isAlive) >= 0 // TODO: Gene をチェックして多様過ぎたら死亡するようにする
+    return (this.containedLives.findIndex(life => life.isAlive) >= 0) // TODO: Gene をチェックして多様過ぎたら死亡するようにする
   }
   private containedLives: GeneticLife[]
+  private _gene: Gene
 
   public constructor(
     public position: Vector,
     lives: GeneticLife[],
   ) {
     super(position)
-    if (lives.length === 0) {
-      this._size = 10
-    } else {
-      const square: number = lives.reduce(
-        (previous, current) => {
-          return previous + (current.size * current.size)
-        },
-        0,
-      )
-      this._size = Math.sqrt(square * 4)
-    }
+    this.containedLives = lives
     this._mass = lives.reduce(
       (previous, current) => {
         return previous + current.mass
       },
       0,
     )
-    this.containedLives = lives
+    this._size = this.calcurateSize()
+    this._gene = this.calcurateGene()
   }
 
   public next(): [Force, WorldObject[]] {
     if (this.isAlive === false) {
-      return [Force.zero(), []]
+      return [Force.zero(), this.containedLives]
     }
 
     const eatProbability = 0.9
@@ -175,7 +180,7 @@ export class MetaActiveLife extends GeneticLife {
       const offsprings = next[1] as GeneticLife[]
       newLives.push(...offsprings)
 
-      if (life instanceof GeneticActiveLife) {
+      if (life instanceof ActiveLife) {
         const threshold = random(1, eatProbability)
 
         for (let j = (i + 1); j < this.containedLives.length; j += 1) {
@@ -184,7 +189,8 @@ export class MetaActiveLife extends GeneticLife {
             if (life.gene.canEat(otherLife.gene, threshold)) {
               const predator = life
               const prey = otherLife
-              predator.eat(prey)
+              const remainings = predator.eat(prey) as GeneticLife[]
+              newLives.push(...remainings)
               killed.push(prey)
               break
 
@@ -201,6 +207,9 @@ export class MetaActiveLife extends GeneticLife {
     })
 
     this.containedLives.push(...newLives)
+
+    this._size = this.calcurateSize()
+    this._gene = this.calcurateGene()
 
     const max = 0.1
     const vx = random(max, -max)
@@ -224,13 +233,50 @@ export class MetaActiveLife extends GeneticLife {
     p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
   }
 
-  public eat(life: GeneticLife): void {
-    // TODO:
+  public eat(other: GeneticLife): WorldObject[] {
+    const coordinate = this.updateCoordinateFor(other.position, other.velocity, Force.zero(), other.mass, other.size)
+    other.position = coordinate[0]
+    other.velocity = coordinate[1]
+
+    this.containedLives.push(other)
+
+    return []
+  }
+
+  public eaten(): WorldObject[] {
+    this.containedLives.forEach(life => {
+      life.position = life.position.add(this.position)
+    })
+
+    return this.containedLives
+  }
+
+  private calcurateSize(): number {
+    if (this.containedLives.length === 0) {
+      return 10
+    } else {
+      const square: number = this.containedLives.reduce(
+        (previous, current) => {
+          return previous + (current.size * current.size)
+        },
+        0,
+      )
+
+      return Math.sqrt(square * 6)
+    }
+  }
+
+  private calcurateGene(): Gene {
+    if (this.containedLives.length === 0) {
+      return Gene.empty()
+    }
+
+    return this.containedLives[0].gene.copy()
   }
 
   // 返り値は [newPosition: Vector, newVelocity: Vector]
   private updateCoordinateFor(position: Vector, velocity: Vector, force: Force, mass: number, lifeSize: number): [Vector, Vector] {
-    const friction = 0.5
+    const friction = 0.85
     const acceleration = force.accelerationTo(mass)
 
     let nextPosition = position.add(velocity)
@@ -248,7 +294,7 @@ export class MetaActiveLife extends GeneticLife {
   }
 }
 
-export class GeneticActiveLife extends GeneticLife {
+export class GeneticActiveLife extends ActiveLife {
   protected _gene: Gene
   protected _energy: number
 
@@ -278,8 +324,10 @@ export class GeneticActiveLife extends GeneticLife {
     this._gene = gene
   }
 
-  public eaten(): void {
+  public eaten(): WorldObject[] {
     this._energy = 0
+
+    return []
   }
 
   public next(): [Force, WorldObject[]] {
@@ -318,9 +366,10 @@ export class GeneticActiveLife extends GeneticLife {
     p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
   }
 
-  public eat(other: GeneticLife): void {
+  public eat(other: GeneticLife): WorldObject[] {
     this._energy += other.energy
-    other.eaten()
+
+    return other.eaten()
   }
 
   private reproduce(): GeneticActiveLife[] {
