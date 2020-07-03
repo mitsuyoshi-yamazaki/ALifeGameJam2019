@@ -41,6 +41,14 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
+    const unusedParameters = parameters.unusedKeys()
+    if (unusedParameters.length > 0) {
+      const errorMessage = `Unrecognized URL parameters: ${String(unusedParameters)}`
+      if (DEBUG) {
+        alert(errorMessage)
+      }
+      console.log(`[CAUTION] ${errorMessage}\n\n`)
+    }
     log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
     log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}`)
@@ -335,9 +343,9 @@ class MachineWorld extends VanillaWorld {
         const normalizedDistance = ((minDistance - distance) / minDistance)
         const forceMagnitude = normalizedDistance * 1
         life.forces.push(life.position.sub(otherLife.position)
-                           .sized(forceMagnitude))
+          .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
-                                .sized(forceMagnitude))
+          .sized(forceMagnitude))
 
         life.didCollide()
         otherLife.didCollide()

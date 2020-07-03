@@ -21,6 +21,7 @@ export class Color {
 
 export class URLParameter {
   public readonly parameters = new Map<string, string>()
+  private readonly usedKeys: string[] = []
 
   public constructor() {
     const rawQuery = document.location.search
@@ -39,6 +40,10 @@ export class URLParameter {
   }
 
   public int(key: string, defaultValue: number, shortKey?: string): number {
+    if (shortKey != undefined) {
+      this.usedKeys.push(shortKey)
+    }
+    this.usedKeys.push(key)
     const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
@@ -52,6 +57,10 @@ export class URLParameter {
   }
 
   public float(key: string, defaultValue: number, shortKey?: string): number {
+    if (shortKey != undefined) {
+      this.usedKeys.push(shortKey)
+    }
+    this.usedKeys.push(key)
     const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
@@ -65,6 +74,10 @@ export class URLParameter {
   }
 
   public boolean(key: string, defaultValue: boolean, shortKey?: string): boolean {
+    if (shortKey != undefined) {
+      this.usedKeys.push(shortKey)
+    }
+    this.usedKeys.push(key)
     const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
@@ -78,11 +91,21 @@ export class URLParameter {
   }
 
   public string(key: string, defaultValue: string, shortKey?: string): string {
+    if (shortKey != undefined) {
+      this.usedKeys.push(shortKey)
+    }
+    this.usedKeys.push(key)
     const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
     }
 
     return rawValue
+  }
+
+  public unusedKeys(): string[] {
+    const allKeys = Array.from(this.parameters.keys())
+
+    return allKeys.filter(k => this.usedKeys.indexOf(k) === -1)
   }
 }
