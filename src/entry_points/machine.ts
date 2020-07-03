@@ -7,21 +7,21 @@ import { VanillaWorld } from "../classes/world"
 import { Color, random, URLParameter } from "../utilities"
 
 const parameters = new URLParameter()
-const DEBUG = parameters.boolean("debug", true)
-let TEST = parameters.boolean("test", false)
-const artMode = parameters.boolean("art_mode", false)
-const transparency = parameters.float("background_transparency", 1)
-const statisticsInterval = parameters.int("statistics_interval", 500)
-const size = parameters.int("size", 1000)
-const friction = parameters.float("friction", 0.99)
-const singleGene = parameters.boolean("single_gene", true)
-const machineCount = parameters.int("population", 100)
-const mutationRate = parameters.float("mutation_rate", 0.03)
-const machineSize = parameters.float("life_size", 6)
-const initialEnergy = parameters.float("initial_energy", 10)
-const birthEnergy = parameters.float("birth_energy", 5)
-const matureInterval = parameters.int("mature_interval", 200)
-const reproduceInterval = parameters.int("reproduce_interval", 100)
+const DEBUG = parameters.boolean("debug", true, "d")
+let TEST = parameters.boolean("test", false, "t")
+const artMode = parameters.boolean("art_mode", false, "a")
+const transparency = parameters.float("background_transparency", 1, "t")
+const statisticsInterval = parameters.int("statistics_interval", 500, "si")
+const size = parameters.int("size", 1000, "s")
+const friction = parameters.float("friction", 0.99, "f")
+const singleGene = parameters.boolean("single_gene", true, "g")
+const machineCount = parameters.int("initial_population", 100, "p")
+const mutationRate = parameters.float("mutation_rate", 0.03, "m")
+const machineSize = parameters.float("life_size", 6, "l")
+const initialEnergy = parameters.float("initial_energy", 10, "e")
+const birthEnergy = parameters.float("birth_energy", 5, "be")
+const matureInterval = parameters.int("mature_interval", 200, "mi")
+const reproduceInterval = parameters.int("reproduce_interval", 100, "ri")
 
 function log(message: string): void {
   if (DEBUG) {
@@ -99,7 +99,7 @@ function showStatistics(): void {
   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
   sorted.slice(0, Math.min(sorted.length, 10))
     .forEach(e => {
-      log(`${e[0].toString(2).padStart(Gene.geneLength, "0")}: ${e[1]}`)
+      log(`0x${e[0].toString(16).padStart(Math.ceil(Gene.geneLength / 4), "0")}: ${e[1]}`)
     })
 }
 
@@ -262,7 +262,7 @@ class Machine extends Life {
       p.noStroke()
       p.fill(this.gene.color.p5(p, 0xA0))
 
-      const diameter = this.size
+      const diameter = Math.min((this.age + 100) / 100, this.size)
       p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
     }
   }
