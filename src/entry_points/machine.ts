@@ -7,21 +7,21 @@ import { VanillaWorld } from "../classes/world"
 import { Color, random, URLParameter } from "../utilities"
 
 const parameters = new URLParameter()
-const DEBUG = parameters.boolean("debug", false)
+const DEBUG = parameters.boolean("debug", true)
 let TEST = parameters.boolean("test", false)
 const artMode = parameters.boolean("art_mode", false)
 const transparency = parameters.float("background_transparency", 1)
-const statisticsInterval = parameters.int("statistics_interval", 300)
+const statisticsInterval = parameters.int("statistics_interval", 500)
 const size = parameters.int("size", 1000)
-const friction = parameters.float("friction", 0.5)
+const friction = parameters.float("friction", 0.99)
 const singleGene = parameters.boolean("single_gene", true)
 const machineCount = parameters.int("population", 100)
 const mutationRate = parameters.float("mutation_rate", 0.03)
-const machineSize = parameters.float("life_size", 3)
+const machineSize = parameters.float("life_size", 6)
 const initialEnergy = parameters.float("initial_energy", 10)
 const birthEnergy = parameters.float("birth_energy", 5)
-const matureInterval = parameters.int("mature_interval", 20)
-const reproduceInterval = parameters.int("reproduce_interval", 5)
+const matureInterval = parameters.int("mature_interval", 200)
+const reproduceInterval = parameters.int("reproduce_interval", 100)
 
 function log(message: string): void {
   if (DEBUG) {
@@ -317,6 +317,7 @@ class MachineWorld extends VanillaWorld {
 
         if (life.canMate && otherLife.canMate) {
           newLives.push(...life.reproduce(otherLife))
+          newLives.push(...otherLife.reproduce(life))
         }
 
         const normalizedDistance = ((minDistance - distance) / minDistance)
