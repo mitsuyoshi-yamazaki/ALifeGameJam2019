@@ -254,7 +254,7 @@ class Machine extends Life {
       p.noStroke()
       p.fill(this.gene.color.p5(p, 0xA0))
 
-      const diameter = this.size
+      const diameter = Math.min((this.age + 100) / 100, this.size)
       p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
     }
   }
