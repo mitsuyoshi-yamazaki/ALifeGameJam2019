@@ -99,7 +99,7 @@ function showStatistics(): void {
   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
   sorted.slice(0, Math.min(sorted.length, 10))
     .forEach(e => {
-      log(`${e[0].toString(2).padStart(Gene.geneLength, "0")}: ${e[1]}`)
+      log(`0x${e[0].toString(16).padStart(Math.ceil(Gene.geneLength / 4), "0")}: ${e[1]}`)
     })
 }
 
