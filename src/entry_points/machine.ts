@@ -36,7 +36,7 @@ const backgroundTransparency = artMode ? transparency : 0xFF
 
 const main = (p: p5) => {
   p.setup = () => {
-    const fieldSize = new Vector(size, Math.floor(size * 0.66))
+    const fieldSize = new Vector(size, size)
     const canvas = p.createCanvas(fieldSize.x, fieldSize.y)
     canvas.id("canvas")
     canvas.parent("canvas-parent")
@@ -245,7 +245,7 @@ class Machine extends Life {
       Math.cos(target),
       Math.sin(target),
     )
-      .sized(size * 0.4)
+      .sized(size * 0.3)
       .add(world.size.div(2))
 
     const movingForce = targetPosition.sub(this.position).sized(attractForce).add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
