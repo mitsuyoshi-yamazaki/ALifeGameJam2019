@@ -4,17 +4,18 @@ import { WorldObject } from "../classes/object"
 import { Force, Vector } from "../classes/physics"
 import { FrictedTerrain, Terrain } from "../classes/terrain"
 import { VanillaWorld } from "../classes/world"
-import { random, URLParameter } from "../utilities"
+import { Color, random, URLParameter } from "../utilities"
 
 const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", false)
 let TEST = parameters.boolean("test", false)
 const artMode = parameters.boolean("art_mode", false)
+const transparency = parameters.float("background_transparency", 1)
+const statisticsInterval = parameters.int("statistics_interval", 300)
 const size = parameters.int("size", 1000)
 const friction = parameters.float("friction", 0.5)
 const singleGene = parameters.boolean("single_gene", true)
 const machineCount = parameters.int("population", 100)
-const machineMax = parameters.int("max", 1000)
 const mutationRate = parameters.float("mutation_rate", 0.03)
 const machineSize = parameters.float("life_size", 3)
 const initialEnergy = parameters.float("initial_energy", 10)
@@ -30,7 +31,7 @@ function log(message: string): void {
 
 let t = 0
 let world: MachineWorld
-const backgroundTransparency = artMode ? 0x0 : 0xFF
+const backgroundTransparency = artMode ? transparency : 0xFF
 
 const main = (p: p5) => {
   p.setup = () => {
@@ -39,9 +40,9 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
-    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, art mode: ${artMode}`)
+    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
-    log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}, max population ${machineMax}`)
+    log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}`)
     log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, initial energy: ${initialEnergy}, birth energy: ${birthEnergy}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
 
     if (TEST) {
@@ -68,6 +69,10 @@ const main = (p: p5) => {
     world.next()
     world.draw(p)
 
+    if ((t % statisticsInterval) === 0) {
+      showStatistics()
+    }
+
     t += 1
     setTimestamp(t)
   }
@@ -75,28 +80,28 @@ const main = (p: p5) => {
 
 const sketch = new p5(main)
 
-// function showStatistics(born: number, trimmed: number): void {
-//   const genesMap = new Map<number, number>() // {gene: number of genes}
+function showStatistics(): void {
+  const genesMap = new Map<number, number>() // {gene: number of genes}
 
-//   log(`\n\n\n[${t}]\nMachines: ${machines.length}, ${born} born, ${trimmed} die`)
+  log(`\n\n\n[${t}]\nMachines: ${world.lives.length}`)
 
-//   machines.forEach(m => {
-//     // tslint:disable-next-line: strict-boolean-expressions
-//     const numberOfMachines = genesMap.get(m.gene.value) || 0
-//     genesMap.set(m.gene.value, numberOfMachines + 1)
-//   })
+  world.lives.forEach(m => {
+    // tslint:disable-next-line: strict-boolean-expressions
+    const numberOfMachines = genesMap.get(m.gene.value) || 0
+    genesMap.set(m.gene.value, numberOfMachines + 1)
+  })
 
-//   const genes: [number, number][] = []
-//   genesMap.forEach((value, gene) => {
-//     genes.push([gene, value])
-//   })
+  const genes: [number, number][] = []
+  genesMap.forEach((value, gene) => {
+    genes.push([gene, value])
+  })
 
-//   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
-//   sorted.slice(0, Math.min(sorted.length, 5))
-//     .forEach(e => {
-//       log(`${e[0].toString(2)}: ${e[1]}`)
-//     })
-// }
+  const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
+  sorted.slice(0, Math.min(sorted.length, 10))
+    .forEach(e => {
+      log(`${e[0].toString(2).padStart(Gene.geneLength, "0")}: ${e[1]}`)
+    })
+}
 
 /**
  * geneLength bits binary
@@ -111,6 +116,10 @@ class Gene {
   public static transitionTableMask = Math.pow(2, Gene.transitionTableLength) - 1
   public readonly header: number
   public readonly transitionTable: number // geneLength bits
+  public get color(): Color {
+    return this._color
+  }
+  private _color: Color
 
   public constructor(public readonly value: number) {
     this.header = value >> Gene.transitionTableLength
@@ -118,6 +127,11 @@ class Gene {
     const upper = rawTransitionTable << Gene.headerLength
     const lower = rawTransitionTable >> (Gene.transitionTableLength - Gene.headerLength)
     this.transitionTable = upper + lower
+
+    const r = ((this.header << 4) / 2) + 0x80
+    const g = ((rawTransitionTable & 0xF0) / 2) + 0x80
+    const b = (((rawTransitionTable & 0xF) << 4) / 2) + 0x80
+    this._color = new Color(r, g, b)
   }
 
   public static random(): Gene {
@@ -181,11 +195,13 @@ class Machine extends Life {
   }
   private energy = initialEnergy
   private reproducedAt: number | undefined
+  private previousPosition: Vector
 
   public constructor(position: Vector, public readonly gene: Gene) {
     super(position)
     this.createdAt = t
     this._size = machineSize
+    this.previousPosition = position
   }
 
   public reproduce(other: Machine): Machine[] {
@@ -212,6 +228,8 @@ class Machine extends Life {
   }
 
   public next(): [Force, WorldObject[]] {
+    this.previousPosition = this.position
+
     if (this.isAlive === false) {
       return [Force.zero(), []]
     }
@@ -226,11 +244,19 @@ class Machine extends Life {
   }
 
   public draw(p: p5, anchor: Vector): void {
-    p.noStroke()
-    p.fill(0xFF, 0, 0)
+    if (artMode) {
+      p.noFill()
+      p.stroke(this.gene.color.p5(p, 0xA0))
+      p.strokeWeight(0.5)
+      p.line(this.previousPosition.x, this.previousPosition.y, this.position.x, this.position.y)
 
-    const diameter = this.size
-    p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
+    } else {
+      p.noStroke()
+      p.fill(this.gene.color.p5(p, 0xA0))
+
+      const diameter = this.size
+      p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
+    }
   }
 }
 
