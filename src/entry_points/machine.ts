@@ -119,6 +119,7 @@ class Gene {
   public get color(): Color {
     return this._color
   }
+
   private _color: Color
 
   public constructor(public readonly value: number) {
@@ -177,12 +178,15 @@ class Gene {
 class Machine extends Life {
   public createdAt: number
   public forces: Vector[] = []
+
   public get age(): number {
     return t - this.createdAt
   }
+
   public get isAlive(): boolean {
     return this.energy > 0
   }
+
   public get canMate(): boolean {
     if (this.age < matureInterval) {
       return false
@@ -193,6 +197,7 @@ class Machine extends Life {
 
     return (t - this.reproducedAt) > reproduceInterval
   }
+
   private energy = initialEnergy
   private reproducedAt: number | undefined
   private previousPosition: Vector
@@ -235,10 +240,16 @@ class Machine extends Life {
     }
 
     const max = 0.1
-    const vx = random(max, -max)
-    const vy = random(max, -max)
-
-    const force = new Force(new Vector(vx, vy))
+    const cellCount = 10
+    log('gene:' + this.gene.value.toString())
+    log('size:' + world.size.toString())
+    const target = new Vector(
+      this.gene.value % cellCount * world.size.x / cellCount
+      , this.gene.value / cellCount % cellCount * world.size.y / cellCount)
+    const movingForce = target.sub(this.position).sized(max)
+    movingForce.add(Vector.random(max * 0.5, -max * 0.5))
+    log('force' + movingForce.size.toString())
+    const force = new Force(movingForce)
 
     return [force, []]
   }
@@ -323,9 +334,9 @@ class MachineWorld extends VanillaWorld {
         const normalizedDistance = ((minDistance - distance) / minDistance)
         const forceMagnitude = normalizedDistance * 1
         life.forces.push(life.position.sub(otherLife.position)
-          .sized(forceMagnitude))
+                           .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
-          .sized(forceMagnitude))
+                                .sized(forceMagnitude))
 
         life.didCollide()
         otherLife.didCollide()
