@@ -80,6 +80,8 @@ const main = (p: p5) => {
     ]
     world = new MachineWorld(fieldSize, terrains)
     world.addLives(machines)
+
+    p.background(0xFF)
   }
 
   p.draw = () => {
