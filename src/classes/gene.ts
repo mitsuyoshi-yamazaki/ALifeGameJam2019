@@ -29,23 +29,23 @@ export class Gene {
   private readonly _color: Color
 
   public constructor(_predatorGene: number, _preyGene: number) {
-   const geneLength = Gene.geneLength
-   const geneMaxValue = Gene.geneMaxValue
-   this._predatorGene = _predatorGene % geneMaxValue
-   this._preyGene = _preyGene % geneMaxValue
+    const geneLength = Gene.geneLength
+    const geneMaxValue = Gene.geneMaxValue
+    this._predatorGene = _predatorGene % geneMaxValue
+    this._preyGene = _preyGene % geneMaxValue
 
-   const shiftInt = (shiftee: number, shiftLength: number) => {
-     if (shiftLength > 0) {
-       return (shiftee << shiftLength)
-     } else {
-       return (shiftee >> (-shiftLength))
-     }
-   }
+    const shiftInt = (shiftee: number, shiftLength: number) => {
+      if (shiftLength > 0) {
+        return (shiftee << shiftLength)
+      } else {
+        return (shiftee >> (-shiftLength))
+      }
+    }
 
-   const r = shiftInt(this.predatorGene, 8 - geneLength)
-   const g = shiftInt(this.preyGene, 8 - geneLength)
-   const b = 0xFF
-   this._color = new Color(r, g, b)
+    const r = shiftInt(this.predatorGene, 8 - geneLength)
+    const g = shiftInt(this.preyGene, 8 - geneLength)
+    const b = 0xFF
+    this._color = new Color(r, g, b)
   }
 
   public static createWith(binary: number): Gene {
@@ -54,6 +54,10 @@ export class Gene {
     const preyGene = binary & geneLengthMask
 
     return new Gene(predatorGene, preyGene)
+  }
+
+  public static empty(): Gene {
+    return new Gene(0, 0)
   }
 
   public static random(): Gene {
@@ -66,6 +70,10 @@ export class Gene {
     return `${this.predatorGene.toString(16)}|${this.preyGene.toString(16)}`
   }
 
+  public copy(): Gene {
+    return new Gene(this.predatorGene, this.preyGene)
+  }
+
   public mutated(): Gene {
     const mutation = 1 << Math.floor(random(Gene.binaryLength, 0))
     const mutatedBinary = this.binaryRepresentation ^ mutation
@@ -74,14 +82,14 @@ export class Gene {
   }
 
   public canEat(other: Gene, threshold: number): boolean {
-    let diff = 0
+    let sameBits = 0
 
-    for (let i = 0; i < Gene.geneMaxValue; i += 1) {
+    for (let i = 0; i < Gene.geneLength; i += 1) {
       if (((this.predatorGene >> i) & 0x01) === ((other.preyGene >> i) & 0x01)) {
-        diff += 1
+        sameBits += 1
       }
     }
 
-    return (diff / Gene.geneMaxValue) > threshold
+    return (sameBits / Gene.geneLength) > threshold
   }
 }

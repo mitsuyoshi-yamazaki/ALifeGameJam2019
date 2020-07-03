@@ -129,6 +129,9 @@ export class GravitationalTerrain extends Terrain {
 export class FrictedTerrain extends Terrain {
   public constructor(public readonly size: Vector, public readonly friction: number) {
     super(size)
+    if ((friction < 0) || (friction > 1)) {
+      console.log(`[Terrain] friction should be between 0-1 (${friction} given)`)
+    }
   }
 
   public frictionAt(position: Vector): number {

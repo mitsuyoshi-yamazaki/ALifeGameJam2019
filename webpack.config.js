@@ -9,6 +9,7 @@ module.exports = {
     cellular_atmosphere: './src/entry_points/cellular_atmosphere.ts',
     generative_art_002: './src/entry_points/generative_art_002.ts',
     machine: './src/entry_points/machine.ts',
+    matryoshka_2: './src/entry_points/matryoshka_2.ts',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
