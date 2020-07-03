@@ -371,9 +371,10 @@ class MachineWorld extends VanillaWorld {
                            .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
                                 .sized(forceMagnitude))
-
-        life.didCollide()
-        otherLife.didCollide()
+        if (life.age >= matureInterval && otherLife.age >= matureInterval) {
+          life.didCollide()
+          otherLife.didCollide()
+        }
       }
     }
 
