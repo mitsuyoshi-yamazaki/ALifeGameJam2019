@@ -11,13 +11,15 @@ const parameters = parsedQueries()
 const rawDebug = parseInt(parameters["debug"], 10)
 const DEBUG = isNaN(rawDebug) ? false : (rawDebug ? true : false)
 const rawTest = parseInt(parameters["test"], 10)
-const TEST = isNaN(rawTest) ? false : (rawTest ? true : false)
+let TEST = isNaN(rawTest) ? false : (rawTest ? true : false)
 const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
 const machineCount = parameters["machines"] ? parseInt(parameters["machines"], 10) : 100
 const machineMax = parameters["max"] ? parseInt(parameters["max"], 10) : 1000
 const matingRate = parameters["mating_rate"] ? parseFloat(parameters["mating_rate"]) : 0.1
 const mutationRate = parameters["mutation_rate"] ? parseFloat(parameters["mutation_rate"]) : 0.03
 const speed = parameters["speed"] ? parseInt(parameters["speed"], 10) : 300
+const rawSingleGene = parseInt(parameters["single_gene"], 10)
+const singleGene = isNaN(rawSingleGene) ? true : (rawSingleGene ? true : false)
 // tslint:enable: no-string-literal
 
 function log(message: string): void {
@@ -42,8 +44,12 @@ const main = (p: p5) => {
     }
 
     for (let i = 0; i < machineCount; i += 1) {
-      machines.push(new Machine(new Gene(0b1100111100)))
+      const gene = singleGene ? new Gene(0b1100111100) : Gene.random()
+      machines.push(new Machine(gene))
     }
+
+    log(`DEBUG: ${DEBUG}, TEST: ${TEST}`)
+    log(`max: ${machineMax}, mating rate: ${matingRate}, mutation rate: ${mutationRate}, single gene: ${singleGene}`)
   }
 
   p.draw = () => {
@@ -154,6 +160,10 @@ class Gene {
     this.transitionTable = upper + lower
   }
 
+  public static random(): Gene {
+    return new Gene(Math.floor(random(Gene.geneMask)))
+  }
+
   public mutated(): Gene {
     const mutation = 1 << Math.floor(random(Gene.geneLength, 0))
     const mutatedValue = this.value ^ mutation
@@ -165,11 +175,16 @@ class Gene {
     const result: Gene[] = []
     const otherDoubledValue = ((other.value << Gene.geneLength) + other.value)
     const shiftOrigin = Gene.transitionTableLength + Gene.geneLength
+    const start = Math.floor(random(Gene.geneLength))
     for (let i = 0; i < Gene.geneLength; i += 1) {
-      const checkValue = (otherDoubledValue >> (shiftOrigin - i)) & Gene.headerMask
+      const j = (i + start) % Gene.geneLength
+      const checkValue = (otherDoubledValue >> (shiftOrigin - j)) & Gene.headerMask
       if ((checkValue ^ this.header) === Gene.headerMask) {
-        const newValue = this.decode(other.value, (i + Gene.headerLength) % Gene.geneLength)
+        const newValue = this.decode(other.value, (j + Gene.headerLength) % Gene.geneLength)
         result.push(new Gene(newValue))
+        if (TEST === false) {
+          break // 生産数が多すぎるため、mating ごとの子孫数を1未満に制限
+        }
       }
     }
 
@@ -231,4 +246,5 @@ function tests(): void {
   })
 
   log(`Test finished`)
+  TEST = false
 }
