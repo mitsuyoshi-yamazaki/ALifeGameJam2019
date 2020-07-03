@@ -1,12 +1,10 @@
 import * as p5 from "p5"
-import { parsedQueries, random } from "../utilities"
+import { random, URLParameter } from "../utilities"
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
-const isSpringEnabled = parameters["spring"] ? true : false
-// tslint:enable: no-string-literal
+const parameters = new URLParameter()
+const DEBUG = parameters.boolean("debug", false)
+const size = parameters.int("size", 100)
+const isSpringEnabled = parameters.boolean("spring", false)
 
 let t = 0
 const cells: Cell[][] = []
