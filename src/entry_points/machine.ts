@@ -7,21 +7,21 @@ import { VanillaWorld } from "../classes/world"
 import { Color, random, URLParameter } from "../utilities"
 
 const parameters = new URLParameter()
-const DEBUG = parameters.boolean("debug", true, "d")
-let TEST = parameters.boolean("test", false, "t")
-const artMode = parameters.boolean("art_mode", false, "a")
-const transparency = parameters.float("background_transparency", 1, "t")
-const statisticsInterval = parameters.int("statistics_interval", 500, "si")
-const size = parameters.int("size", 1000, "s")
-const friction = parameters.float("friction", 0.99, "f")
-const singleGene = parameters.boolean("single_gene", true, "g")
-const machineCount = parameters.int("initial_population", 100, "p")
-const mutationRate = parameters.float("mutation_rate", 0.03, "m")
-const machineSize = parameters.float("life_size", 6, "l")
-const initialEnergy = parameters.float("initial_energy", 10, "e")
-const birthEnergy = parameters.float("birth_energy", 5, "be")
-const matureInterval = parameters.int("mature_interval", 200, "mi")
-const reproduceInterval = parameters.int("reproduce_interval", 100, "ri")
+const DEBUG = parameters.boolean("debug", true, "d")        // デバッグフラグ
+let TEST = parameters.boolean("test", false, "t")           // テストを実行
+const artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
+const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
+const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
+const size = parameters.int("size", 1000, "s")                  // canvas サイズ
+const friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
+const singleGene = parameters.boolean("single_gene", true, "g") // 初期の個体の遺伝子を同一の状態から始める：false 設定時はランダム
+const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
+const mutationRate = parameters.float("mutation_rate", 0.03, "m") // 突然変異率（0-1）
+const machineSize = parameters.float("life_size", 6, "l")         // 最大個体サイズ
+const initialEnergy = parameters.float("initial_energy", 10, "e") // 個体生成時の初期エネルギー量
+const birthEnergy = parameters.float("birth_energy", 5, "be")     // 子孫生成時に増加するエネルギー量
+const matureInterval = parameters.int("mature_interval", 200, "mi") // 個体生成から子孫を残せるようになるまでの時間
+const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
 
 function log(message: string): void {
   if (DEBUG) {
@@ -83,8 +83,6 @@ const sketch = new p5(main)
 function showStatistics(): void {
   const genesMap = new Map<number, number>() // {gene: number of genes}
 
-  log(`\n\n\n[${t}]\nMachines: ${world.lives.length}`)
-
   world.lives.forEach(m => {
     // tslint:disable-next-line: strict-boolean-expressions
     const numberOfMachines = genesMap.get(m.gene.value) || 0
@@ -96,6 +94,8 @@ function showStatistics(): void {
     genes.push([gene, value])
   })
 
+  log(`\n\n\n${t} steps\nPopulation: ${world.lives.length}, number of species(genes): ${genes.length}`)
+  log(`Genes:`)
   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
   sorted.slice(0, Math.min(sorted.length, 10))
     .forEach(e => {
