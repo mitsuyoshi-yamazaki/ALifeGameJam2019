@@ -17,9 +17,9 @@ const friction = parameters.float("friction", 0.99, "f")        // 運動に対�
 const singleGene = parameters.boolean("single_gene", true, "g") // 初期の個体の遺伝子を同一の状態から始める：false 設定時はランダム
 const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
 const mutationRate = parameters.float("mutation_rate", 0.03, "m") // 突然変異率（0-1）
-const machineSize = parameters.float("life_size", 6, "l")         // 最大個体サイズ
-const initialEnergy = parameters.float("initial_energy", 10, "e") // 個体生成時の初期エネルギー量
-const birthEnergy = parameters.float("birth_energy", 5, "be")     // 子孫生成時に増加するエネルギー量
+const machineSize = parameters.float("life_size", 6, "ls")         // 最大個体サイズ
+const initialLifespan = parameters.float("initial_lifespan", 10, "l") // 個体生成時の初期寿命
+const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")     // 子孫生成時に増加する寿命
 const matureInterval = parameters.int("mature_interval", 200, "mi") // 個体生成から子孫を残せるようになるまでの時間
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
 
@@ -43,7 +43,7 @@ const main = (p: p5) => {
     log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
     log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}`)
-    log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, initial energy: ${initialEnergy}, birth energy: ${birthEnergy}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
+    log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, lifespan: ${initialLifespan}, birth additional lifespan: ${birthAdditionalLifespan}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
 
     if (TEST) {
       tests()
@@ -181,7 +181,7 @@ class Machine extends Life {
     return t - this.createdAt
   }
   public get isAlive(): boolean {
-    return this.energy > 0
+    return this.lifespan > 0
   }
   public get canMate(): boolean {
     if (this.age < matureInterval) {
@@ -193,7 +193,7 @@ class Machine extends Life {
 
     return (t - this.reproducedAt) > reproduceInterval
   }
-  private energy = initialEnergy
+  private lifespan = initialLifespan
   private reproducedAt: number | undefined
   private previousPosition: Vector
 
@@ -217,14 +217,14 @@ class Machine extends Life {
 
     if (offsprings.length > 0) {
       this.reproducedAt = t
-      this.energy += offsprings.length * birthEnergy
+      this.lifespan += offsprings.length * birthAdditionalLifespan
     }
 
     return offsprings
   }
 
   public didCollide(): void {
-    this.energy -= 1
+    this.lifespan -= 1
   }
 
   public next(): [Force, WorldObject[]] {
