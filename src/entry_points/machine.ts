@@ -242,8 +242,8 @@ class Machine extends Life {
     const max = 0.1
     const cellCount = 10
     const target = new Vector(
-      this.gene.value % cellCount * world.size.x / cellCount
-      , this.gene.value / cellCount % cellCount * world.size.y / cellCount)
+      (this.gene.value % cellCount) * world.size.x / cellCount
+      , ((this.gene.value / cellCount) % cellCount) * world.size.y / cellCount)
     const movingForce = target.sub(this.position).sized(max)
     movingForce.add(Vector.random(max * 0.5, -max * 0.5))
     const force = new Force(movingForce)
