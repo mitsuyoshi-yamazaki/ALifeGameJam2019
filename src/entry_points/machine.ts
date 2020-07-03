@@ -1,21 +1,26 @@
 import * as p5 from "p5"
+import { Life } from "../classes/life"
+import { WorldObject } from "../classes/object"
+import { Force, Vector } from "../classes/physics"
+import { FrictedTerrain, Terrain } from "../classes/terrain"
+import { VanillaWorld } from "../classes/world"
 import { random, URLParameter } from "../utilities"
-
-/**
- * TODO:
- * iをランダムな位置から検索し、子孫数を1未満にする
- */
 
 const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", false)
 let TEST = parameters.boolean("test", false)
-const size = parameters.int("size", 100)
-const machineCount = parameters.int("machines", 100)
-const machineMax = parameters.int("max", 1000)
-const matingRate = parameters.float("mating_rate", 0.1)
-const mutationRate = parameters.float("mutation_rate", 0.03)
-const speed = parameters.int("speed", 300)
+const artMode = parameters.boolean("art_mode", false)
+const size = parameters.int("size", 1000)
+const friction = parameters.float("friction", 0.5)
 const singleGene = parameters.boolean("single_gene", true)
+const machineCount = parameters.int("population", 100)
+const machineMax = parameters.int("max", 1000)
+const mutationRate = parameters.float("mutation_rate", 0.03)
+const machineSize = parameters.float("life_size", 3)
+const initialEnergy = parameters.float("initial_energy", 10)
+const birthEnergy = parameters.float("birth_energy", 5)
+const matureInterval = parameters.int("mature_interval", 20)
+const reproduceInterval = parameters.int("reproduce_interval", 5)
 
 function log(message: string): void {
   if (DEBUG) {
@@ -23,37 +28,46 @@ function log(message: string): void {
   }
 }
 
-let tt = -1
 let t = 0
-let machines: Machine[] = []
+let world: MachineWorld
+const backgroundTransparency = artMode ? 0x0 : 0xFF
 
 const main = (p: p5) => {
   p.setup = () => {
-    const fieldSize = size
-    const canvas = p.createCanvas(fieldSize, fieldSize)
+    const fieldSize = new Vector(size, Math.floor(size * 0.66))
+    const canvas = p.createCanvas(fieldSize.x, fieldSize.y)
     canvas.id("canvas")
     canvas.parent("canvas-parent")
+
+    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, art mode: ${artMode}`)
+    log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
+    log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}, max population ${machineMax}`)
+    log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, initial energy: ${initialEnergy}, birth energy: ${birthEnergy}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
 
     if (TEST) {
       tests()
     }
 
+    const machines: Machine[] = []
     for (let i = 0; i < machineCount; i += 1) {
       const gene = singleGene ? new Gene(0b1100111100) : Gene.random()
-      machines.push(new Machine(gene))
+      const position = new Vector(random(fieldSize.x), random(fieldSize.y))
+      machines.push(new Machine(position, gene))
     }
 
-    log(`DEBUG: ${DEBUG}, TEST: ${TEST}`)
-    log(`max: ${machineMax}, mating rate: ${matingRate}, mutation rate: ${mutationRate}, single gene: ${singleGene}`)
+    const terrains: Terrain[] = [
+      new FrictedTerrain(fieldSize, friction),
+    ]
+    world = new MachineWorld(fieldSize, terrains)
+    world.addLives(machines)
   }
 
   p.draw = () => {
-    tt += 1
-    if (tt % speed !== 0) {
-      return
-    }
+    p.background(0xFF, backgroundTransparency)
 
-    next()
+    world.next()
+    world.draw(p)
+
     t += 1
     setTimestamp(t)
   }
@@ -61,77 +75,28 @@ const main = (p: p5) => {
 
 const sketch = new p5(main)
 
-function next(): void {
-  const trimmed = trimMachines()
-  const born = reproduceMachines()
-  showStatistics(born, trimmed)
-}
+// function showStatistics(born: number, trimmed: number): void {
+//   const genesMap = new Map<number, number>() // {gene: number of genes}
 
-function reproduceMachines(): number {
-  const newMachines: Machine[] = []
+//   log(`\n\n\n[${t}]\nMachines: ${machines.length}, ${born} born, ${trimmed} die`)
 
-  for (let i = 0; i < machines.length; i += 1) {
-    const machine = machines[i]
+//   machines.forEach(m => {
+//     // tslint:disable-next-line: strict-boolean-expressions
+//     const numberOfMachines = genesMap.get(m.gene.value) || 0
+//     genesMap.set(m.gene.value, numberOfMachines + 1)
+//   })
 
-    for (let j = i + 1; j < machines.length; j += 1) {
-      if (random(1) > matingRate) {
-        continue
-      }
-      const other = machines[j]
-      const offsprings = machine.reproduce(other)
-      newMachines.push(...offsprings)
-    }
-  }
+//   const genes: [number, number][] = []
+//   genesMap.forEach((value, gene) => {
+//     genes.push([gene, value])
+//   })
 
-  machines.push(...newMachines)
-
-  return newMachines.length
-}
-
-function trimMachines(): number {
-  if (machines.length <= machineMax) {
-    return 0
-  }
-
-  const trimmed: Machine[] = []
-  for (let i = 0; i < machines.length; i += 1) {
-    if ((machines.length - trimmed.length) <= machineMax) {
-      break
-    }
-
-    const machine = machines[i]
-    if (machine.age > 0) {  // machines は先頭から古い順に並ぶため // TODO: 子孫を多く残したものを優先して残す
-      trimmed.push(machine)
-    }
-  }
-
-  machines = machines.filter(m => trimmed.indexOf(m) === -1)
-
-  return trimmed.length
-}
-
-function showStatistics(born: number, trimmed: number): void {
-  const genesMap = new Map<number, number>() // {gene: number of genes}
-
-  log(`\n\n\n[${t}]\nMachines: ${machines.length}, ${born} born, ${trimmed} die`)
-
-  machines.forEach(m => {
-    // tslint:disable-next-line: strict-boolean-expressions
-    const numberOfMachines = genesMap.get(m.gene.value) || 0
-    genesMap.set(m.gene.value, numberOfMachines + 1)
-  })
-
-  const genes: [number, number][] = []
-  genesMap.forEach((value, gene) => {
-    genes.push([gene, value])
-  })
-
-  const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
-  sorted.slice(0, Math.min(sorted.length, 5))
-    .forEach(e => {
-      log(`${e[0].toString(2)}: ${e[1]}`)
-    })
-}
+//   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
+//   sorted.slice(0, Math.min(sorted.length, 5))
+//     .forEach(e => {
+//       log(`${e[0].toString(2)}: ${e[1]}`)
+//     })
+// }
 
 /**
  * geneLength bits binary
@@ -195,30 +160,178 @@ class Gene {
   }
 }
 
-class Machine {
+class Machine extends Life {
   public createdAt: number
+  public forces: Vector[] = []
   public get age(): number {
     return t - this.createdAt
   }
+  public get isAlive(): boolean {
+    return this.energy > 0
+  }
+  public get canMate(): boolean {
+    if (this.age < matureInterval) {
+      return false
+    }
+    if (this.reproducedAt == undefined) {
+      return true
+    }
 
-  public constructor(public readonly gene: Gene) {
+    return (t - this.reproducedAt) > reproduceInterval
+  }
+  private energy = initialEnergy
+  private reproducedAt: number | undefined
+
+  public constructor(position: Vector, public readonly gene: Gene) {
+    super(position)
     this.createdAt = t
+    this._size = machineSize
   }
 
   public reproduce(other: Machine): Machine[] {
-    return this.gene.reproduce(other.gene)
+    const offsprings = this.gene.reproduce(other.gene)
       .map(g => {
-        if (random(1) < mutationRate) {
-          return new Machine(g.mutated())
-        } else {
-          return new Machine(g)
-        }
+        const position = this.position.add(this.velocity.sized(this.size * -2))
+        const gene = (random(1) < mutationRate) ? g.mutated() : g
+        const offspring = new Machine(position, gene)
+        offspring.velocity = this.velocity.sized(-1)
+
+        return offspring
       })
+
+    if (offsprings.length > 0) {
+      this.reproducedAt = t
+      this.energy += offsprings.length * birthEnergy
+    }
+
+    return offsprings
+  }
+
+  public didCollide(): void {
+    this.energy -= 1
+  }
+
+  public next(): [Force, WorldObject[]] {
+    if (this.isAlive === false) {
+      return [Force.zero(), []]
+    }
+
+    const max = 0.1
+    const vx = random(max, -max)
+    const vy = random(max, -max)
+
+    const force = new Force(new Vector(vx, vy))
+
+    return [force, []]
+  }
+
+  public draw(p: p5, anchor: Vector): void {
+    p.noStroke()
+    p.fill(0xFF, 0, 0)
+
+    const diameter = this.size
+    p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
   }
 }
 
+class MachineWorld extends VanillaWorld {
+  protected _lives: Machine[] = []
+  public get lives(): Machine[] {
+    return this._lives
+  }
+
+  public next(): void {
+    const newLives: Machine[] = []
+
+    const sortedX = [...this.lives].sort((lhs, rhs) => {
+      return lhs.position.x - rhs.position.x
+    })
+
+    for (let i = 0; i < this.lives.length; i += 1) {
+      const life = this.lives[i]
+      life.forces = []
+
+      if (life.isAlive === false) {
+        continue
+      }
+
+      const xIndex = sortedX.indexOf(life)
+      const maxX = life.position.x + life.size
+      const minX = life.position.x - life.size
+
+      const compareTo: Machine[] = []
+
+      for (let k = i + 1; k < this.lives.length; k += 1) {
+        compareTo.push(this.lives[k])
+      }
+
+      // FixMe: 衝突判定が漏れる
+      // for (let k = xIndex + 1; k < sortedX.length; k += 1) {
+      //   if (sortedX[k].position.x > maxX) {
+      //     break
+      //   }
+      //   compareTo.push(sortedX[k])
+      // }
+      // for (let k = xIndex - 1; k >= 0; k -= 1) {
+      //   if (sortedX[k].position.x < minX) {
+      //     break
+      //   }
+      //   compareTo.push(sortedX[k])
+      // }
+
+      for (let j = 0; j < compareTo.length; j += 1) {
+        const otherLife = compareTo[j]
+        const distance = life.position.dist(otherLife.position)
+        const minDistance = (life.size + otherLife.size) / 2
+        const isColliding = distance < minDistance
+
+        if (isColliding === false) {
+          continue
+        }
+
+        if (life.canMate && otherLife.canMate) {
+          newLives.push(...life.reproduce(otherLife))
+        }
+
+        const normalizedDistance = ((minDistance - distance) / minDistance)
+        const forceMagnitude = normalizedDistance * 1
+        life.forces.push(life.position.sub(otherLife.position)
+          .sized(forceMagnitude))
+        otherLife.forces.push(otherLife.position.sub(life.position)
+          .sized(forceMagnitude))
+
+        life.didCollide()
+        otherLife.didCollide()
+      }
+    }
+
+    this._lives = this.lives.filter(l => l.isAlive)
+
+    for (let i = 0; i < this.lives.length; i += 1) {
+      const life = this.lives[i]
+
+      const next = life.next()
+      const sumForces = life.forces.reduce(
+        (result, current) => {
+          return result.add(new Force(current))
+        },
+        next[0],
+      )
+
+      const coordinate = this.updateCoordinateFor(life.position, life.velocity, sumForces, life.mass)
+      life.position = coordinate[0]
+      life.velocity = coordinate[1]
+    }
+
+    this.addLives(newLives)
+  }
+}
+
+// ----- TEST -----
+
 function assert(b: boolean, message: string): void {
   if (b !== true) {
+    // FixMe: テストが最後まで実行されるようにする
     throw new Error(`[Failed] ${message}`)
   }
 }
