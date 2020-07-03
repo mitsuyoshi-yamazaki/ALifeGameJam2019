@@ -1,26 +1,21 @@
 import * as p5 from "p5"
-import { parsedQueries, random } from "../utilities"
+import { random, URLParameter } from "../utilities"
 
 /**
  * TODO:
  * iをランダムな位置から検索し、子孫数を1未満にする
  */
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const rawDebug = parseInt(parameters["debug"], 10)
-const DEBUG = isNaN(rawDebug) ? false : (rawDebug ? true : false)
-const rawTest = parseInt(parameters["test"], 10)
-let TEST = isNaN(rawTest) ? false : (rawTest ? true : false)
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
-const machineCount = parameters["machines"] ? parseInt(parameters["machines"], 10) : 100
-const machineMax = parameters["max"] ? parseInt(parameters["max"], 10) : 1000
-const matingRate = parameters["mating_rate"] ? parseFloat(parameters["mating_rate"]) : 0.1
-const mutationRate = parameters["mutation_rate"] ? parseFloat(parameters["mutation_rate"]) : 0.03
-const speed = parameters["speed"] ? parseInt(parameters["speed"], 10) : 300
-const rawSingleGene = parseInt(parameters["single_gene"], 10)
-const singleGene = isNaN(rawSingleGene) ? true : (rawSingleGene ? true : false)
-// tslint:enable: no-string-literal
+const parameters = new URLParameter()
+const DEBUG = parameters.boolean("debug", false)
+let TEST = parameters.boolean("test", false)
+const size = parameters.int("size", 100)
+const machineCount = parameters.int("machines", 100)
+const machineMax = parameters.int("max", 1000)
+const matingRate = parameters.float("mating_rate", 0.1)
+const mutationRate = parameters.float("mutation_rate", 0.03)
+const speed = parameters.int("speed", 300)
+const singleGene = parameters.boolean("single_gene", true)
 
 function log(message: string): void {
   if (DEBUG) {
