@@ -70,16 +70,10 @@ const main = (p: p5) => {
     }
 
     const machines: Machine[] = []
-    const initialGenes: Gene[] = function() {
-      if (initialGeneType != 0) {
-        return [...Array(initialGeneType).keys()].map(_ => Gene.random())
-      } else {
-        return [Gene.random()]
-      }
-    }()
+    const initialGenes: Gene[] = [...Array(initialGeneType).keys()].map(_ => Gene.random())
 
     for (let i = 0; i < machineCount; i += 1) {
-      const gene = singleGene ? new Gene(0b1100111100) : initialGenes[Math.floor(random(initialGeneType))]
+      const gene = singleGene ? new Gene(0b1100111100) : initialGeneType == 0 ? Gene.random() : initialGenes[Math.floor(random(initialGeneType))]
       const position = new Vector(random(fieldSize.x), random(fieldSize.y))
       machines.push(new Machine(position, gene))
     }
