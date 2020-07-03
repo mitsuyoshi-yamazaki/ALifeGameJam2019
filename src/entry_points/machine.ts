@@ -9,6 +9,7 @@ import { Color, random, URLParameter } from "../utilities"
 const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", true, "d")        // デバッグフラグ
 let TEST = parameters.boolean("test", false, "t")           // テストを実行
+const mode = parameters.string("mode", "default", "m")      // 実行モードを変更 default: 通常, attracted: 遺伝子ごとのアトラクタに誘引される
 const artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
@@ -16,13 +17,13 @@ const size = parameters.int("size", 1000, "s")                  // canvas サイ
 const friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
 const singleGene = parameters.boolean("single_gene", true, "g") // 初期の個体の遺伝子を同一の状態から始める：false 設定時はランダム
 const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
-const mutationRate = parameters.float("mutation_rate", 0.03, "m") // 突然変異率（0-1）
-const machineSize = parameters.float("life_size", 6, "ls")         // 最大個体サイズ
+const mutationRate = parameters.float("mutation_rate", 0.03, "mr")  // 突然変異率（0-1）
+const machineSize = parameters.float("life_size", 6, "ls")          // 最大個体サイズ
 const initialLifespan = parameters.float("initial_lifespan", 10, "l") // 個体生成時の初期寿命
-const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")     // 子孫生成時に増加する寿命
-const matureInterval = parameters.int("mature_interval", 200, "mi") // 個体生成から子孫を残せるようになるまでの時間
+const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")   // 子孫生成時に増加する寿命
+const matureInterval = parameters.int("mature_interval", 200, "mi")       // 個体生成から子孫を残せるようになるまでの時間
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
-const attractForce = parameters.float("attract_force", 0.1, "af")
+const attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted の引力
 
 function log(message: string): void {
   if (DEBUG) {
@@ -36,7 +37,16 @@ const backgroundTransparency = artMode ? transparency : 0xFF
 
 const main = (p: p5) => {
   p.setup = () => {
-    const fieldSize = new Vector(size, size)
+    let fieldSize: Vector
+    switch (mode) {
+      case "attracted":
+        fieldSize = new Vector(size, size)
+        break
+      default:
+        fieldSize = new Vector(size, Math.floor(size * 0.6))
+        break
+    }
+
     const canvas = p.createCanvas(fieldSize.x, fieldSize.y)
     canvas.id("canvas")
     canvas.parent("canvas-parent")
@@ -49,7 +59,7 @@ const main = (p: p5) => {
       }
       console.log(`[CAUTION] ${errorMessage}\n\n`)
     }
-    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
+    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
     log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}`)
     log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, lifespan: ${initialLifespan}, birth additional lifespan: ${birthAdditionalLifespan}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
@@ -249,18 +259,30 @@ class Machine extends Life {
       return [Force.zero(), []]
     }
 
-    const target = (this.gene.value / Gene.geneMask) * Math.PI * 2
-    const targetPosition = new Vector(
-      Math.cos(target),
-      Math.sin(target),
-    )
-      .sized(size * 0.3)
-      .add(world.size.div(2))
+    switch (mode) {
+      case "attracted":
+        const target = (this.gene.value / Gene.geneMask) * Math.PI * 2
+        const targetPosition = new Vector(
+          Math.cos(target),
+          Math.sin(target),
+        )
+          .sized(size * 0.3)
+          .add(world.size.div(2))
 
-    const movingForce = targetPosition.sub(this.position).sized(attractForce).add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
-    const force = new Force(movingForce)
+        const movingForce = targetPosition
+          .sub(this.position)
+          .sized(attractForce)
+          .add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
 
-    return [force, []]
+        return [new Force(movingForce), []]
+
+      default:
+        const max = 0.1
+        const vx = random(max, -max)
+        const vy = random(max, -max)
+
+        return [new Force(new Vector(vx, vy)), []]
+    }
   }
 
   public draw(p: p5, anchor: Vector): void {
