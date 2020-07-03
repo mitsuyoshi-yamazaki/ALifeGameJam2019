@@ -22,6 +22,7 @@ const initialEnergy = parameters.float("initial_energy", 10, "e") // 個体生�
 const birthEnergy = parameters.float("birth_energy", 5, "be")     // 子孫生成時に増加するエネルギー量
 const matureInterval = parameters.int("mature_interval", 200, "mi") // 個体生成から子孫を残せるようになるまでの時間
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
+const attractForce = parameters.float("attract_force", 0.1, "af")
 
 function log(message: string): void {
   if (DEBUG) {
@@ -239,13 +240,15 @@ class Machine extends Life {
       return [Force.zero(), []]
     }
 
-    const max = 0.1
-    const cellCount = 10
-    const target = new Vector(
-      (this.gene.value % cellCount) * world.size.x / cellCount
-      , ((this.gene.value / cellCount) % cellCount) * world.size.y / cellCount)
-    const movingForce = target.sub(this.position).sized(max)
-    movingForce.add(Vector.random(max * 0.5, -max * 0.5))
+    const target = (this.gene.value / Gene.geneMask) * Math.PI * 2
+    const targetPosition = new Vector(
+      Math.cos(target),
+      Math.sin(target),
+    )
+      .sized(size * 0.4)
+      .add(world.size.div(2))
+
+    const movingForce = targetPosition.sub(this.position).sized(attractForce).add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
     const force = new Force(movingForce)
 
     return [force, []]
