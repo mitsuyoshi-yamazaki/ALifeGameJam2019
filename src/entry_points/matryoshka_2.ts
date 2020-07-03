@@ -4,18 +4,16 @@ import { GeneticActiveLife, GeneticLife, GeneticResource, Life, MetaActiveLife }
 import { calculateOrbitalVelocity, Vector } from "../classes/physics"
 import { FrictedTerrain, Terrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
-import { parsedQueries, random } from "../utilities"
+import { random, URLParameter } from "../utilities"
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const DEBUG = (parameters["debug"] ? parseInt(parameters["debug"], 10) : 0) > 0
-const artMode = (parameters["art_mode"] ? parseInt(parameters["art_mode"], 10) : 0) > 0
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1200
-const lifeSize = parameters["life_size"] ? parseInt(parameters["life_size"], 10) : 6
-const population = parameters["population"] ? parseInt(parameters["population"], 10) : 4000
-const friction = parameters["friction"] ? parseFloat(parameters["friction"]) : 0.99
-const mutationRate = parameters["mutation_rate"] ? parseFloat(parameters["mutation_rate"]) : 0.03
-// tslint:enable: no-string-literal
+const parameters = new URLParameter()
+const DEBUG = parameters.boolean("debug", false)
+const artMode = parameters.boolean("art_mode", false)
+const size = parameters.int("size", 1200)
+const lifeSize = parameters.float("life_size", 6)
+const population = parameters.int("population", 4000)
+const friction = parameters.float("friction", 0.99)
+const mutationRate = parameters.float("mutation_rate", 0.03)
 
 const startsWithSingleGene = true
 
