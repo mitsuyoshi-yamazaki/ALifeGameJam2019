@@ -38,8 +38,8 @@ export class URLParameter {
     console.log(rawParameters)
   }
 
-  public int(key: string, defaultValue: number): number {
-    const rawValue = this.parameters.get(key)
+  public int(key: string, defaultValue: number, shortKey?: string): number {
+    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
     }
@@ -51,8 +51,8 @@ export class URLParameter {
     return parsedValue
   }
 
-  public float(key: string, defaultValue: number): number {
-    const rawValue = this.parameters.get(key)
+  public float(key: string, defaultValue: number, shortKey?: string): number {
+    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
     }
@@ -64,8 +64,8 @@ export class URLParameter {
     return parsedValue
   }
 
-  public boolean(key: string, defaultValue: boolean): boolean {
-    const rawValue = this.parameters.get(key)
+  public boolean(key: string, defaultValue: boolean, shortKey?: string): boolean {
+    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
     }
@@ -77,8 +77,8 @@ export class URLParameter {
     return parsedValue > 0
   }
 
-  public string(key: string, defaultValue: string): string {
-    const rawValue = this.parameters.get(key)
+  public string(key: string, defaultValue: string, shortKey?: string): string {
+    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
     if (rawValue == undefined) {
       return defaultValue
     }
