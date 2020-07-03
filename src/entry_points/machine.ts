@@ -371,6 +371,7 @@ class MachineWorld extends VanillaWorld {
                            .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
                                 .sized(forceMagnitude))
+        // TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
         if (life.age >= matureInterval && otherLife.age >= matureInterval) {
           life.didCollide()
           otherLife.didCollide()
