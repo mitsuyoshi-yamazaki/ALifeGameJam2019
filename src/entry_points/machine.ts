@@ -16,7 +16,7 @@ const statisticsInterval = parameters.int("statistics_interval", 500, "si") // �
 const size = parameters.int("size", 1000, "s")                  // canvas サイズ
 const friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
 const singleGene = parameters.boolean("single_gene", true, "g") // 初期の個体の遺伝子を同一の状態から始める：false  falseのときは下のinitial_gene_typeに従う
-const initialGeneType = parameters.float("initial_gene_type", 0, "ig")         // 初期遺伝子の種類 default:0 無制限 singleGene=trueのとき無効
+const initialGeneType = parameters.int("initial_gene_type", 0, "ig")         // 初期遺伝子の種類 default:0 無制限 singleGene=trueのとき無効
 const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
 const mutationRate = parameters.float("mutation_rate", 0.03, "mr")  // 突然変異率（0-1）
 const machineSize = parameters.float("life_size", 6, "ls")          // 最大個体サイズ
