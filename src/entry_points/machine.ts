@@ -22,6 +22,7 @@ const initialLifespan = parameters.float("initial_lifespan", 10, "l") // 個体�
 const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")     // 子孫生成時に増加する寿命
 const matureInterval = parameters.int("mature_interval", 200, "mi") // 個体生成から子孫を残せるようになるまでの時間
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
+const attractForce = parameters.float("attract_force", 0.1, "af")
 
 function log(message: string): void {
   if (DEBUG) {
@@ -35,7 +36,7 @@ const backgroundTransparency = artMode ? transparency : 0xFF
 
 const main = (p: p5) => {
   p.setup = () => {
-    const fieldSize = new Vector(size, Math.floor(size * 0.66))
+    const fieldSize = new Vector(size, size)
     const canvas = p.createCanvas(fieldSize.x, fieldSize.y)
     canvas.id("canvas")
     canvas.parent("canvas-parent")
@@ -119,6 +120,7 @@ class Gene {
   public get color(): Color {
     return this._color
   }
+
   private _color: Color
 
   public constructor(public readonly value: number) {
@@ -177,12 +179,15 @@ class Gene {
 class Machine extends Life {
   public createdAt: number
   public forces: Vector[] = []
+
   public get age(): number {
     return t - this.createdAt
   }
+
   public get isAlive(): boolean {
     return this.lifespan > 0
   }
+
   public get canMate(): boolean {
     if (this.age < matureInterval) {
       return false
@@ -193,7 +198,9 @@ class Machine extends Life {
 
     return (t - this.reproducedAt) > reproduceInterval
   }
+
   private lifespan = initialLifespan
+
   private reproducedAt: number | undefined
   private previousPosition: Vector
 
@@ -234,11 +241,16 @@ class Machine extends Life {
       return [Force.zero(), []]
     }
 
-    const max = 0.1
-    const vx = random(max, -max)
-    const vy = random(max, -max)
+    const target = (this.gene.value / Gene.geneMask) * Math.PI * 2
+    const targetPosition = new Vector(
+      Math.cos(target),
+      Math.sin(target),
+    )
+      .sized(size * 0.3)
+      .add(world.size.div(2))
 
-    const force = new Force(new Vector(vx, vy))
+    const movingForce = targetPosition.sub(this.position).sized(attractForce).add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
+    const force = new Force(movingForce)
 
     return [force, []]
   }
@@ -323,9 +335,9 @@ class MachineWorld extends VanillaWorld {
         const normalizedDistance = ((minDistance - distance) / minDistance)
         const forceMagnitude = normalizedDistance * 1
         life.forces.push(life.position.sub(otherLife.position)
-          .sized(forceMagnitude))
+                           .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
-          .sized(forceMagnitude))
+                                .sized(forceMagnitude))
 
         life.didCollide()
         otherLife.didCollide()
