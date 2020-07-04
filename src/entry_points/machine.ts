@@ -9,7 +9,7 @@ import { Color, random, URLParameter } from "../utilities"
 const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", true, "d")        // デバッグフラグ
 let TEST = parameters.boolean("test", false, "t")           // テストを実行
-const mode = parameters.string("mode", "default", "m")      // 実行モードを変更 default: 通常, attracted: 遺伝子ごとのアトラクタに誘引される
+const mode = parameters.string("mode", "default", "m")      // 実行モードを変更 default: 通常, attracted: 遺伝子ごとのアトラクタに誘引される, equidistant: attracted のアトラクタを等間隔に配置
 const artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
@@ -24,7 +24,7 @@ const initialLifespan = parameters.float("initial_lifespan", 10, "l") // 個体�
 const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")   // 子孫生成時に増加する寿命
 const matureInterval = parameters.int("mature_interval", 200, "mi")       // 個体生成から子孫を残せるようになるまでの時間
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
-const attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted の引力
+const attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted, equidistant の引力
 
 function log(message: string): void {
   if (DEBUG) {
@@ -34,6 +34,7 @@ function log(message: string): void {
 
 let t = 0
 let world: MachineWorld
+const genes: number[] = []
 const backgroundTransparency = artMode ? transparency : 0xFF
 
 const main = (p: p5) => {
@@ -41,6 +42,7 @@ const main = (p: p5) => {
     let fieldSize: Vector
     switch (mode) {
       case "attracted":
+      case "equidistant":
         fieldSize = new Vector(size, size)
         break
       default:
@@ -157,6 +159,10 @@ class Gene {
     const g = ((rawTransitionTable & 0xF0) / 2) + 0x80
     const b = (((rawTransitionTable & 0xF) << 4) / 2) + 0x80
     this._color = new Color(r, g, b)
+
+    if (genes.indexOf(value) === -1) {
+      genes.push(value)
+    }
   }
 
   public static random(): Gene {
@@ -266,7 +272,19 @@ class Machine extends Life {
 
     switch (mode) {
       case "attracted":
-        const target = (this.gene.value / Gene.geneMask) * Math.PI * 2
+      case "equidistant":
+        let target: number
+        if (mode === "attracted") {
+          target = (this.gene.value / Gene.geneMask) * Math.PI * 2
+
+        } else {
+          const geneIndex = genes.indexOf(this.gene.value)
+          if (geneIndex < 0) {
+            break
+          }
+
+          target = (geneIndex / genes.length) * Math.PI * 2
+        }
         const targetPosition = new Vector(
           Math.cos(target),
           Math.sin(target),
@@ -282,12 +300,14 @@ class Machine extends Life {
         return [new Force(movingForce), []]
 
       default:
-        const max = 0.1
-        const vx = random(max, -max)
-        const vy = random(max, -max)
-
-        return [new Force(new Vector(vx, vy)), []]
+        break
     }
+
+    const max = 0.1
+    const vx = random(max, -max)
+    const vy = random(max, -max)
+
+    return [new Force(new Vector(vx, vy)), []]
   }
 
   public draw(p: p5, anchor: Vector): void {
@@ -370,9 +390,9 @@ class MachineWorld extends VanillaWorld {
         const normalizedDistance = ((minDistance - distance) / minDistance)
         const forceMagnitude = normalizedDistance * 1
         life.forces.push(life.position.sub(otherLife.position)
-                           .sized(forceMagnitude))
+          .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
-                                .sized(forceMagnitude))
+          .sized(forceMagnitude))
         // TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
         if (life.age >= matureInterval && otherLife.age >= matureInterval) {
           life.didCollide()
