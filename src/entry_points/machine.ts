@@ -75,7 +75,7 @@ const main = (p: p5) => {
     for (let i = 0; i < machineCount; i += 1) {
       const gene = singleGene ? new Gene(0b1100111100) : initialGeneType == 0 ? Gene.random() : initialGenes[Math.floor(random(initialGeneType))]
       const position = new Vector(random(fieldSize.x), random(fieldSize.y))
-      machines.push(new Machine(position, gene))
+      machines.push(new Machine(position, gene, new Family(gene.value, undefined)))
     }
 
     const terrains: Terrain[] = [
@@ -121,10 +121,140 @@ function showStatistics(): void {
   log(`\n\n\n${t} steps\nPopulation: ${world.lives.length}, number of species(genes): ${genes.length}`)
   log(`Genes:`)
   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
-  sorted.slice(0, Math.min(sorted.length, 10))
+  sorted.slice(0, Math.min(sorted.length, 6))
     .forEach(e => {
       log(`0x${e[0].toString(16).padStart(Math.ceil(Gene.geneLength / 4), "0")}: ${e[1]}`)
     })
+
+  if (sorted.length > 0) {
+    const value = sorted[0][0]
+    const machine = world.lives.find(m => m.gene.value === value)
+
+    if (machine != undefined) {
+      const familyLines = machine.family.familyLines(6, [])
+      familyLines.forEach(l => {
+        log(`${l}`)
+      })
+    }
+  }
+}
+
+type FamilyValue = string
+
+class Family {
+  public readonly value: FamilyValue
+  public get children(): Family[] {
+    return this._children
+  }
+  private _children: Family[] = []
+  private childValues: FamilyValue[] = []
+
+  public constructor(value: number, public readonly parents: [Family, Family] | undefined) {
+    this.value = `${value.toString(16).padStart(Math.ceil(Gene.geneLength / 4), "0")}`
+  }
+
+  public addChildren(children: Family[]): void {
+    children.forEach(child => {
+      if (this.childValues.indexOf(child.value) >= 0) {
+        return
+      }
+      if (child.value === this.value) {
+        this._children.push(this)
+        this.childValues.push(this.value)
+
+        return
+      }
+
+      const ancester = this.ancester(child.value)
+      if (ancester != undefined) {
+        this._children.push(ancester)
+        this.childValues.push(ancester.value)
+
+        return
+      }
+
+      this._children.push(child)
+      this.childValues.push(child.value)
+    })
+  }
+
+  public familyLines(limit: number, offsprings: string[]): string[] {
+    let l = limit
+    if (l <= 0) {
+      return []
+    }
+    if (this.parents == undefined) {
+      return [this.value]
+    }
+    if (offsprings.indexOf(this.value) >= 0) {
+      return [this.value]
+    }
+    const parents = this.parents
+
+    const append = (ancesterLine: string, value: FamilyValue, otherParent: Family): string => {
+      return `${ancesterLine}(${otherParent.value}) -> ${value}`
+    }
+
+    const o: string[] = [...offsprings]
+    o.push(this.value)
+    const result: string[] = []
+    const lines0 = this.parents[0].familyLines(l, o)
+      .slice(0, l)
+      .map(line => {
+        return append(line, this.value, parents[1])
+      })
+    result.push(...lines0)
+
+    l -= lines0.length
+    if (l <= 0) {
+      return result
+    }
+
+    const lines1 = this.parents[0].familyLines(l, o)
+      .slice(0, l)
+      .map(line => {
+        return append(line, this.value, parents[0])
+      })
+    result.push(...lines1)
+
+    return result
+  }
+
+  private ancester(value: FamilyValue): Family | undefined {
+    if (this.parents == undefined) {
+      return undefined
+    }
+    if (this.parents[0].value === value) {
+      return this.parents[0]
+    }
+    if (this.parents[1].value === value) {
+      return this.parents[1]
+    }
+    const ancester = this.parents[0].ancester(value)
+    if (ancester != undefined) {
+      return ancester
+    }
+
+    return this.parents[1].ancester(value)
+  }
+
+  private hasAncester(value: FamilyValue): boolean {
+    if (this.parents == undefined) {
+      return false
+    }
+    if (this.parents[0].hasAncester(value)) {
+      return true
+    }
+    if (this.parents[1].hasAncester(value)) {
+      return true
+    }
+
+    return false
+  }
+
+  private hasSameAncester(): boolean {
+    return this.hasAncester(this.value)
+  }
 }
 
 /**
@@ -227,7 +357,7 @@ class Machine extends Life {
   private reproducedAt: number | undefined
   private previousPosition: Vector
 
-  public constructor(position: Vector, public readonly gene: Gene) {
+  public constructor(position: Vector, public readonly gene: Gene, public readonly family: Family) {
     super(position)
     this.createdAt = t
     this._size = machineSize
@@ -239,7 +369,7 @@ class Machine extends Life {
       .map(g => {
         const position = this.position.add(this.velocity.sized(this.size * -2))
         const gene = (random(1) < mutationRate) ? g.mutated() : g
-        const offspring = new Machine(position, gene)
+        const offspring = new Machine(position, gene, new Family(gene.value, [this.family, other.family]))
         offspring.velocity = this.velocity.sized(-1)
 
         return offspring
@@ -248,6 +378,9 @@ class Machine extends Life {
     if (offsprings.length > 0) {
       this.reproducedAt = t
       this.lifespan += offsprings.length * birthAdditionalLifespan
+
+      this.family.addChildren(offsprings.map(c => c.family))
+      other.family.addChildren(offsprings.map(c => c.family))
     }
 
     return offsprings
@@ -370,9 +503,9 @@ class MachineWorld extends VanillaWorld {
         const normalizedDistance = ((minDistance - distance) / minDistance)
         const forceMagnitude = normalizedDistance * 1
         life.forces.push(life.position.sub(otherLife.position)
-                           .sized(forceMagnitude))
+          .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
-                                .sized(forceMagnitude))
+          .sized(forceMagnitude))
         // TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
         if (life.age >= matureInterval && otherLife.age >= matureInterval) {
           life.didCollide()
