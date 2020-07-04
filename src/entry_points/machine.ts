@@ -31,6 +31,7 @@ const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")   // 子
 const matureInterval = parameters.int("mature_interval", 200, "mi")       // 個体生成から子孫を残せるようになるまでの時間
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
 const attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted, equidistant の引力
+const repulsingForce = parameters.float("repulsing_force", 1, "rf")     // 衝突した際に発生する斥力の大きさ
 
 function log(message: string): void {
   if (DEBUG) {
@@ -74,7 +75,7 @@ const main = (p: p5) => {
       `${String(parsedInitialGenes.map(g => g.hex))}` : (initialGeneType === 0 ? "random" : `random (${initialGeneType}) patterns`)
 
     log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
-    log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
+    log(`Field... size: ${String(fieldSize)}, friction: ${friction}, repulsing force: ${repulsingForce}`)
     log(`Enviornment... initial genes: ${geneParameter}, population: ${machineCount}`)
     log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, lifespan: ${initialLifespan}, birth additional lifespan: ${birthAdditionalLifespan}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
 
@@ -450,7 +451,7 @@ class MachineWorld extends VanillaWorld {
         }
 
         const normalizedDistance = ((minDistance - distance) / minDistance)
-        const forceMagnitude = normalizedDistance * 1
+        const forceMagnitude = normalizedDistance * repulsingForce
         life.forces.push(life.position.sub(otherLife.position)
           .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
