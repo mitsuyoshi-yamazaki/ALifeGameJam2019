@@ -15,8 +15,8 @@ const transparency = parameters.float("background_transparency", 1, "t")    // �
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
 const size = parameters.int("size", 1000, "s")                  // canvas サイズ
 const friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
-const singleGene = parameters.boolean("single_gene", true, "g") // 初期の個体の遺伝子を同一の状態から始める：false  falseのときは下のinitial_gene_typeに従う
-const initialGeneType = parameters.int("initial_gene_type", 0, "ig")         // 初期遺伝子の種類 default:0 無制限 singleGene=trueのとき無効
+const rawInitialGenes = parameters.string("initial_genes", "33c", "g") // 初期遺伝子の指定（hex）例: initial_genes=20e,169
+const initialGeneType = parameters.int("initial_gene_type", 0, "ig")  // 初期ランダム遺伝子の種類 0: 無制限 initial_genes を指定しない場合のみ有効
 const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
 const mutationRate = parameters.float("mutation_rate", 0.03, "mr")  // 突然変異率（0-1）
 const machineSize = parameters.float("life_size", 6, "ls")          // 最大個体サイズ
@@ -62,9 +62,13 @@ const main = (p: p5) => {
       }
       console.log(`[CAUTION] ${errorMessage}\n\n`)
     }
+    const parsedInitialGenes = parseInitialGenes()
+    const geneParameter = (parsedInitialGenes.length > 0) ?
+      `${String(parsedInitialGenes.map(g => g.hex))}` : (initialGeneType === 0 ? "random" : `random (${initialGeneType}) patterns`)
+
     log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}`)
-    log(`Enviornment... single gene: ${singleGene}, population: ${machineCount}`)
+    log(`Enviornment... initial genes: ${geneParameter}, population: ${machineCount}`)
     log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, lifespan: ${initialLifespan}, birth additional lifespan: ${birthAdditionalLifespan}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
 
     if (TEST) {
@@ -72,10 +76,20 @@ const main = (p: p5) => {
     }
 
     const machines: Machine[] = []
-    const initialGenes: Gene[] = [...Array(initialGeneType).keys()].map(_ => Gene.random())
+    const initialGenes: Gene[] = []
+    if (parsedInitialGenes.length > 0) {
+      initialGenes.push(...parsedInitialGenes)
+    } else {
+      initialGenes.push(...[...Array(initialGeneType).keys()].map(_ => Gene.random()))
+    }
 
     for (let i = 0; i < machineCount; i += 1) {
-      const gene = singleGene ? new Gene(0b1100111100) : initialGeneType == 0 ? Gene.random() : initialGenes[Math.floor(random(initialGeneType))]
+      let gene: Gene
+      if (initialGenes.length > 0) {
+        gene = initialGenes[Math.floor(random(initialGenes.length))]
+      } else {
+        gene = Gene.random()
+      }
       const position = new Vector(random(fieldSize.x), random(fieldSize.y))
       machines.push(new Machine(position, gene))
     }
@@ -106,6 +120,25 @@ const main = (p: p5) => {
 
 const sketch = new p5(main)
 
+function parseInitialGenes(): Gene[] {
+  if (rawInitialGenes.length === 0) {
+    return []
+  }
+  const result: Gene[] = []
+  rawInitialGenes.split(",")
+    .forEach(hexString => {
+      const value = parseInt(hexString, 16)
+      if (isNaN(value)) {
+        log(`[CAUTION] Value ${hexString} specified in "initial_genes" cannot parse to integer`)
+
+        return
+      }
+      result.push(new Gene(value))
+    })
+
+  return result
+}
+
 function showStatistics(): void {
   const genesMap = new Map<number, number>() // {gene: number of genes}
 
@@ -125,7 +158,7 @@ function showStatistics(): void {
   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
   sorted.slice(0, Math.min(sorted.length, 10))
     .forEach(e => {
-      log(`0x${e[0].toString(16).padStart(Math.ceil(Gene.geneLength / 4), "0")}: ${e[1]}`)
+      log(`0x${Gene.hex(e[0])}: ${e[1]}`)
     })
 }
 
@@ -145,6 +178,9 @@ class Gene {
   public get color(): Color {
     return this._color
   }
+  public get hex(): string {
+    return Gene.hex(this.value)
+  }
 
   private _color: Color
 
@@ -163,6 +199,10 @@ class Gene {
     if (genes.indexOf(value) === -1) {
       genes.push(value)
     }
+  }
+
+  public static hex(value: number): string {
+    return `${value.toString(16).padStart(Math.ceil(Gene.geneLength / 4), "0")}`
   }
 
   public static random(): Gene {
