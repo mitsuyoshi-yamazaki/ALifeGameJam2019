@@ -9,7 +9,13 @@ import { Color, random, URLParameter } from "../utilities"
 const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", true, "d")        // デバッグフラグ
 let TEST = parameters.boolean("test", false, "t")           // テストを実行
-const mode = parameters.string("mode", "default", "m")      // 実行モードを変更 default: 通常, attracted: 遺伝子ごとのアトラクタに誘引される, equidistant: attracted のアトラクタを等間隔に配置
+
+// 実行モードを変更
+// default: 通常
+// attracted: 遺伝子ごとのアトラクタに誘引される
+// equidistant: attracted のアトラクタを等間隔に配置
+// scroll: アトラクタを世代で分割
+const mode = parameters.string("mode", "default", "m")
 const artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
@@ -43,6 +49,7 @@ const main = (p: p5) => {
     switch (mode) {
       case "attracted":
       case "equidistant":
+      case "scroll":
         fieldSize = new Vector(size, size)
         break
       default:
@@ -312,7 +319,7 @@ class Machine extends Life {
 
     switch (mode) {
       case "attracted":
-      case "equidistant":
+      case "equidistant": {
         let target: number
         if (mode === "attracted") {
           target = (this.gene.value / Gene.geneMask) * Math.PI * 2
@@ -338,6 +345,21 @@ class Machine extends Life {
           .add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
 
         return [new Force(movingForce), []]
+      }
+
+      case "scroll": {
+        const targetX = (this.gene.value / Gene.geneMask) * world.size.x * 0.8 + world.size.x * 0.1
+        const normalized = reproduceInterval
+        const targetY = world.size.y * 0.7 - t + (Math.floor(this.createdAt / normalized) * normalized)
+        const targetPosition = new Vector(targetX, targetY)
+
+        const movingForce = targetPosition
+          .sub(this.position)
+          .sized(attractForce)
+          .add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
+
+        return [new Force(movingForce), []]
+      }
 
       default:
         break
