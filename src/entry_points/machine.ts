@@ -401,6 +401,9 @@ class Machine extends Life {
 
   public draw(p: p5, anchor: Vector): void {
     if (artMode) {
+      if (mode === "family") {
+        return
+      }
       p.noFill()
       p.stroke(this.gene.color.p5(p, 0xA0))
       p.strokeWeight(0.5)
@@ -508,6 +511,17 @@ class Family {
       .div(this.machines.length)
 
     return result
+  }
+
+  public draw(p: p5): void {
+    if (artMode === false) {
+      return
+    }
+    p.stroke(0x20, 0x80)
+    p.strokeWeight(0.5)
+
+    const diameter = Math.sqrt(this.machines.length * machineSize * machineSize)
+    p.circle(this.center.x, this.center.y, diameter)
   }
 }
 
@@ -665,6 +679,14 @@ class MachineWorld extends VanillaWorld {
     })
     this.families = this.families.filter(f => f.machines.length > 0)
     this.families.push(...newFamilies)
+  }
+
+  public draw(p: p5): void {
+    super.draw(p)
+
+    this.families.forEach(f => {
+      f.draw(p)
+    })
   }
 }
 
