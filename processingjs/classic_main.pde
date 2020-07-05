@@ -3,6 +3,7 @@
 // System
 bool DEBUG = false;
 bool artMode = true;
+int t = 0;
 
 // Population
 Life[] lifes;
@@ -409,6 +410,9 @@ void draw(){
   lifes = lifes.concat(born);
 
   addResources();
+
+  setTimestamp(t);	// see screenshot.js
+  t += 1;
 }
 
 void addResources() {
