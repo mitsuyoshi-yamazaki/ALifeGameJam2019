@@ -35,6 +35,7 @@ const attractForce = parameters.float("attract_force", 0.6, "af")         // mod
 const repulsingForce = parameters.float("repulsing_force", 1, "rf")     // 衝突した際に発生する斥力の大きさ
 const familyLifespanDecresement = parameters.float("family_lifespan_decresement", 1, "fd")     // Family 同士で衝突した際のlifespanの減少分
 const familyVelocity = parameters.float("family_velocity", 0.1, "fv")     //
+const lifespanDecresement = parameters.float("lifespan_decresement", 0.001, "ld")     // 時間で減少する寿命
 
 function log(message: string): void {
   if (DEBUG) {
@@ -317,6 +318,7 @@ class Machine extends Life {
   }
 
   public next(): [Force, WorldObject[]] {
+    this.lifespan -= lifespanDecresement
     this.previousPosition = this.position
 
     if (this.isAlive === false) {
@@ -371,8 +373,9 @@ class Machine extends Life {
         if (this.family == undefined) {
           break
         }
-        const forceSize = (this.position.dist(this.family.center) > 100) ?
-          attractForce : (this.gene.value / Gene.geneMask) * (attractForce / 2) + (attractForce / 2)
+        const distance = this.position.dist(this.family.center)
+        const maxDistance = 20
+        const forceSize = (Math.min(distance + 10, maxDistance) / maxDistance) * attractForce
 
         const familyCenterForce = this.family.center
           .sub(this.position)
@@ -445,8 +448,35 @@ class Family {
     machine.family = this
   }
 
-  public next(): void {
+  public next(): Family[] {
+    const result: Family[] = []
     this._machines = this._machines.filter(m => m.isAlive)
+
+    if (this.machines.length > 40) {
+      const center = this.machines.reduce(
+        (previous, current) => {
+          return previous + current.position.x
+        },
+        0,
+      ) / this.machines.length
+
+      const remains: Machine[] = []
+      const newFamily = new Family()
+
+      this.machines.forEach(m => {
+        if (m.position.x > center) {
+          remains.push(m)
+        } else {
+          newFamily.addMachine(m)
+        }
+      })
+
+      this._machines = remains
+      result.push(newFamily)
+      // result.push(...newFamily.next())   // Maximum call stack size exceeded
+      newFamily._velocity = new Vector(-2, newFamily.velocity.y)
+    }
+
     if (this.machines.length <= 1) {
       const machine = this.machines.pop()
       if (machine != undefined) {
@@ -476,6 +506,8 @@ class Family {
       Vector.zero(),
     )
       .div(this.machines.length)
+
+    return result
   }
 }
 
@@ -544,6 +576,10 @@ class MachineWorld extends VanillaWorld {
           offsprings.push(...life.reproduce(otherLife))
           offsprings.push(...otherLife.reproduce(life))
           newLives.push(...offsprings)
+
+          if (random(1) < 0.1) {
+            offsprings.pop()  // Familyに追加されない
+          }
         }
 
         const normalizedDistance = ((minDistance - distance) / minDistance)
@@ -557,9 +593,7 @@ class MachineWorld extends VanillaWorld {
           if ((life.family != undefined) && (life.family === otherLife.family)) {
             const family = life.family
             offsprings.forEach(m => {
-              if (family.canAddMachine(m)) {
-                family.addMachine(m)
-              }
+              family.addMachine(m)
             })
           } else if ((life.family != undefined) && (otherLife.family == undefined)) {
             const family = life.family
@@ -625,10 +659,12 @@ class MachineWorld extends VanillaWorld {
 
     this.addLives(newLives)
 
+    const newFamilies: Family[] = []
     this.families.forEach(f => {
-      f.next()
+      newFamilies.push(...f.next())
     })
     this.families = this.families.filter(f => f.machines.length > 0)
+    this.families.push(...newFamilies)
   }
 }
 
