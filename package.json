@@ -19,6 +19,7 @@
     "p5": "^0.8.0"
   },
   "scripts": {
-    "build": "webpack"
+		"build": "webpack",
+		"add_simulation": "func() { cp pages/template.html \"pages/$1.html\" && cp src/entry_points/template.ts src/entry_points/$1.ts; }; func"
   }
 }

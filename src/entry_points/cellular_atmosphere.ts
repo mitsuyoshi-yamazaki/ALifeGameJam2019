@@ -1,12 +1,10 @@
 import * as p5 from "p5"
-import { parsedQueries, random } from "../utilities"
+import { random, URLParameter } from "../utilities"
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 100
-const isSpringEnabled = parameters["spring"] ? true : false
-// tslint:enable: no-string-literal
+const parameters = new URLParameter()
+const DEBUG = parameters.boolean("debug", false)
+const size = parameters.int("size", 100)
+const isSpringEnabled = parameters.boolean("spring", false)
 
 let t = 0
 const cells: Cell[][] = []
@@ -155,7 +153,7 @@ const main = (p: p5) => {
           })
 
           let largestPressure = 0
-          let largestPressureMaterial: Material | null
+          let largestPressureMaterial: Material | undefined
           pressures.forEach((pressure, material) => {
             if (pressure > largestPressure) {
               largestPressureMaterial = material
@@ -356,7 +354,7 @@ class State {
 }
 
 function pressureOf(state: State, surroundings: State[]): number {
-   return 0	// TODO: materialが異なれば与えるpressureが異なる？
+  return 0	// TODO: materialが異なれば与えるpressureが異なる？
 }
 
 // function transference(to: State, from: State, pressure): number {
