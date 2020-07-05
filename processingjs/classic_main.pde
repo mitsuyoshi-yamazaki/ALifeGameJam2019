@@ -2,7 +2,7 @@
 
 // System
 bool DEBUG = false;
-bool artMode = false;
+bool artMode = true;
 int t = 0;
 
 // Population
@@ -328,7 +328,7 @@ void setup()
 void draw(){
 
   fill(0xff, backgroundTransparency);
-  rect(0,0,fieldWidth / 2,fieldHeight); // background() だと動作しない
+  rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
 
   Life[] killed = [];
   Life[] born = [];
