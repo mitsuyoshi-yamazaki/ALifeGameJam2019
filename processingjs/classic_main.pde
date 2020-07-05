@@ -12,8 +12,8 @@ int initialResourceSize = 600;
 int resourceGrowth = 4;
 
 // Field
-float fieldWidth = 1600;
-float fieldHeight = 700;
+float fieldWidth = 1200;
+float fieldHeight = (fieldWidth / 16) * 9;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 // Gene initialGene = new Gene(0, 0);  
@@ -40,7 +40,7 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 // Fight
 float eatProbability = 0.5;
 
-float mutationRate = 0.03;
+float mutationRate = 0.01;
 
 if (artMode) {
   backgroundTransparency = 0;
@@ -296,17 +296,23 @@ void setup()
   int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
   int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
-  Gene initialGene = Gene.randomGene();
+  Gene[] initialGenes = [Gene.randomGene(), Gene.randomGene(), Gene.randomGene(), Gene.randomGene()];
+  int numberOfGenes = initialGenes.length;
+  int width = (fieldWidth / numberOfGenes);
 
   for(int i=0; i < populationSize;i++){
-    if (useSingleGene) {
-      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,initialGene);
-    } else {
-      lifes[i]=new Life(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight),lifeRadius,defaultEnergy,Gene.randomGene());
-    }
+    int index = Math.floor(i / (populationSize / numberOfGenes));
+    Gene gene = initialGenes[index];
+    lifes[i] = new Life(
+      random(width) + (width * index),
+      random(paddingHeight, fieldHeight - paddingHeight),
+      lifeRadius,
+      defaultEnergy,
+      gene
+    );
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    lifes[lifes.length] = Life.makeResource(random(paddingWidth,fieldWidth - paddingWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    lifes[lifes.length] = Life.makeResource(random(fieldWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
   }
   Gene g = Gene.fromWholeGene(0xff);
   Gene g2 = g.childGene();
