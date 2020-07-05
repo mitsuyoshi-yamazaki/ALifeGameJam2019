@@ -15,6 +15,7 @@ let TEST = parameters.boolean("test", false, "t")           // テストを実�
 // attracted: 遺伝子ごとのアトラクタに誘引される
 // equidistant: attracted のアトラクタを等間隔に配置
 // scroll: アトラクタを世代で分割
+// family: 自己複製する集団ごとにまとまりをつくる
 const mode = parameters.string("mode", "default", "m")
 const artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
@@ -32,6 +33,8 @@ const matureInterval = parameters.int("mature_interval", 200, "mi")       // 個
 const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
 const attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted, equidistant の引力
 const repulsingForce = parameters.float("repulsing_force", 1, "rf")     // 衝突した際に発生する斥力の大きさ
+const familyLifespanDecresement = parameters.float("family_lifespan_decresement", 1, "fd")     // Family 同士で衝突した際のlifespanの減少分
+const familyVelocity = parameters.float("family_velocity", 0.1, "fv")     //
 
 function log(message: string): void {
   if (DEBUG) {
@@ -53,6 +56,7 @@ const main = (p: p5) => {
       case "scroll":
         fieldSize = new Vector(size, size)
         break
+      case "family":
       default:
         fieldSize = new Vector(size, Math.floor(size * 0.6))
         break
@@ -228,7 +232,7 @@ class Gene {
     const result: Gene[] = []
     const otherDoubledValue = ((other.value << Gene.geneLength) + other.value)
     const shiftOrigin = Gene.transitionTableLength + Gene.geneLength
-    const start = Math.floor(random(Gene.geneLength))
+    const start = 0 // Math.floor(random(Gene.geneLength))
     for (let i = 0; i < Gene.geneLength; i += 1) {
       const j = (i + start) % Gene.geneLength
       const checkValue = (otherDoubledValue >> (shiftOrigin - j)) & Gene.headerMask
@@ -254,6 +258,7 @@ class Gene {
 }
 
 class Machine extends Life {
+  public family: Family | undefined
   public createdAt: number
   public forces: Vector[] = []
 
@@ -294,7 +299,7 @@ class Machine extends Life {
         const position = this.position.add(this.velocity.sized(this.size * -2))
         const gene = (random(1) < mutationRate) ? g.mutated() : g
         const offspring = new Machine(position, gene)
-        offspring.velocity = this.velocity.sized(-1)
+        offspring.velocity = this.velocity.sized(-0.5)
 
         return offspring
       })
@@ -307,8 +312,8 @@ class Machine extends Life {
     return offsprings
   }
 
-  public didCollide(): void {
-    this.lifespan -= 1
+  public didCollide(damage: number): void {
+    this.lifespan -= damage
   }
 
   public next(): [Force, WorldObject[]] {
@@ -362,6 +367,24 @@ class Machine extends Life {
         return [new Force(movingForce), []]
       }
 
+      case "family":
+        if (this.family == undefined) {
+          break
+        }
+        const forceSize = (this.position.dist(this.family.center) > 100) ?
+          attractForce : (this.gene.value / Gene.geneMask) * (attractForce / 2) + (attractForce / 2)
+
+        const familyCenterForce = this.family.center
+          .sub(this.position)
+          .sized(forceSize)
+          .add(Vector.random(attractForce * 0.5, -attractForce * 0.5))
+
+        const movingDirectionForce = this.family.velocity.mult(familyVelocity)
+
+        const movingForce = familyCenterForce.add(movingDirectionForce)
+
+        return [new Force(movingForce), []]
+
       default:
         break
     }
@@ -381,12 +404,78 @@ class Machine extends Life {
       p.line(this.previousPosition.x, this.previousPosition.y, this.position.x, this.position.y)
 
     } else {
-      p.noStroke()
+      if ((mode !== "family") || (this.family != undefined)) {
+        p.noStroke()
+      } else {
+        p.stroke(0x20, 0x80)
+        p.strokeWeight(0.5)
+      }
       p.fill(this.gene.color.p5(p, 0xA0))
 
       const diameter = Math.min((this.age + 400) / 100, this.size)
       p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
     }
+  }
+}
+
+class Family {
+  public get machines(): Machine[] {
+    return this._machines
+  }
+  public get center(): Vector {
+    return this._center
+  }
+  public get velocity(): Vector {
+    return this._velocity
+  }
+  private _machines: Machine[] = []
+  private _center = world.size.div(2)
+  private _velocity = Vector.zero()
+  private genes: number[] = []
+
+  public constructor() {
+  }
+
+  public canAddMachine(machine: Machine): boolean {
+    return (this.machines.length <= 2) || (this.genes.indexOf(machine.gene.value) >= 0)
+  }
+
+  public addMachine(machine: Machine): void {
+    this._machines.push(machine)
+    machine.family = this
+  }
+
+  public next(): void {
+    this._machines = this._machines.filter(m => m.isAlive)
+    if (this.machines.length <= 1) {
+      const machine = this.machines.pop()
+      if (machine != undefined) {
+        machine.family = undefined
+      }
+    }
+    this.genes = []
+    this.machines.forEach(m => {
+      if (this.genes.indexOf(m.gene.value) === -1) {
+        this.genes.push(m.gene.value)
+      }
+    })
+
+    // TODO: 中心点を動かしたり周回させたりする
+    this._center = this.machines.reduce(
+      (previous, current) => {
+        return previous.add(current.position)
+      },
+      Vector.zero(),
+    )
+      .div(this.machines.length)
+
+    this._velocity = this.machines.reduce(
+      (previous, current) => {
+        return previous.add(current.velocity)
+      },
+      Vector.zero(),
+    )
+      .div(this.machines.length)
   }
 }
 
@@ -396,6 +485,9 @@ class MachineWorld extends VanillaWorld {
     return this._lives
   }
 
+  private families: Family[] = []
+
+  // tslint:disable-next-line:cyclomatic-complexity
   public next(): void {
     const newLives: Machine[] = []
 
@@ -445,9 +537,13 @@ class MachineWorld extends VanillaWorld {
           continue
         }
 
-        if (life.canMate && otherLife.canMate) {
-          newLives.push(...life.reproduce(otherLife))
-          newLives.push(...otherLife.reproduce(life))
+        const offsprings: Machine[] = []
+        const isDifferentFamily = (life.family != undefined) && (otherLife.family != undefined) && (life.family !== otherLife.family)
+
+        if (life.canMate && otherLife.canMate && (isDifferentFamily === false)) {
+          offsprings.push(...life.reproduce(otherLife))
+          offsprings.push(...otherLife.reproduce(life))
+          newLives.push(...offsprings)
         }
 
         const normalizedDistance = ((minDistance - distance) / minDistance)
@@ -456,11 +552,56 @@ class MachineWorld extends VanillaWorld {
           .sized(forceMagnitude))
         otherLife.forces.push(otherLife.position.sub(life.position)
           .sized(forceMagnitude))
-        // TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
-        if (life.age >= matureInterval && otherLife.age >= matureInterval) {
-          life.didCollide()
-          otherLife.didCollide()
+
+        if (mode === "family") {
+          if ((life.family != undefined) && (life.family === otherLife.family)) {
+            const family = life.family
+            offsprings.forEach(m => {
+              if (family.canAddMachine(m)) {
+                family.addMachine(m)
+              }
+            })
+          } else if ((life.family != undefined) && (otherLife.family == undefined)) {
+            const family = life.family
+            if (family.canAddMachine(otherLife)) {
+              family.addMachine(otherLife)
+            }
+            offsprings.forEach(m => {
+              if (family.canAddMachine(m)) {
+                family.addMachine(m)
+              }
+            })
+          } else if ((life.family == undefined) && (otherLife.family != undefined)) {
+            const family = otherLife.family
+            if (family.canAddMachine(life)) {
+              family.addMachine(life)
+            }
+            offsprings.forEach(m => {
+              if (family.canAddMachine(m)) {
+                family.addMachine(m)
+              }
+            })
+          } else if ((life.gene.value === otherLife.gene.value) && (life.family == undefined) && (otherLife.family == undefined)) {
+            const newFamily = new Family()
+            this.families.push(newFamily)
+            newFamily.addMachine(life)
+            newFamily.addMachine(otherLife)
+            offsprings.forEach(m => {
+              newFamily.addMachine(m)
+            })
+          }
         }
+
+        if ((life.family != undefined) && (life.family === otherLife.family)) {
+          life.didCollide(familyLifespanDecresement)
+          otherLife.didCollide(familyLifespanDecresement)
+        } else
+
+          // TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
+          if (life.age >= matureInterval && otherLife.age >= matureInterval) {
+            life.didCollide(1)
+            otherLife.didCollide(1)
+          }
       }
     }
 
@@ -483,6 +624,11 @@ class MachineWorld extends VanillaWorld {
     }
 
     this.addLives(newLives)
+
+    this.families.forEach(f => {
+      f.next()
+    })
+    this.families = this.families.filter(f => f.machines.length > 0)
   }
 }
 
