@@ -44,8 +44,8 @@ float mutationRate = 0.03;
 
 if (artMode) {
   backgroundTransparency = 0;
-  enableEatColor = false;
-  disableResourceColor = true;
+  // enableEatColor = false;
+  // disableResourceColor = true;
 }
 
 // --
