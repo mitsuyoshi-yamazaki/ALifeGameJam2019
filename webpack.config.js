@@ -10,6 +10,9 @@ module.exports = {
     generative_art_002: './src/entry_points/generative_art_002.ts',
     machine: './src/entry_points/machine.ts',
     matryoshka_2: './src/entry_points/matryoshka_2.ts',
+    lsystem: './src/entry_points/lsystem.ts',
+    evo_devo: './src/entry_points/evo_devo.ts',
+    bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
