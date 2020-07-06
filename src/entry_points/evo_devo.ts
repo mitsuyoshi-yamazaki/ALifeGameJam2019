@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import { Vector } from "../classes/physics"
-import { parsedQueries } from "../utilities"
+import { URLParameter } from "../utilities"
 
 /**
  * TODO:
@@ -12,17 +12,13 @@ import { parsedQueries } from "../utilities"
  * http://0.0.0.0:8000/pages/evo_devo.html?debug=1&speed=100&limit=6&position=0.5,0.5&rules=A:-A++B,B:A&constants=+:20,-:-20
  */
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
-// const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
-// const rawConstants = parameters["constants"]  // constants=+:55,-:-55
-const rawPosition = parameters["position"]  // 0.5,0.5
-const speed = parameters["speed"] ? parseInt(parameters["speed"], 10) : 1000
-const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
-const limit = parameters["limit"] ? parseInt(parameters["limit"], 10) : 6
-// tslint:enable: no-string-literal
+const parameter = new URLParameter()
+const DEBUG = parameter.boolean("debug", false)
+const size = parameter.int("size", 1000)
+const rawPosition = parameter.string("position", "0.5,0.5")
+const speed = parameter.int("speed", 1000)
+const unitLength = parameter.int("length", 100)
+const limit = parameter.int("limit", 6)
 
 const initialState = "A"
 const rawRules = "A:aAbB,B:A"

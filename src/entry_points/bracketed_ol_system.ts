@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import { Vector } from "../classes/physics"
-import { parsedQueries } from "../utilities"
+import { URLParameter } from "../utilities"
 
 /**
  * ?debug=1&length=5&weight=1&depth=5&rules=F:F[+F]F[-F]F&constants=+:25.7,-:-25.7&condition=F
@@ -9,17 +9,15 @@ import { parsedQueries } from "../utilities"
  * ?debug=1&length=1&weight=1&depth=7&rules=X:F[+X][-X]FX,F:FF&constants=+:25.7,-:-25.7&condition=X
  */
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
-const maxDepth = parameters["depth"] ? parseInt(parameters["depth"], 10) : 5
-const rawRules = parameters["rules"]  // rules=F:F[+F]F[-F]F
-const rawConstants = parameters["constants"]  // constants=+:25.7,-:-25.7
-const initialCondition = parameters["condition"]  // condition=F
-const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
-const unitWeight = parameters["weight"] ? parseFloat(parameters["weight"]) : 1
-// tslint:enable: no-string-literal
+const parameters = new URLParameter()
+const DEBUG = parameters.boolean("debug", false)
+const size = parameters.int("size", 1000)
+const maxDepth = parameters.int("depth", 5)
+const rawRules = parameters.string("rules", "F:F[+F]F[-F]F")
+const rawConstants = parameters.string("constants", "+:25.7,-:-25.7")
+const initialCondition = parameters.string("condition", "F")
+const unitLength = parameters.int("length", 100)
+const unitWeight = parameters.float("weight", 1)
 
 const canvasSize = new Vector(size, size)
 let agent: Agent

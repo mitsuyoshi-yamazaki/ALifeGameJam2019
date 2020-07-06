@@ -1,18 +1,16 @@
 import * as p5 from "p5"
 import { Vector } from "../classes/physics"
-import { parsedQueries } from "../utilities"
+import { URLParameter } from "../utilities"
 
-const parameters = parsedQueries()
-// tslint:disable: no-string-literal
-const DEBUG = parameters["debug"] ? true : false  // Caution: 0 turns to "0" and it's true. Use "" to disable it.
-const size = parameters["size"] ? parseInt(parameters["size"], 10) : 1000
-const numberOfAgents = parameters["agents"] ? parseInt(parameters["agents"], 10) : 1
-const maxDepth = parameters["depth"] ? parseInt(parameters["depth"], 10) : 3
-const rawRules = parameters["rules"]  // rules=A:-C+B+C,B:A
-const rawConstants = parameters["constants"]  // constants=+:55,-:-55
-const initialCondition = parameters["condition"]  // condition=A
-const unitLength = parameters["length"] ? parseInt(parameters["length"], 10) : 100
-// tslint:enable: no-string-literal
+const parameters = new URLParameter()
+const DEBUG = parameters.boolean("debug", false)
+const size = parameters.int("size", 1000)
+const numberOfAgents = parameters.int("agents", 1)
+const maxDepth = parameters.int("depth", 3)
+const rawRules = parameters.string("rules", "A:-C+B+C,B:A")
+const rawConstants = parameters.string("constants", "+:55,-:-55")
+const initialCondition = parameters.string("condition", "A")
+const unitLength = parameters.int("length", 100)
 
 const canvasSize = new Vector(size, size)
 const agents: Agent[] = []
