@@ -44,7 +44,7 @@ const main = (p: p5) => {
 
 function initializeAgents(): void {
   for (let i = 0; i < numberOfAgents; i += 1) {
-    const diff = new Vector(0, size * 0.1)
+    const diff = new Vector(0, size * 0.4)
     const position = canvasSize.div(2)
       .add(diff)
     const lsystem = new LSystem(rules, constants)
@@ -124,7 +124,7 @@ class LSystem {
     }
 
     let newDirection = direction
-    const length = unitLength // Math.pow(0.9, maxDepth - depth) * unitLength
+    const length = Math.pow(0.9, maxDepth - depth) * unitLength
 
     for (const c of condition) {
       const directionChange = this.constants.get(c)
@@ -137,7 +137,7 @@ class LSystem {
       const nextPosition = position.moved(radian, length)
       const center = nextPosition.add(position)
         .div(2)
-      p.strokeWeight(4)
+      p.strokeWeight(0.5)
       p.stroke(0xFF, 0x80)
       p.line(position.x, position.y, nextPosition.x, nextPosition.y)
 
