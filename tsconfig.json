@@ -18,7 +18,9 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*"

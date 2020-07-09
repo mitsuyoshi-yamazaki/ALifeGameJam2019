@@ -16,10 +16,21 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "p5": "^0.8.0"
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "@babel/register": "^7.10.4",
+    "@types/react": "^16.9.41",
+    "@types/react-dom": "^16.9.8",
+    "babel-loader": "^8.1.0",
+    "html-webpack-plugin": "^4.3.0",
+    "p5": "^0.8.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "webpack-dev-server": "^3.11.0"
   },
   "scripts": {
-		"build": "webpack",
-		"add_simulation": "func() { cp pages/template.html \"pages/$1.html\" && cp src/entry_points/template.ts src/entry_points/$1.ts; }; func"
+    "build": "webpack",
+    "add_simulation": "func() { cp pages/template.html \"pages/$1.html\" && cp src/entry_points/template.ts src/entry_points/$1.ts; }; func"
   }
 }
