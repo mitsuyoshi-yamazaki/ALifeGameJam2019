@@ -32,11 +32,14 @@ export class URLParameter {
     const rawParameters = {} as any
 
     for (const query of pairs) {
+      if (query === "") {
+        continue
+      }
       const pair = query.split("=")
       rawParameters[pair[0]] = pair[1]
       this.parameters.set(pair[0], pair[1])
     }
-    console.log(rawParameters)
+    console.log(`parameters: ${rawParameters.toString()}`)
   }
 
   public hasKey(key: string, shortKey?: string): boolean {
