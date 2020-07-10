@@ -107,7 +107,7 @@ const main = (p: p5) => {
         })
 
         let largestPressure = 0
-        let largestPressureMaterial: Material | null
+        let largestPressureMaterial: Material | undefined
         pressures.forEach((pressure, material) => {
           if (material === cell.currentState.material) {
             return
