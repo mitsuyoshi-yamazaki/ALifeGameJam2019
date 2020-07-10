@@ -24,9 +24,13 @@ const main = (p: p5) => {
 
     const lives = randomLives()
     world.addLives(lives)
+
+    p.background(0xFF)
   }
 
   p.draw = () => {
+    p.background(0xFF)
+
     world.next()
     world.draw(p)
   }
