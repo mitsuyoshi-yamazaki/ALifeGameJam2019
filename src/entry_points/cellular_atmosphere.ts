@@ -1,10 +1,19 @@
 import * as p5 from "p5"
 import { random, URLParameter } from "../utilities"
 
+enum Material {
+  Vacuum = 0,
+  Hydrogen = 1,
+  Nitrogen = 2,
+  CarbonDioxide = 3,
+}
+
 const parameters = new URLParameter()
-const DEBUG = parameters.boolean("debug", false)
-const size = parameters.int("size", 100)
+const DEBUG = parameters.boolean("debug", false, "d")
+const size = parameters.int("size", 100, "s")
 const isSpringEnabled = parameters.boolean("spring", false)
+const materials = parseMaterials(parameters.string("materials", "H,N", "m"))  // V, H, N, CO2
+const frame = parameters.int("speed", 10, "sp")
 
 let t = 0
 const cells: Cell[][] = []
@@ -24,7 +33,7 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    if (t % 10 !== 0) {
+    if (t % frame !== 0) {
       t += 1
 
       return
@@ -32,7 +41,6 @@ const main = (p: p5) => {
     update()
     draw()
     t += 1
-    setTimestamp(t)
   }
 
   function draw(): void {
@@ -82,6 +90,7 @@ const main = (p: p5) => {
         const cell = row[x]
         mass += cell.currentState.pressure
 
+        // TODO: updateVacuum(), updateGas() に分割する
         if (cell.currentState.material === Material.Vacuum) {
           cell.imaginaryPressure = 0
           continue
@@ -98,30 +107,33 @@ const main = (p: p5) => {
           }
         }
 
-        let additionalPressure = 0
-        neighbourCells.forEach(c => {
-          if (c.currentState.material === cell.currentState.material) {
-            additionalPressure -= Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
-          } else {
-            additionalPressure += Math.max((c.currentState.pressure - cell.currentState.pressure), 0)
+        const pressures = new Map<Material, number>()
+        neighbourCells.forEach(neighbour => {
+          // tslint:disable-next-line: strict-boolean-expressions
+          const pressure = pressures.get(neighbour.currentState.material) || 0
+          pressures.set(neighbour.currentState.material, pressure + neighbour.currentState.pressure)
+        })
+
+        let largestPressure = 0
+        let largestPressureMaterial: Material | undefined
+        pressures.forEach((pressure, material) => {
+          if (material === cell.currentState.material) {
+            return
+          }
+          if (pressure > largestPressure) {
+            largestPressureMaterial = material
+            largestPressure = pressure
           }
         })
-        // const differenceMaterialCells = neighbourCells.filter(c => {
-        //   return c.currentState.material !== cell.currentState.material
-        // })
-        // const additionalPressure = differenceMaterialCells
-        //   .map((c: Cell): number => {
-        //     return c.currentState.pressure
-        //   })
-        //   .reduce(
-        //     (previousValue, currentValue) => {
-        //       return previousValue + Math.max((currentValue - cell.currentState.pressure), 0)
-        //     },
-        //     0,
-        //   )
-        // if (additionalPressure > 0) {
+
+        let additionalPressure = 0
+        if (largestPressureMaterial != undefined) {
+          // tslint:disable-next-line: strict-boolean-expressions
+          const currentMaterialPressure = pressures.get(cell.currentState.material) || 0
+          additionalPressure = Math.max(largestPressure - currentMaterialPressure, 0)
+        }
+
         cell.imaginaryPressure = cell.currentState.pressure + additionalPressure
-        // }
       }
     }
     if (DEBUG) {
@@ -182,7 +194,7 @@ const main = (p: p5) => {
               cell.nextState.pressure -= Math.floor(transferAmount)
               // console.log(`${pressure} - ${transferAmount}`)
             }
-            if ((cell.nextState.pressure < numberOfNeighbors) && (cell.imaginaryPressure > maxPressure)) {
+            if ((cell.nextState.pressure < numberOfNeighbors) && (cell.imaginaryPressure > 0)) {
               cell.nextState.pressure = 0
               cell.nextState.material = Material.Vacuum
             }
@@ -222,11 +234,37 @@ const main = (p: p5) => {
 
 const sketch = new p5(main)
 
-enum Material {
-  Vacuum = 0,
-  Hydrogen = 1,
-  Nitrogen = 2,
-  CarbonDioxide = 3,
+function parseMaterials(rawMaterials: string): Material[] {
+  const result: Material[] = []
+  rawMaterials.split(",")
+    .forEach(m => {
+      let material: Material | undefined
+      switch (m) {
+        case "V":
+          material = Material.Vacuum
+          break
+
+        case "H":
+          material = Material.Hydrogen
+          break
+
+        case "N":
+          material = Material.Nitrogen
+          break
+
+        case "CO2":
+          material = Material.CarbonDioxide
+          break
+
+        default:
+          break
+      }
+      if ((material != undefined) && (result.indexOf(material) === -1)) {
+        result.push(material)
+      }
+    })
+
+  return result
 }
 
 function colorOf(material: Material, p: p5): p5.Color {
@@ -325,13 +363,6 @@ class State {
 
   public static random(): State {
     const state = new State()
-    const materials: Material[] = [
-      // Material.Vacuum,
-      Material.Hydrogen,
-      Material.Nitrogen,
-      // Material.CarbonDioxide,
-    ]
-
     state.material = materials[Math.floor(random(materials.length))]
 
     const isVacuum = state.material === Material.Vacuum
