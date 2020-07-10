@@ -18,7 +18,7 @@ const App = () => {
     <div className="App">
       <p>Blind Painter</p>
       <div id="canvas-parent"/>
-      <Button variant="primary" onClick={main.reset}>Restart</Button>
+      <Button variant="primary" onClick={ reset}>Restart</Button>
     </div>
   )
 }
@@ -62,60 +62,27 @@ function log(message: string): void {
   }
 }
 
-let main: Main
+let t = 0
 let world: MachineWorld
-function execute(p: p5): Main {
-  main = new Main(p)
+const genes: number[] = []
+const backgroundTransparency = artMode ? transparency : 0xFF
+let controller: Controller
 
-  return main
+function reset() {
+  if (controller) {
+    controller.reset()
+  }
 }
 
-class Main {
-  private t = 0
-
-  private genes: number[] = []
-  private readonly backgroundTransparency = artMode ? transparency : 0xFF
-
-  private readonly p: p5
+class Controller {
+  public p: p5
 
   public constructor(p: p5) {
     this.p = p
   }
 
-  public setup = () => {
-    let fieldSize: Vector
-    switch (mode) {
-      case "attracted":
-      case "equidistant":
-      case "scroll":
-        fieldSize = new Vector(size, size)
-        break
-      case "family":
-      default:
-        fieldSize = new Vector(size, Math.floor(size * 0.6))
-        break
-    }
-
-    const canvas = this.p.createCanvas(fieldSize.x, fieldSize.y)
-    canvas.id("canvas")
-    canvas.parent("canvas-parent")
-    this.reset()
-
-  }
-
   public reset() {
-    let fieldSize: Vector
-    switch (mode) {
-      case "attracted":
-      case "equidistant":
-      case "scroll":
-        fieldSize = new Vector(size, size)
-        break
-      case "family":
-      default:
-        fieldSize = new Vector(size, Math.floor(size * 0.6))
-        break
-    }
+    const fieldSize: Vector = this.fieldSize
     this.p.resizeCanvas(fieldSize.x, fieldSize.y)
 
     const unusedParameters = parameters.unusedKeys()
@@ -130,7 +97,7 @@ class Main {
     const geneParameter = (parsedInitialGenes.length > 0) ?
       `${String(parsedInitialGenes.map(g => g.hex))}` : (initialGeneType === 0 ? "random" : `random (${initialGeneType}) patterns`)
 
-    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${this.backgroundTransparency}, statistics interval: ${statisticsInterval}`)
+    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}, repulsing force: ${repulsingForce}`)
     log(`Enviornment... initial genes: ${geneParameter}, population: ${machineCount}`)
     log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, lifespan: ${initialLifespan}, birth additional lifespan: ${birthAdditionalLifespan}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
@@ -162,28 +129,52 @@ class Main {
     const terrains: Terrain[] = [
       new FrictedTerrain(fieldSize, friction),
     ]
-    this.world = new MachineWorld(fieldSize, terrains)
-    this.world.addLives(machines)
+    world = new MachineWorld(fieldSize, terrains)
+    world.addLives(machines)
 
     this.p.background(0xFF)
   }
 
-  public draw = () => {
-    this.p.background(0xFF, this.backgroundTransparency)
-
-    this.world.next()
-    this.world.draw(this.p)
-
-    if ((this.t % statisticsInterval) === 0) {
-      showStatistics()
+  public get fieldSize() {
+    switch (mode) {
+      case "attracted":
+      case "equidistant":
+      case "scroll":
+        return new Vector(size, size)
+      case "family":
+      default:
+        return new Vector(size, Math.floor(size * 0.6))
     }
-
-    this.t += 1
-    setTimestamp(this.t)
   }
 }
 
-const sketch = new p5(execute)
+const main = (p: p5) => {
+  controller = new Controller(p)
+  p.setup = () => {
+    const fieldSize = controller.fieldSize
+    const canvas = p.createCanvas(fieldSize.x, fieldSize.y)
+    canvas.id("canvas")
+    canvas.parent("canvas-parent")
+    controller.reset()
+
+  }
+
+  p.draw = () => {
+    p.background(0xFF, backgroundTransparency)
+
+    world.next()
+    world.draw(p)
+
+    if ((t % statisticsInterval) === 0) {
+      showStatistics()
+    }
+
+    t += 1
+    setTimestamp(t)
+  }
+}
+
+const sketch = new p5(main)
 
 function parseInitialGenes(): Gene[] {
   if (rawInitialGenes.length === 0) {
@@ -207,18 +198,19 @@ function parseInitialGenes(): Gene[] {
 function showStatistics(): void {
   const genesMap = new Map<number, number>() // {gene: number of genes}
 
-  this.world.lives.forEach(m => {
+  world.lives.forEach(m => {
     // tslint:disable-next-line: strict-boolean-expressions
     const numberOfMachines = genesMap.get(m.gene.value) || 0
     genesMap.set(m.gene.value, numberOfMachines + 1)
   })
 
+  // tslint:disable-next-line:no-shadowed-variable
   const genes: [number, number][] = []
   genesMap.forEach((value, gene) => {
     genes.push([gene, value])
   })
 
-  log(`\n\n\n${t} steps\nPopulation: ${this.world.lives.length}, number of species(genes): ${genes.length}`)
+  log(`\n\n\n${t} steps\nPopulation: ${world.lives.length}, number of species(genes): ${genes.length}`)
   log(`Genes:`)
   const sorted = genes.sort((lhs, rhs) => rhs[1] - lhs[1])
   sorted.slice(0, Math.min(sorted.length, 10))
@@ -398,7 +390,7 @@ class Machine extends Life {
           Math.sin(target),
         )
           .sized(size * 0.3)
-          .add(this.world.size.div(2))
+          .add(world.size.div(2))
 
         const movingForce = targetPosition
           .sub(this.position)
@@ -409,9 +401,9 @@ class Machine extends Life {
       }
 
       case "scroll": {
-        const targetX = (this.gene.value / Gene.geneMask) * this.world.size.x * 0.8 + this.world.size.x * 0.1
+        const targetX = (this.gene.value / Gene.geneMask) * world.size.x * 0.8 + world.size.x * 0.1
         const normalized = reproduceInterval
-        const targetY = this.world.size.y * 0.7 - t + (Math.floor(this.createdAt / normalized) * normalized)
+        const targetY = world.size.y * 0.7 - t + (Math.floor(this.createdAt / normalized) * normalized)
         const targetPosition = new Vector(targetX, targetY)
 
         const movingForce = targetPosition
@@ -491,7 +483,7 @@ class Family {
   }
 
   private _machines: Machine[] = []
-  private _center = this.world.size.div(2)
+  private _center = world.size.div(2)
   private _velocity = Vector.zero()
   private genes: number[] = []
 
