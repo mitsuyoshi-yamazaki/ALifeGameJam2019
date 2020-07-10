@@ -40,11 +40,15 @@ export class URLParameter {
   }
 
   public int(key: string, defaultValue: number, shortKey?: string): number {
+    let rawValue: string | undefined
     if (shortKey != undefined) {
       this.usedKeys.push(shortKey)
+      rawValue = this.parameters.get(shortKey)
     }
     this.usedKeys.push(key)
-    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
+    if (rawValue == undefined) {
+      rawValue = this.parameters.get(key)
+    }
     if (rawValue == undefined) {
       return defaultValue
     }
@@ -57,11 +61,15 @@ export class URLParameter {
   }
 
   public float(key: string, defaultValue: number, shortKey?: string): number {
+    let rawValue: string | undefined
     if (shortKey != undefined) {
       this.usedKeys.push(shortKey)
+      rawValue = this.parameters.get(shortKey)
     }
     this.usedKeys.push(key)
-    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
+    if (rawValue == undefined) {
+      rawValue = this.parameters.get(key)
+    }
     if (rawValue == undefined) {
       return defaultValue
     }
@@ -74,11 +82,15 @@ export class URLParameter {
   }
 
   public boolean(key: string, defaultValue: boolean, shortKey?: string): boolean {
+    let rawValue: string | undefined
     if (shortKey != undefined) {
       this.usedKeys.push(shortKey)
+      rawValue = this.parameters.get(shortKey)
     }
     this.usedKeys.push(key)
-    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
+    if (rawValue == undefined) {
+      rawValue = this.parameters.get(key)
+    }
     if (rawValue == undefined) {
       return defaultValue
     }
@@ -91,11 +103,15 @@ export class URLParameter {
   }
 
   public string(key: string, defaultValue: string, shortKey?: string): string {
+    let rawValue: string | undefined
     if (shortKey != undefined) {
       this.usedKeys.push(shortKey)
+      rawValue = this.parameters.get(shortKey)
     }
     this.usedKeys.push(key)
-    const rawValue = shortKey != undefined ? this.parameters.get(shortKey) : this.parameters.get(key)
+    if (rawValue == undefined) {
+      rawValue = this.parameters.get(key)
+    }
     if (rawValue == undefined) {
       return defaultValue
     }
