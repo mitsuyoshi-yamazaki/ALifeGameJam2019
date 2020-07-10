@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import { random } from "../utilities"
-import { GeneticActiveLife, GeneticLife, Life } from "./life"
+import { ActiveLife, GeneticActiveLife, GeneticLife, Life } from "./life"
 import { WorldObject } from "./object"
 import { Force, Vector } from "./physics"
 import { Terrain } from "./terrain"
@@ -70,20 +70,18 @@ export class VanillaWorld implements World {
   }
 
   public draw(p: p5): void {
-    p.background(220)
-
     this.terrains.forEach(terrain => {
       terrain.draw(p)
     })
     this._objects.forEach(obj => {
-      obj.draw(p)
+      obj.draw(p, Vector.zero())
     })
     this._lives.forEach(life => {
-      life.draw(p)
+      life.draw(p, Vector.zero())
     })
   }
 
-   // 返り値は [newPosition: Vector, newVelocity: Vector]
+  // 返り値は [newPosition: Vector, newVelocity: Vector]
   protected updateCoordinateFor(position: Vector, velocity: Vector, force: Force, mass: number): [Vector, Vector] {
     const forces: Force[] = this.terrains.map(terrain => {
       return terrain.forceAt(position)
@@ -105,7 +103,7 @@ export class VanillaWorld implements World {
 
     const nextPosition = position.add(velocity)
     const nextVelocity = velocity.mult(friction)
-        .add(acceleration)
+      .add(acceleration)
     let x = nextPosition.x
     let y = nextPosition.y
     let dx = nextVelocity.x
@@ -138,8 +136,8 @@ export class PredPreyWorld extends VanillaWorld {
   public next(): void {
     const eatProbability = 0.9
 
-    const deads: GeneticLife[] = []
-    const born: GeneticLife[] = []
+    const killed: GeneticLife[] = []
+    const newLives: GeneticLife[] = []
 
     const sortedX = [...this.lives].sort((lhs, rhs) => {
       return lhs.position.x - rhs.position.x
@@ -147,15 +145,9 @@ export class PredPreyWorld extends VanillaWorld {
 
     for (let i = 0; i < this.lives.length; i += 1) {
       const life = this.lives[i]
-      const next = life.next()
-      const coordinate = this.updateCoordinateFor(life.position, life.velocity, next[0], life.mass)
-      life.position = coordinate[0]
-      life.velocity = coordinate[1]
+      life.forces = []
 
-      const offsprings = next[1] as GeneticLife[]
-      born.push(...offsprings)
-
-      if (life instanceof GeneticActiveLife) {
+      if (life instanceof ActiveLife) {
         if (life.isAlive) {
           const xIndex = sortedX.indexOf(life)
           const maxX = life.position.x + life.size
@@ -163,47 +155,79 @@ export class PredPreyWorld extends VanillaWorld {
 
           const compareTo: GeneticLife[] = []
 
-          for (let k = xIndex + 1; k < sortedX.length; k += 1) {
-            if (sortedX[k].position.x > maxX) {
-              break
-            }
-            compareTo.push(sortedX[k])
+          for (let k = i + 1; k < this.lives.length; k += 1) {
+            compareTo.push(this.lives[k])
           }
-          for (let k = xIndex - 1; k >= 0; k -= 1) {
-            if (sortedX[k].position.x < minX) {
-              break
-            }
-            compareTo.push(sortedX[k])
-          }
+
+          // FixMe: 衝突判定が漏れる
+          // for (let k = xIndex + 1; k < sortedX.length; k += 1) {
+          //   if (sortedX[k].position.x > maxX) {
+          //     break
+          //   }
+          //   compareTo.push(sortedX[k])
+          // }
+          // for (let k = xIndex - 1; k >= 0; k -= 1) {
+          //   if (sortedX[k].position.x < minX) {
+          //     break
+          //   }
+          //   compareTo.push(sortedX[k])
+          // }
 
           const threshold = random(1, eatProbability)
 
           for (let j = 0; j < compareTo.length; j += 1) {
             const otherLife = compareTo[j]
-            if (life.isCollidingWith(otherLife)) {
-              if (life.gene.canEat(otherLife.gene, threshold)) {
-                const predator = life
-                const prey = otherLife
-                predator.eat(prey)
-                deads.push(prey)
-                break
+            const distance = life.position.dist(otherLife.position)
+            const minDistance = (life.size + otherLife.size) / 2
+            const isColliding = distance < minDistance
 
-              } else {
-                continue
-              }
+            if (isColliding === false) {
+              continue
+            }
+            if (life.gene.canEat(otherLife.gene, threshold)) {
+              const predator = life
+              const prey = otherLife
+              const remainings = predator.eat(prey) as GeneticLife[]
+              newLives.push(...remainings)
+              killed.push(prey)
+              // break // FixMe: 捕食が発生するとcollisionがスキップされてしまう
+
+            } else {
+              const normalizedDistance = ((minDistance - distance) / minDistance)
+              const forceMagnitude = normalizedDistance * 1
+              life.forces.push(life.position.sub(otherLife.position).sized(forceMagnitude))
+              otherLife.forces.push(otherLife.position.sub(life.position).sized(forceMagnitude))
             }
           }
         } else {
           // Dead
-          deads.push(life)
         }
       }
     }
 
     this._lives = this.lives.filter(l => {
-      return deads.indexOf(l) < 0
+      return killed.indexOf(l) < 0
     })
 
-    this.addLives(born)
+    for (let i = 0; i < this.lives.length; i += 1) {
+      const life = this.lives[i]
+
+      const next = life.next()
+      const sumForces = life.forces.reduce(
+        (result, current) => {
+          return result.add(new Force(current))
+        },
+        next[0],
+      )
+
+      const coordinate = this.updateCoordinateFor(life.position, life.velocity, sumForces, life.mass)
+      life.position = coordinate[0]
+      life.velocity = coordinate[1]
+
+      const offsprings = next[1] as GeneticLife[]
+      newLives.push(...offsprings)
+    }
+
+    this.addLives(newLives)
   }
 }

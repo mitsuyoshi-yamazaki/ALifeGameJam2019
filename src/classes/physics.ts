@@ -49,7 +49,7 @@ export class Vector {
     const mul = size / this.size
 
     return this.mult(mul)
-    }
+  }
 
   public rotated(radian: number): Vector {
     const x = this.x * Math.cos(radian) - this.y * Math.sin(radian)
@@ -60,6 +60,13 @@ export class Vector {
 
   public randomized(): Vector {
     return new Vector(random(this.x), random(this.y))
+  }
+
+  public moved(radian: number, length: number): Vector {
+    const x = this.x + Math.cos(radian) * length
+    const y = this.y + Math.sin(radian) * length
+
+    return new Vector(x, y)
   }
 }
 

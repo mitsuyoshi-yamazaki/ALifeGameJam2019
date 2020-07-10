@@ -48,7 +48,7 @@ export class VanillaTerrain extends Terrain {
 
   public forceAt(position: Vector): Force {
     if (this.gravityCenter == undefined) {
-      return
+      return Force.zero()
     }
     const distance = Math.max(this.gravityCenter.dist(position), this.gravity / 10) // ブラックホールは法律で禁止されている
     const magnitude = (1 / (distance * distance)) * this.gravity
@@ -129,6 +129,9 @@ export class GravitationalTerrain extends Terrain {
 export class FrictedTerrain extends Terrain {
   public constructor(public readonly size: Vector, public readonly friction: number) {
     super(size)
+    if ((friction < 0) || (friction > 1)) {
+      console.log(`[Terrain] friction should be between 0-1 (${friction} given)`)
+    }
   }
 
   public frictionAt(position: Vector): number {

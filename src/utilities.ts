@@ -14,23 +14,75 @@ export class Color {
   public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
   }
 
-  public p5(p: p5): p5.Color {
-    return p.color(this.r, this.g, this.b)
+  public p5(p: p5, alpha: number): p5.Color {
+    return p.color(this.r, this.g, this.b, alpha)
   }
 }
 
-export function parsedQueries(): object {
-  const rawQuery = document.location.search
-  const queries = rawQuery
-    .slice(rawQuery.indexOf("?") + 1)
-    .split("&")
-  const parameters = { }
+export class URLParameter {
+  public readonly parameters = new Map<string, string>()
 
-  for (const query of queries) {
-    const pair = query.split("=")
-    parameters[pair[0]] = pair[1]
+  public constructor() {
+    const rawQuery = document.location.search
+    const pairs = rawQuery
+      .slice(rawQuery.indexOf("?") + 1)
+      .split("&")
+    // tslint:disable-next-line:no-any
+    const rawParameters = {} as any
+
+    for (const query of pairs) {
+      const pair = query.split("=")
+      rawParameters[pair[0]] = pair[1]
+      this.parameters.set(pair[0], pair[1])
+    }
+    console.log(rawParameters)
   }
-  console.log(parameters)
 
-  return parameters
+  public int(key: string, defaultValue: number): number {
+    const rawValue = this.parameters.get(key)
+    if (rawValue == undefined) {
+      return defaultValue
+    }
+    const parsedValue = parseInt(rawValue, 10)
+    if (isNaN(parsedValue)) {
+      return defaultValue
+    }
+
+    return parsedValue
+  }
+
+  public float(key: string, defaultValue: number): number {
+    const rawValue = this.parameters.get(key)
+    if (rawValue == undefined) {
+      return defaultValue
+    }
+    const parsedValue = parseFloat(rawValue)
+    if (isNaN(parsedValue)) {
+      return defaultValue
+    }
+
+    return parsedValue
+  }
+
+  public boolean(key: string, defaultValue: boolean): boolean {
+    const rawValue = this.parameters.get(key)
+    if (rawValue == undefined) {
+      return defaultValue
+    }
+    const parsedValue = parseInt(rawValue, 10)
+    if (isNaN(parsedValue)) {
+      return defaultValue
+    }
+
+    return parsedValue > 0
+  }
+
+  public string(key: string, defaultValue: string): string {
+    const rawValue = this.parameters.get(key)
+    if (rawValue == undefined) {
+      return defaultValue
+    }
+
+    return rawValue
+  }
 }
