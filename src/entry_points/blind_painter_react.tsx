@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import React, { useState } from "react"
-import { Button, ButtonGroup, ToggleButton } from "react-bootstrap"
+import { Button, ButtonGroup, Dropdown, ToggleButton } from "react-bootstrap"
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Life } from "../classes/life"
@@ -16,23 +16,52 @@ import { Color, random, URLParameter } from "../utilities"
 // tslint:disable-next-line:variable-name
 const App = () => {
   const [checked, setChecked] = useState(false)
+  const [radioValue, setRadioValue] = useState("default")
+
+  const modes = [
+    {"name": "default", "value": "default"},
+    {"name": "attracted", "value": "attracted"},
+    {"name": "equidistant", "value": "equidistant"},
+    {"name": "scroll", "value": "scroll"},
+    {"name": "family", "value": "family"},
+  ]
 
   return (
     <div className="App">
       <p>Blind Painter</p>
       <div id="canvas-parent"/>
       <ScreenShotButton/>
+      <br/>
       <Button variant="primary" onClick={reset}>Restart</Button>
-      <ButtonGroup toggle className="mb-2">
-        <ToggleButton
-          type="checkbox"
-          checked={checked}
-          value="1"
-          onChange={e => {
-            artMode = (e.currentTarget.checked)
-            setChecked(e.currentTarget.checked)
-          }}
-        >ArtMode</ToggleButton>
+      <br/>
+      <ToggleButton
+        type="checkbox"
+        variant="secondary"
+        checked={checked}
+        value="1"
+        onChange={(e: any) => {
+          artMode = (e.currentTarget.checked)
+          setChecked(e.currentTarget.checked)
+        }}
+      >ArtMode</ToggleButton>
+      <br/>
+      <ButtonGroup toggle>
+        {modes.map((radio, idx) => (
+          <ToggleButton
+            key={idx}
+            type="radio"
+            variant="secondary"
+            name="radio"
+            value={radio.value}
+            checked={radioValue === radio.value}
+            onChange={(e: any) => {
+              mode = e.target.value
+              setRadioValue(e.currentTarget.value)
+            }}
+          >
+            {radio.name}
+          </ToggleButton>
+        ))}
       </ButtonGroup>
     </div>
   )
@@ -50,7 +79,7 @@ let TEST = parameters.boolean("test", false, "t")           // テストを実�
 // equidistant: attracted のアトラクタを等間隔に配置
 // scroll: アトラクタを世代で分割
 // family: 自己複製する集団ごとにまとまりをつくる
-const mode = parameters.string("mode", "default", "m")
+let mode = parameters.string("mode", "default", "m")
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
