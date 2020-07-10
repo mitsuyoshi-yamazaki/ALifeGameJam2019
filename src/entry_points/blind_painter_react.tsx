@@ -1,10 +1,11 @@
 import * as p5 from "p5"
 import React, { useState } from "react"
 import ReactDOM from "react-dom"
+import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Gene } from "../classes/gene"
-import { GeneticActiveLife, GeneticLife, GeneticResource, MetaActiveLife } from "../classes/life"
+import { GeneticActiveLife, GeneticLife, GeneticResource, Life, MetaActiveLife } from "../classes/life"
 import { calculateOrbitalVelocity, Vector } from "../classes/physics"
-import { FrictedTerrain, Terrain } from "../classes/terrain"
+import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { random, URLParameter } from "../utilities"
 
@@ -21,48 +22,44 @@ const App = () => {
 }
 
 ReactDOM.render(<App/>, document.getElementById("root"))
-
-const parameters = new URLParameter()
-const DEBUG = parameters.boolean("debug", false)
-const artMode = parameters.boolean("art_mode", false)
-const size = parameters.int("size", 1200)
-const lifeSize = parameters.float("life_size", 6)
-const population = parameters.int("population", 4000)
-const friction = parameters.float("friction", 0.99)
-const mutationRate = parameters.float("mutation_rate", 0.03)
+//
+// const parameters = new URLParameter()
+// const DEBUG = parameters.boolean("debug", false)
+// const artMode = parameters.boolean("art_mode", false)
+// const size = parameters.int("size", 1200)
+// const lifeSize = parameters.float("life_size", 6)
+// const population = parameters.int("population", 4000)
+// const friction = parameters.float("friction", 0.99)
+// const mutationRate = parameters.float("mutation_rate", 0.03)
 
 const startsWithSingleGene = true
 
 let world: World
-const backgroundTransparency = artMode ? 0x0 : 0xFF
-const fieldWidth = size
-const fieldHeight = Math.floor(fieldWidth * 0.6)
+const backgroundTransparency = 0xFF
+const fieldWidth = 1200
+const fieldHeight = Math.floor(fieldWidth * 1)
 const worldSize = new Vector(fieldWidth, fieldHeight)
 const gravityCenter = worldSize.mult(0.5)
 const worldCenter = worldSize.div(2)
 const gravity = 20
+const friction = 0.99
 const immobilizedWidth = 0
 const initialEnergy = 100
+const lifeSize = 6
 
 function reset() {
   const terrains: Terrain[] = [
-    // new VanillaTerrain(worldSize, worldCenter, gravity, friction, immobilizedWidth),
-    new FrictedTerrain(worldSize, friction),
+    new VanillaTerrain(worldSize, worldCenter, gravity, friction, immobilizedWidth),
+    // new GravitationalTerrain(worldSize, gravityCenter, gravity),
   ]
   world = new PredPreyWorld(worldSize, terrains)
 
-  const lives = randomLives(population, worldSize, 1)
+  const lives = randomLives(4000, worldSize, 1)
   world.addLives(lives)
 
-  const metaLives: MetaActiveLife[] = []
-  for (let i = 0; i < 20; i += 1) {
-    const position = new Vector(random(worldSize.x), random(worldSize.y))
-    metaLives.push(new MetaActiveLife(position, randomLives(3, worldSize, undefined)))
-  }
-  world.addLives(metaLives)
 }
 
-function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): GeneticActiveLife[] {
+function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: number | undefined): Life[] {
   const lives: GeneticActiveLife[] = []
 
   const initialGene = new Gene(0x99, 0x99) // Gene.random()
@@ -70,7 +67,7 @@ function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: nu
   for (let i = 0; i < numberOfLives; i += 1) {
     const position = new Vector(random(positionSpace.x), random(positionSpace.y))
     const gene = startsWithSingleGene ? initialGene : Gene.random()
-    lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy, mutationRate))
+    lives.push(new GeneticActiveLife(position, gene, lifeSize, initialEnergy, 0.03))
   }
   if (velocity != undefined) {
     lives.forEach(life => {
@@ -82,15 +79,15 @@ function randomLives(numberOfLives: number, positionSpace: Vector, velocity?: nu
 }
 
 const main = (p: p5) => {
+
   p.setup = () => {
-    const canvas = p.createCanvas(fieldWidth, fieldHeight)
-    canvas.id("canvas")
-    canvas.parent("canvas-parent")
+    p.createCanvas(fieldWidth, fieldHeight)
     reset()
   }
 
   p.draw = () => {
-    p.background(0xFF, backgroundTransparency)
+    p.fill(0xFF, backgroundTransparency)
+    p.rect(0, 0, fieldWidth, fieldHeight) // background() では動作しない
 
     const resources: GeneticLife[] = []
     const resourceSize = lifeSize * 0.6
