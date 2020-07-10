@@ -6,19 +6,21 @@ import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Life } from "../classes/life"
 import { WorldObject } from "../classes/object"
 import { calculateOrbitalVelocity, Force, Vector } from "../classes/physics"
+import { Screenshot } from "../classes/screenshot"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
+import { ScreenShotButton } from "../tsx/ScreenShotButton"
 import { Color, random, URLParameter } from "../utilities"
 
 // tslint:disable-next-line:variable-name
 const App = () => {
-
   return (
     <div className="App">
       <p>Blind Painter</p>
       <div id="canvas-parent"/>
-      <Button variant="primary" onClick={ reset}>Restart</Button>
+      <ScreenShotButton/>
+      <Button variant="primary" onClick={reset}>Restart</Button>
     </div>
   )
 }
@@ -156,7 +158,6 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
     controller.reset()
-
   }
 
   p.draw = () => {
