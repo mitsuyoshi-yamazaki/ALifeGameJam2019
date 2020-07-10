@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import React, { useState } from "react"
-import { Button } from "react-bootstrap"
+import { Button, ButtonGroup, ToggleButton } from "react-bootstrap"
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Life } from "../classes/life"
@@ -15,12 +15,25 @@ import { Color, random, URLParameter } from "../utilities"
 
 // tslint:disable-next-line:variable-name
 const App = () => {
+  const [checked, setChecked] = useState(false)
+
   return (
     <div className="App">
       <p>Blind Painter</p>
       <div id="canvas-parent"/>
       <ScreenShotButton/>
       <Button variant="primary" onClick={reset}>Restart</Button>
+      <ButtonGroup toggle className="mb-2">
+        <ToggleButton
+          type="checkbox"
+          checked={checked}
+          value="1"
+          onChange={e => {
+            artMode = (e.currentTarget.checked)
+            setChecked(e.currentTarget.checked)
+          }}
+        >ArtMode</ToggleButton>
+      </ButtonGroup>
     </div>
   )
 }
@@ -38,7 +51,7 @@ let TEST = parameters.boolean("test", false, "t")           // テストを実�
 // scroll: アトラクタを世代で分割
 // family: 自己複製する集団ごとにまとまりをつくる
 const mode = parameters.string("mode", "default", "m")
-const artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
+let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
 const size = parameters.int("size", 1000, "s")                  // canvas サイズ
@@ -67,7 +80,11 @@ function log(message: string): void {
 let t = 0
 let world: MachineWorld
 const genes: number[] = []
-const backgroundTransparency = artMode ? transparency : 0xFF
+
+function backgroundTransparency() {
+  return artMode ? transparency : 0xFF
+}
+
 let controller: Controller
 
 function reset() {
@@ -99,7 +116,7 @@ class Controller {
     const geneParameter = (parsedInitialGenes.length > 0) ?
       `${String(parsedInitialGenes.map(g => g.hex))}` : (initialGeneType === 0 ? "random" : `random (${initialGeneType}) patterns`)
 
-    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${backgroundTransparency}, statistics interval: ${statisticsInterval}`)
+    log(`System... DEBUG: ${DEBUG}, TEST: ${TEST}, mode: ${mode}, art mode: ${artMode}, background transparency: ${backgroundTransparency()}, statistics interval: ${statisticsInterval}`)
     log(`Field... size: ${String(fieldSize)}, friction: ${friction}, repulsing force: ${repulsingForce}`)
     log(`Enviornment... initial genes: ${geneParameter}, population: ${machineCount}`)
     log(`Life... size: ${machineSize}, mutation rate: ${mutationRate * 100}%, lifespan: ${initialLifespan}, birth additional lifespan: ${birthAdditionalLifespan}, mature interval: ${matureInterval}steps, reproduce interval: ${reproduceInterval}steps`)
@@ -161,11 +178,11 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    p.background(0xFF, backgroundTransparency)
+    p.background(0xFF, backgroundTransparency())
 
     world.next()
     world.draw(p)
-
+    t = Math.floor((new Date()).getTime() / 1000) - Screenshot.launchTime
     if ((t % statisticsInterval) === 0) {
       showStatistics()
     }
@@ -564,6 +581,7 @@ class Family {
     if (artMode === false) {
       return
     }
+    console.log(`is artMode: ${artMode}`)
     p.stroke(0x20, 0x80)
     p.strokeWeight(0.5)
 

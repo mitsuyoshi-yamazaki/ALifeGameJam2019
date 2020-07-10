@@ -4492,7 +4492,7 @@ rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-bootstrap@^1.0.0:
+react-bootstrap@^1.0.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/react-bootstrap/-/react-bootstrap-1.2.0.tgz#9aca4f4c602d97e7154bf9cf7b0c0d6c58bddd0c"
   integrity sha512-HHYPi6aukpBkuKKDxTle9Xle4w259ARERjf9mqb84LAe8lqXLdIyiUsYLdU+8PH6Ka9/sBnxgx3ahf3iW23T3g==
