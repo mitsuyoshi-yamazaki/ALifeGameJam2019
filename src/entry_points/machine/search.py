@@ -49,6 +49,7 @@ def child(t, other, i):
   binary = int(t, 2) ^ shifted
   return  format(binary, '0%sb' % l)
 
+
 # -------- Search Self-Reproducible Genes -------- #
 
 def search_self_reproducible(l):
@@ -61,6 +62,24 @@ def search_self_reproducible(l):
   return result
 
 search_self_reproducible(10)
+
+
+# -------- Search Genes that can match itself -------- #
+
+def check_self_matchable(l):
+  result = {}
+  a = create(l)
+  for b in a:
+    r = []
+    for i in xrange(l):
+      if check_header(b, i) == True:
+        r.append(i)
+    if len(r) > 0:
+      result[b] = r
+  return result
+
+check_self_matchable(10)
+
 
 # -------- Search All Combinations and Offsprings -------- #
 
