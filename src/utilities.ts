@@ -135,4 +135,13 @@ export class URLParameter {
 
     return allKeys.filter(k => this.usedKeys.indexOf(k) === -1)
   }
+
+  public toURLString(): string {
+    let str = '?'
+    this.parameters.forEach((value, key) => {
+      str = str + "&" + key + '=' + value
+    })
+
+    return str
+  }
 }

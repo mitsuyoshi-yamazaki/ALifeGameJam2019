@@ -41,6 +41,8 @@ const App = () => {
         value="1"
         onChange={(e: any) => {
           artMode = (e.currentTarget.checked)
+          parameters.parameters.set('art_mode', artMode.toString())
+          window.history.pushState('page', 'blind_painter_react', '/pages/blind_painter_react.html' + parameters.toURLString())
           setChecked(e.currentTarget.checked)
         }}
       >ArtMode</ToggleButton>
