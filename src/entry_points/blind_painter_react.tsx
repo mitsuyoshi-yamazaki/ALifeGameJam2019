@@ -10,7 +10,7 @@ import { Screenshot } from "../classes/screenshot"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
-import { ScreenShotButton } from "../tsx/ScreenShotButton"
+import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { Color, random, URLParameter } from "../utilities"
 
 // tslint:disable-next-line:variable-name
@@ -170,8 +170,6 @@ const main = (p: p5) => {
       showStatistics()
     }
 
-    t += 1
-    setTimestamp(t)
   }
 }
 
