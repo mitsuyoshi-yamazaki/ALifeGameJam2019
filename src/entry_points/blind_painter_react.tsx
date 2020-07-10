@@ -1,5 +1,6 @@
 import * as p5 from "p5"
 import React, { useState } from "react"
+import { Button } from "react-bootstrap"
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Gene } from "../classes/gene"
@@ -8,15 +9,14 @@ import { calculateOrbitalVelocity, Vector } from "../classes/physics"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { random, URLParameter } from "../utilities"
-
 // tslint:disable-next-line:variable-name
 const App = () => {
 
   return (
-    <div>
+    <div className="App">
       <p>Blind Painter</p>
       <div id="canvas-parent"/>
-      <button onClick={ reset}>Restart</button>
+      <Button variant="primary" onClick={ reset}>Restart</Button>
     </div>
   )
 }
@@ -107,4 +107,4 @@ const main = (p: p5) => {
 
 }
 
-let sketch = new p5(main)
+const sketch = new p5(main)
