@@ -39,6 +39,14 @@ export class URLParameter {
     console.log(rawParameters)
   }
 
+  public hasKey(key: string, shortKey?: string): boolean {
+    if ((shortKey != undefined) && (this.parameters.get(shortKey) != undefined)) {
+      return true
+    }
+
+    return this.parameters.get(key) != undefined
+  }
+
   public int(key: string, defaultValue: number, shortKey?: string): number {
     let rawValue: string | undefined
     if (shortKey != undefined) {
