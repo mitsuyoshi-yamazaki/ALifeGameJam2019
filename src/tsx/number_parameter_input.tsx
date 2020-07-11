@@ -30,15 +30,20 @@ export function NumberParameterInput({parameters, paramKey, page, effect, defaul
       </Tooltip>
     }
   >
-    <FormControl
-      type="text"
-      placeholder={label}
-      aria-label={label}
-      aria-describedby="btnGroupAddon2"
-      value={value}
-      onChange={(e: any) => {
-        setValue(e.currentTarget.value)
-      }}
-    />
+    <InputGroup>
+      <InputGroup.Prepend>
+        <InputGroup.Text id="btnGroupAddon2">{label}</InputGroup.Text>
+      </InputGroup.Prepend>
+      <FormControl
+        type="text"
+        placeholder={label}
+        aria-label={label}
+        aria-describedby="btnGroupAddon2"
+        value={value}
+        onChange={(e: any) => {
+          setValue(e.currentTarget.value)
+        }}
+      />
+    </InputGroup>
   </OverlayTrigger>
 }

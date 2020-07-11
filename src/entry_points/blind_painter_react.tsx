@@ -50,6 +50,51 @@ const App = () => {
       <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
                             effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
       <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"g"} page={page} defaultValue={0x33C}
+                            effect={value => rawInitialGenes = value.toString()} detail={"initial genes ex. 20e,169"}
+                            label={"initial genes"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"ig"} page={page} defaultValue={0}
+                            effect={value => initialGeneType = value} detail={"initial species 0:no limit 1~"} label={"initial species"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={100}
+                            effect={value => machineCount = value} detail={"initial population "} label={"initial population"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"mr"} page={page} defaultValue={0.03}
+                            effect={value => mutationRate = value} detail={"mutation rate 0.00-1.00"} label={"mutation rate"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"ls"} page={page} defaultValue={6}
+                            effect={value => machineSize = value} detail={"maximum life size"} label={"life size"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"l"} page={page} defaultValue={10}
+                            effect={value => initialLifespan = value} detail={"initial lifespan "} label={"initial lifespan"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"bl"} page={page} defaultValue={5}
+                            effect={value => birthAdditionalLifespan = value} detail={"birth life "} label={"birth life"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"mi"} page={page} defaultValue={200}
+                            effect={value => matureInterval = value} detail={"mature interval"} label={"mature interval"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"ri"} page={page} defaultValue={100}
+                            effect={value => reproduceInterval = value} detail={"reproduce interval"} label={"reproduce interval"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"af"} page={page} defaultValue={0.6}
+                            effect={value => attractForce = value} detail={"attract force in mode: attracted, equidistant "}
+                            label={"attract force"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"rf"} page={page} defaultValue={1}
+                            effect={value => repulsingForce = value} detail={"repulsing force"} label={"repulsing force"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"fd"} page={page} defaultValue={1}
+                            effect={value => familyLifespanDecresement = value} detail={"family lifespan decreasement"}
+                            label={"family lifespan decreasement"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"fv"} page={page} defaultValue={0.1}
+                            effect={value => familyVelocity = value} detail={"family velocity"} label={"family velocity"}/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"ld"} page={page} defaultValue={0.001}
+                            effect={value => lifespanDecresement = value} detail={"lifespan decresement"} label={"lifespan decresement"}/>
+      <br/>
     </div>
   )
 }
@@ -70,20 +115,20 @@ let transparency = parameters.float("background_transparency", 1, "t")    // ア
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
 const size = parameters.int("size", 1000, "s")                  // canvas サイズ
 let friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
-const rawInitialGenes = parameters.string("initial_genes", "33c", "g") // 初期遺伝子の指定（hex）例: initial_genes=20e,169
-const initialGeneType = parameters.int("initial_gene_type", 0, "ig")  // 初期ランダム遺伝子の種類 0: 無制限 initial_genes を指定しない場合のみ有効
-const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
-const mutationRate = parameters.float("mutation_rate", 0.03, "mr")  // 突然変異率（0-1）
-const machineSize = parameters.float("life_size", 6, "ls")          // 最大個体サイズ
-const initialLifespan = parameters.float("initial_lifespan", 10, "l") // 個体生成時の初期寿命
-const birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")   // 子孫生成時に増加する寿命
-const matureInterval = parameters.int("mature_interval", 200, "mi")       // 個体生成から子孫を残せるようになるまでの時間
-const reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
-const attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted, equidistant の引力
-const repulsingForce = parameters.float("repulsing_force", 1, "rf")     // 衝突した際に発生する斥力の大きさ
-const familyLifespanDecresement = parameters.float("family_lifespan_decresement", 1, "fd")     // Family 同士で衝突した際のlifespanの減少分
-const familyVelocity = parameters.float("family_velocity", 0.1, "fv")     //
-const lifespanDecresement = parameters.float("lifespan_decresement", 0.001, "ld")     // 時間で減少する寿命
+let rawInitialGenes = parameters.string("initial_genes", "33c", "g") // 初期遺伝子の指定（hex）例: initial_genes=20e,169
+let initialGeneType = parameters.int("initial_gene_type", 0, "ig")  // 初期ランダム遺伝子の種類 0: 無制限 initial_genes を指定しない場合のみ有効
+let machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
+let mutationRate = parameters.float("mutation_rate", 0.03, "mr")  // 突然変異率（0-1）
+let machineSize = parameters.float("life_size", 6, "ls")          // 最大個体サイズ
+let initialLifespan = parameters.float("initial_lifespan", 10, "l") // 個体生成時の初期寿命
+let birthAdditionalLifespan = parameters.float("birth_life", 5, "bl")   // 子孫生成時に増加する寿命
+let matureInterval = parameters.int("mature_interval", 200, "mi")       // 個体生成から子孫を残せるようになるまでの時間
+let reproduceInterval = parameters.int("reproduce_interval", 100, "ri") // 連続して子孫生成できる最小間隔
+let attractForce = parameters.float("attract_force", 0.6, "af")         // mode: attracted, equidistant の引力
+let repulsingForce = parameters.float("repulsing_force", 1, "rf")     // 衝突した際に発生する斥力の大きさ
+let familyLifespanDecresement = parameters.float("family_lifespan_decresement", 1, "fd")     // Family 同士で衝突した際のlifespanの減少分
+let familyVelocity = parameters.float("family_velocity", 0.1, "fv")     //
+let lifespanDecresement = parameters.float("lifespan_decresement", 0.001, "ld")     // 時間で減少する寿命
 
 function log(message: string): void {
   if (DEBUG) {
