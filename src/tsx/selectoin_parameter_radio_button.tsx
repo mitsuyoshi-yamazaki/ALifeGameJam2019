@@ -12,10 +12,10 @@ interface Props {
 }
 
 export function SelectionParameterRadioButton({modes, effect, parameters, paramKey, page}: Props) {
-  const [radioValue, setRadioValue] = useState("default")
+  const [radioValue, setRadioValue] = useState(parameters.getString(paramKey))
   useEffect(() => {
     effect(radioValue)
-    parameters.parameters.set(paramKey, radioValue)
+    parameters.setString(paramKey, radioValue)
     window.history.pushState("page", "blind_painter_react", `/pages/${page}.html${parameters.toURLString()}`)
   })
 

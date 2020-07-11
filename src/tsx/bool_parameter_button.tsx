@@ -12,11 +12,11 @@ interface Props {
   effect(value: boolean): void
 }
 
-export function BoolParameterButton({parameters, initial, paramKey, page, effect, children}: Props) {
-  const [checked, setChecked] = useState(initial)
+export function BoolParameterButton({parameters, paramKey, page, effect, children}: Props) {
+  const [checked, setChecked] = useState(parameters.getBoolean(paramKey))
   useEffect(() => {
     effect(checked)
-    parameters.parameters.set(paramKey, checked.toString())
+    parameters.setBoolean(paramKey, checked)
     window.history.pushState("page", "blind_painter_react", `/pages/${page}.html${parameters.toURLString()}`)
   })
 
