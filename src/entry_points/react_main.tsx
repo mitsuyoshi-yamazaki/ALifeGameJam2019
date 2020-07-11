@@ -4,7 +4,7 @@ import { Button, ButtonGroup, Container, Dropdown, ToggleButton } from "react-bo
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Gene } from "../classes/gene"
-import { ActiveLife, GeneticActiveLife, GeneticLife, GeneticResource, Life } from "../classes/life"
+import { ActiveLife, GeneticLife, GeneticResource, Life } from "../classes/life"
 import { WorldObject } from "../classes/object"
 import { calculateOrbitalVelocity, Force, Vector } from "../classes/physics"
 import { Screenshot } from "../classes/screenshot"
@@ -52,10 +52,18 @@ const App = () => {
                               effect={value => immobilizedWidth = value} detail={"immobilizedWidth"} label={"immobilizedWidth"}/>
         <NumberParameterInput parameters={parameters} paramKey={"e"} page={page} defaultValue={100}
                               effect={value => initialEnergy = value} detail={"initialEnergy"} label={"initialEnergy"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"re"} page={page} defaultValue={100}
+                              effect={value => resourceEnergy = value} detail={"resourceEnergy"} label={"resourceEnergy"}/>
         <NumberParameterInput parameters={parameters} paramKey={"mr"} page={page} defaultValue={0.03}
                               effect={value => mutationRate = value} detail={"mutation rate 0.00-1.00"} label={"mutation rate"}/>
         <NumberParameterInput parameters={parameters} paramKey={"ls"} page={page} defaultValue={6}
                               effect={value => lifeSize = value} detail={"lifeSize"} label={"lifeSize"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"ec"} page={page} defaultValue={0.01}
+                              effect={value => energyConsumptionRate = value} detail={"energyConsumptionRate"}
+                              label={"energyConsumptionRate"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"rr"} page={page} defaultValue={1}
+                              effect={value => resourceGenerateRate = value} detail={"resourceGenerateRate"}
+                              label={"resourceGenerateRate"}/>
       </Container>
       <br/>
       <br/>
@@ -69,14 +77,17 @@ const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
 let transparency = parameters.float("background_transparency", 0, "t")    // アートモード時の背景の透過（0-0xFF）
 let initialPopulation = parameters.int("initial_population", 100, "p") // 初期個体数
-let friction = parameters.float("friction", 0.01, "f")        // 運動に対する摩擦力（0-1）
-let gravity = parameters.float("gravity", 20, "gv")        //
+let friction = parameters.float("friction", 0.1, "f")        // 運動に対する摩擦力（0-1）
+let gravity = parameters.float("gravity", 0, "gv")        //
 let immobilizedWidth = parameters.float("immobilizedWidth", 0, "im")        //
 let initialEnergy = parameters.float("initialEnergy", 100, "e")        //
-let lifeSize = parameters.float("lifeSize", 6, "ls")        //
+let resourceEnergy = parameters.float("resourceEnergy", 1000, "re")        //
+let lifeSize = parameters.float("lifeSize", 12, "ls")        //
 let startsWithSingleGene = parameters.boolean("startsWithSingleGene", true, "sg")        //
 let mutationRate = parameters.float("mutation_rate", 0.03, "mr")  // 突然変異率（0-1）
 let showResource = parameters.boolean("show_Resource", true, "sr")
+let energyConsumptionRate = parameters.float("energyConsumptionRate", 0.1, "ec")
+let resourceGenerateRate = parameters.float("resourceGenerateRate", 1, "rr")
 
 function backgroundTransparency() {
   return artMode ? transparency : 0xFF
@@ -123,7 +134,7 @@ class Controller {
     }
     if (velocity != undefined) {
       lives.forEach(life => {
-        life.velocity = new Vector(random(-velocity, velocity), random(-velocity, velocity))
+        life.velocity = new Vector(0, 0)
       })
     }
 
@@ -154,10 +165,8 @@ const main = (p: p5) => {
 
     const resources: GeneticLife[] = []
     const resourceSize = showResource ? lifeSize * 0.6 : 0
-    const resourceEnergy = initialEnergy * 0.6
-    const positionSpace = fieldWidth * 0.9
-    for (let i = 0; i < 1; i += 1) {
-      const position = new Vector(random(positionSpace), random(positionSpace))
+    for (let i = 0; i < resourceGenerateRate; i += 1) {
+      const position = new Vector(random(fieldWidth * 0.99), random(fieldHeight * 0.99))
       const resource = new GeneticResource(position, Gene.random(), resourceSize, resourceEnergy)
       resource.velocity = calculateOrbitalVelocity(position, gravityCenter, gravity)
       resources.push(resource)
@@ -195,6 +204,7 @@ export class PaintActiveLife extends ActiveLife {
     gene: Gene,
     size: number,
     energy: number,
+    // tslint:disable-next-line:no-shadowed-variable
     public readonly mutationRate: number,
   ) {
     super(position)
@@ -215,7 +225,6 @@ export class PaintActiveLife extends ActiveLife {
       return [Force.zero(), []]
     }
 
-    const energyConsumptionRate = 1 / 10
     const max = 1
     const vx = random(max, -max)
     const vy = random(max, -max)
@@ -231,15 +240,15 @@ export class PaintActiveLife extends ActiveLife {
   public draw(p: p5, anchor: Vector): void {
     if (this.isAlive) {
       p.noStroke()
-      if (this.energy < 1) {
-        p.fill(255, 0, 0)
-      } else {
-        p.fill(this.gene.color.p5(p, 0xFF))
-      }
+      // if (this.energy < 1) {
+      //   p.fill(255, 0, 0)
+      // } else {
+      p.fill(this.gene.color.p5(p, 0xFF))
+      // }
     } else {
       p.noFill()
-      p.strokeWeight(1)
-      p.stroke(this.gene.color.p5(p, 0x80))
+      // p.strokeWeight(1)
+      // p.stroke(this.gene.color.p5(p, 0x80))
     }
 
     const diameter = this.size
@@ -252,8 +261,8 @@ export class PaintActiveLife extends ActiveLife {
     return other.eaten()
   }
 
-  private reproduce(): GeneticActiveLife[] {
-    const reproductionEnergy = this.size * this.size
+  private reproduce(): PaintActiveLife[] {
+    const reproductionEnergy = this.size
     if (this._energy <= (reproductionEnergy * 2)) {
       return []
     }
@@ -268,7 +277,7 @@ export class PaintActiveLife extends ActiveLife {
     } else {
       gene = this.gene.copy()
     }
-    const offspring = new GeneticActiveLife(position, gene, this.size, energyAfterReproduction, this.mutationRate)
+    const offspring = new PaintActiveLife(position, gene, this.size, energyAfterReproduction, this.mutationRate)
     offspring.velocity = this.velocity.sized(-1)
 
     return [offspring]
