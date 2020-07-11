@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { ToggleButton } from "react-bootstrap"
+import { Col, Row, ToggleButton } from "react-bootstrap"
 import { URLParameter } from "../utilities"
 
 interface Props {
@@ -20,7 +20,7 @@ export function BoolParameterButton({parameters, paramKey, page, effect, childre
     window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
-  return <ToggleButton
+  return <Row><Col><ToggleButton
     type="checkbox"
     variant="secondary"
     checked={checked}
@@ -29,4 +29,6 @@ export function BoolParameterButton({parameters, paramKey, page, effect, childre
       setChecked(e.currentTarget.checked)
     }}
   >{children}</ToggleButton>
+  </Col>
+  </Row>
 }

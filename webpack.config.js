@@ -13,7 +13,8 @@ module.exports = {
     lsystem: './src/entry_points/lsystem.ts',
     evo_devo: './src/entry_points/evo_devo.ts',
     bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts',
-    react_example: './src/entry_points/react_example.tsx'
+    react_example: './src/entry_points/react_example.tsx',
+    react_main: './src/entry_points/react_main.tsx'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { ButtonGroup, ToggleButton } from "react-bootstrap"
+import { ButtonGroup, Col, Row, ToggleButton } from "react-bootstrap"
 import { URLParameter } from "../utilities"
 
 interface Props {
@@ -20,7 +20,7 @@ export function SelectionParameterRadioButton({modes, effect, parameters, paramK
     window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
-  return <ButtonGroup toggle>
+  return <Row><Col><ButtonGroup toggle>
     {modes.map((radio, idx) => (
       <ToggleButton
         key={idx}
@@ -37,5 +37,7 @@ export function SelectionParameterRadioButton({modes, effect, parameters, paramK
       </ToggleButton>
     ))}
   </ButtonGroup>
+  </Col>
+  </Row>
 
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { InputGroup, FormControl, OverlayTrigger, Tooltip } from "react-bootstrap"
+import { InputGroup, FormControl, OverlayTrigger, Tooltip, Container, Row, Col } from "react-bootstrap"
 import { URLParameter } from "../utilities"
 
 interface Props {
@@ -21,29 +21,31 @@ export function NumberParameterInput({parameters, paramKey, page, effect, defaul
     window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
-  return <OverlayTrigger
-    key={paramKey}
-    placement="top"
-    overlay={
-      <Tooltip id={`tooltip-${paramKey}`}>
-        {detail}
-      </Tooltip>
-    }
-  >
-    <InputGroup>
-      <InputGroup.Prepend>
-        <InputGroup.Text id="btnGroupAddon2">{label}</InputGroup.Text>
-      </InputGroup.Prepend>
-      <FormControl
-        type="text"
-        placeholder={label}
-        aria-label={label}
-        aria-describedby="btnGroupAddon2"
-        value={value}
-        onChange={(e: any) => {
-          setValue(e.currentTarget.value)
-        }}
-      />
-    </InputGroup>
-  </OverlayTrigger>
+  return <Row>
+    <Col>
+      <label>{label}</label>
+    </Col>
+    <Col>
+      <OverlayTrigger
+        key={paramKey}
+        placement="bottom"
+        overlay={
+          <Tooltip id={`tooltip-${paramKey}`}>
+            {detail}
+          </Tooltip>
+        }
+      >
+        <FormControl
+          type="text"
+          placeholder={label}
+          aria-label={label}
+          aria-describedby="btnGroupAddon2"
+          value={value}
+          onChange={(e: any) => {
+            setValue(e.currentTarget.value)
+          }}
+        />
+      </OverlayTrigger>
+    </Col>
+  </Row>
 }

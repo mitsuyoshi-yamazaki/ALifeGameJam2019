@@ -1,6 +1,6 @@
 import * as p5 from "p5"
 import React, { useState } from "react"
-import { Button, ButtonGroup, Dropdown, ToggleButton } from "react-bootstrap"
+import { Button, ButtonGroup, Container, Dropdown, ToggleButton } from "react-bootstrap"
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Life } from "../classes/life"
@@ -36,65 +36,49 @@ const App = () => {
       <br/>
       <Button variant="primary" onClick={reset}>Restart</Button>
       <br/>
-      <BoolParameterButton parameters={parameters} paramKey={"a"} page={page} defaultValue={false}
-                           effect={value => artMode = value}>ArtMode</BoolParameterButton>
-      <br/>
-      <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"m"} page={page} defaultValue={"default"}
-                                     effect={value => mode = value}/>
-      <br/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={0}
-                            effect={value => transparency = value} detail={"opacity of the background in Art Mode.need page reload. 0-255"}
-                            label={"background transparency"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
-                            effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
-      <br/>
-      <TextParameterInput parameters={parameters} paramKey={"g"} page={page} defaultValue={""}
-                          effect={value => rawInitialGenes = value} detail={"initial genes ex. 20e,169"}
-                          label={"initial genes"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"ig"} page={page} defaultValue={0}
-                            effect={value => initialGeneType = value} detail={"initial species 0:no limit 1~"} label={"initial species"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={100}
-                            effect={value => machineCount = value} detail={"initial population "} label={"initial population"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"mr"} page={page} defaultValue={0.03}
-                            effect={value => mutationRate = value} detail={"mutation rate 0.00-1.00"} label={"mutation rate"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"ls"} page={page} defaultValue={6}
-                            effect={value => machineSize = value} detail={"maximum life size"} label={"life size"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"l"} page={page} defaultValue={10}
-                            effect={value => initialLifespan = value} detail={"initial lifespan "} label={"initial lifespan"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"bl"} page={page} defaultValue={5}
-                            effect={value => birthAdditionalLifespan = value} detail={"birth life "} label={"birth life"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"mi"} page={page} defaultValue={200}
-                            effect={value => matureInterval = value} detail={"mature interval"} label={"mature interval"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"ri"} page={page} defaultValue={100}
-                            effect={value => reproduceInterval = value} detail={"reproduce interval"} label={"reproduce interval"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"af"} page={page} defaultValue={0.6}
-                            effect={value => attractForce = value} detail={"attract force in mode: attracted, equidistant "}
-                            label={"attract force"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"rf"} page={page} defaultValue={1}
-                            effect={value => repulsingForce = value} detail={"repulsing force"} label={"repulsing force"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"fd"} page={page} defaultValue={1}
-                            effect={value => familyLifespanDecresement = value} detail={"family lifespan decreasement"}
-                            label={"family lifespan decreasement"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"fv"} page={page} defaultValue={0.1}
-                            effect={value => familyVelocity = value} detail={"family velocity"} label={"family velocity"}/>
-      <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"ld"} page={page} defaultValue={0.001}
-                            effect={value => lifespanDecresement = value} detail={"lifespan decresement"} label={"lifespan decresement"}/>
-      <br/>
+      <Container>
+        <BoolParameterButton parameters={parameters} paramKey={"a"} page={page} defaultValue={false}
+                             effect={value => artMode = value}>ArtMode</BoolParameterButton>
+        <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"m"} page={page} defaultValue={"default"}
+                                       effect={value => mode = value}/>
+        <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={0}
+                              effect={value => transparency = value}
+                              detail={"opacity of the background in Art Mode.need page reload. 0-255"}
+                              label={"background transparency"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
+                              effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
+        <TextParameterInput parameters={parameters} paramKey={"g"} page={page} defaultValue={""}
+                            effect={value => rawInitialGenes = value} detail={"initial genes ex. 20e,169"}
+                            label={"initial genes"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"ig"} page={page} defaultValue={0}
+                              effect={value => initialGeneType = value} detail={"initial species 0:no limit 1~"} label={"initial species"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={100}
+                              effect={value => machineCount = value} detail={"initial population "} label={"initial population"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"mr"} page={page} defaultValue={0.03}
+                              effect={value => mutationRate = value} detail={"mutation rate 0.00-1.00"} label={"mutation rate"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"ls"} page={page} defaultValue={6}
+                              effect={value => machineSize = value} detail={"maximum life size"} label={"life size"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"l"} page={page} defaultValue={10}
+                              effect={value => initialLifespan = value} detail={"initial lifespan "} label={"initial lifespan"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"bl"} page={page} defaultValue={5}
+                              effect={value => birthAdditionalLifespan = value} detail={"birth life "} label={"birth life"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"mi"} page={page} defaultValue={200}
+                              effect={value => matureInterval = value} detail={"mature interval"} label={"mature interval"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"ri"} page={page} defaultValue={100}
+                              effect={value => reproduceInterval = value} detail={"reproduce interval"} label={"reproduce interval"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"af"} page={page} defaultValue={0.6}
+                              effect={value => attractForce = value} detail={"attract force in mode: attracted, equidistant "}
+                              label={"attract force"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"rf"} page={page} defaultValue={1}
+                              effect={value => repulsingForce = value} detail={"repulsing force"} label={"repulsing force"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"fd"} page={page} defaultValue={1}
+                              effect={value => familyLifespanDecresement = value} detail={"family lifespan decreasement"}
+                              label={"family lifespan decreasement"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"fv"} page={page} defaultValue={0.1}
+                              effect={value => familyVelocity = value} detail={"family velocity"} label={"family velocity"}/>
+        <NumberParameterInput parameters={parameters} paramKey={"ld"} page={page} defaultValue={0.001}
+                              effect={value => lifespanDecresement = value} detail={"lifespan decresement"} label={"lifespan decresement"}/>
+      </Container>
     </div>
   )
 }
