@@ -3,17 +3,18 @@
 // System
 bool DEBUG = false;
 bool artMode = true;
+bool halfArtMode = false;
 int t = 0;
 
 // Population
 Life[] lifes;
 int populationSize = 1000;
-int initialResourceSize = 600;
+int initialResourceSize = 4000;
 int resourceGrowth = 4;
 
 // Field
-float fieldWidth = 1200;
-float fieldHeight = (fieldWidth / 16) * 9;
+float fieldWidth = 1280;
+float fieldHeight = 720;
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 bool useSingleGene = true;
 // Gene initialGene = new Gene(0, 0);  
@@ -40,7 +41,9 @@ int wholeMax = Math.pow(2, wholeLength) - 1;
 // Fight
 float eatProbability = 0.5;
 
-float mutationRate = 0.01;
+float normalMutationRate = 0.0085;
+float eventMutationRate = 0.1;
+float mutationRate = normalMutationRate;
 
 if (artMode) {
   backgroundTransparency = 0;
@@ -197,7 +200,7 @@ class Life {
 
   void draw(){
     if (type == 'Life') {
-     if (enableEatColor && isEaten) {
+      if (enableEatColor && isEaten) {
         noStroke();
         fill(255, 0, 0);
         ellipse(position.x, position.y, size, size);
@@ -217,16 +220,19 @@ class Life {
     } else {
       if (disableResourceColor) return;
 
-      if (isEaten) {
-        noStroke();
-        fill(255, 0, 0);
+      noStroke();
+      fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
 
-      } else {  
-        // Alive
-        noStroke();
-        fill(81, 145, 198);
-      }
-      rect(position.x, position.y, size, size);
+      // if (isEaten) {
+      //   noStroke();
+      //   fill(255, 0, 0);
+
+      // } else {  
+      //   // Alive
+      //   noStroke();
+      //   fill(81, 145, 198);
+      // }
+      rect(position.x, position.y, size / 2, size / 2);
     }
   }
 
@@ -286,33 +292,76 @@ bool isCollision(Life l1, Life l2){
 void setup()
 {
   size(fieldWidth,fieldHeight);
-  background(0xff);
+  background(0x0);
 
   //noLoop();
   PFont fontA = loadFont("courier");
   textFont(fontA, 14);
 
   lifes = [];
-  int paddingWidth = max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight = max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
+  int sizeee = 200;
+  int paddingWidth = (fieldWidth - sizeee) / 2; //max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
+  int paddingHeight = (fieldHeight - sizeee) / 2; //max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   Gene[] initialGenes = [Gene.randomGene(), Gene.randomGene(), Gene.randomGene(), Gene.randomGene()];
   int numberOfGenes = initialGenes.length;
-  int width = (fieldWidth / numberOfGenes);
+  int width = (sizeee / 2); //(fieldWidth / numberOfGenes);
 
   for(int i=0; i < populationSize;i++){
     int index = Math.floor(i / (populationSize / numberOfGenes));
     Gene gene = initialGenes[index];
-    lifes[i] = new Life(
-      random(width) + (width * index),
-      random(paddingHeight, fieldHeight - paddingHeight),
-      lifeRadius,
-      defaultEnergy,
-      gene
-    );
+    switch (index) {
+      case 0:
+        lifes[i] = new Life(
+        // random(width) + (width * index),
+          random(paddingWidth, fieldWidth - (paddingWidth + width)),
+          random(paddingHeight, fieldHeight - (paddingHeight + width)),
+          lifeRadius,
+          defaultEnergy,
+          gene
+        );
+        break;
+
+      case 1:
+        lifes[i] = new Life(
+        // random(width) + (width * index),
+          random(paddingWidth + width, fieldWidth - paddingWidth),
+          random(paddingHeight, fieldHeight - (paddingHeight + width)),
+          lifeRadius,
+          defaultEnergy,
+          gene
+        );
+        break;
+
+      case 2:
+        lifes[i] = new Life(
+        // random(width) + (width * index),
+          random(paddingWidth, fieldWidth - (paddingWidth + width)),
+          random(paddingHeight + width, fieldHeight - paddingHeight),
+          lifeRadius,
+          defaultEnergy,
+          gene
+        );
+        break;
+
+      case 3:
+        lifes[i] = new Life(
+        // random(width) + (width * index),
+          random(paddingWidth + width, fieldWidth - paddingWidth),
+          random(paddingHeight + width, fieldHeight - paddingHeight),
+          lifeRadius,
+          defaultEnergy,
+          gene
+        );
+        break;
+
+      default:
+        break;
+    }
   }
   for (int i = 0; i < initialResourceSize; i++) {
-    lifes[lifes.length] = Life.makeResource(random(fieldWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    // lifes[lifes.length] = Life.makeResource(random(fieldWidth),random(paddingHeight, fieldHeight - paddingHeight), resourceSize, Gene.randomGene());
+    lifes[lifes.length] = Life.makeResource(random(100, fieldWidth - 100),random(100, fieldHeight - 100), resourceSize, Gene.randomGene());
   }
   Gene g = Gene.fromWholeGene(0xff);
   Gene g2 = g.childGene();
@@ -326,9 +375,13 @@ void setup()
 
 
 void draw(){
+  // if (t === mutationRateChangeTimestamp) {
+  //   mutationRate = mutationRateChange;
+  // }
 
-  fill(0xff, backgroundTransparency);
-  rect(0,0,fieldWidth,fieldHeight); // background() だと動作しない
+  fill(0x0, backgroundTransparency);
+  int ww = halfArtMode ? fieldWidth * 0.5 : fieldWidth;
+  rect(0,0,ww,fieldHeight); // background() だと動作しない
 
   Life[] killed = [];
   Life[] born = [];
@@ -463,11 +516,15 @@ void mouseClicked(){
 
 void keyPressed (){
   if(key == 32){
-    noLoop();
+    // noLoop();
+    console.log("mutation rate " + mutationRate + " -> " + eventMutationRate);
+    mutationRate = eventMutationRate;
   }
 }
 void keyReleased (){
   if(key == 32){
-    loop();
+    // loop();
+    console.log("mutation rate " + mutationRate + " -> " + normalMutationRate);
+    mutationRate = normalMutationRate;
   }
 }
