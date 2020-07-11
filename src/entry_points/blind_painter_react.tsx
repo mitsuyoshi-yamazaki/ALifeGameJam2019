@@ -43,8 +43,13 @@ const App = () => {
                                      effect={value => mode = value}/>
       <br/>
       <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={1}
+                            effect={value => transparency = value} detail={"opacity of the background in Art Mode 0-255"}
+                            label={"background transparency"}/>
+      <br/>
       <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
                             effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
+      <br/>
     </div>
   )
 }
@@ -61,7 +66,7 @@ let TEST = parameters.boolean("test", false, "t")           // テストを実�
 // family: 自己複製する集団ごとにまとまりをつくる
 let mode = parameters.string("mode", "default", "m")
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
-const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
+let transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
 const size = parameters.int("size", 1000, "s")                  // canvas サイズ
 let friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
@@ -160,7 +165,7 @@ class Controller {
     world = new MachineWorld(fieldSize, terrains)
     world.addLives(machines)
 
-    this.p.background(0xFF)
+    this.p.background(0xFF, backgroundTransparency())
   }
 
   public get fieldSize() {
