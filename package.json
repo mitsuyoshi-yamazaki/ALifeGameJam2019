@@ -33,6 +33,7 @@
   },
   "scripts": {
     "build": "webpack",
+    "watch": "webpack -w",
     "start": "webpack-dev-server --open --mode development",
     "add_simulation": "func() { cp pages/template.html \"pages/$1.html\" && cp src/entry_points/template.ts src/entry_points/$1.ts; }; func"
   }

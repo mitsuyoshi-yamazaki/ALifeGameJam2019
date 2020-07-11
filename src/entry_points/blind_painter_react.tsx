@@ -14,6 +14,7 @@ import { BoolParameterButton } from "../tsx/bool_parameter_button"
 import { NumberParameterInput } from "../tsx/number_parameter_input"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { SelectionParameterRadioButton } from "../tsx/selectoin_parameter_radio_button"
+import { TextParameterInput } from "../tsx/text_parameter_input"
 import { Color, random, URLParameter } from "../utilities"
 
 // tslint:disable-next-line:variable-name
@@ -30,7 +31,6 @@ const App = () => {
 
   return (
     <div className="App">
-      <p>Blind Painter</p>
       <div id="canvas-parent"/>
       <ScreenShotButton/>
       <br/>
@@ -43,15 +43,15 @@ const App = () => {
                                      effect={value => mode = value}/>
       <br/>
       <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={1}
-                            effect={value => transparency = value} detail={"opacity of the background in Art Mode 0-255"}
+      <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={0}
+                            effect={value => transparency = value} detail={"opacity of the background in Art Mode.need page reload. 0-255"}
                             label={"background transparency"}/>
       <br/>
       <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
                             effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
       <br/>
-      <NumberParameterInput parameters={parameters} paramKey={"g"} page={page} defaultValue={0x33C}
-                            effect={value => rawInitialGenes = value.toString()} detail={"initial genes ex. 20e,169"}
+      <TextParameterInput parameters={parameters} paramKey={"g"} page={page} defaultValue={""}
+                            effect={value => rawInitialGenes = value} detail={"initial genes ex. 20e,169"}
                             label={"initial genes"}/>
       <br/>
       <NumberParameterInput parameters={parameters} paramKey={"ig"} page={page} defaultValue={0}
@@ -523,13 +523,15 @@ class Machine extends Life {
   }
 
   public draw(p: p5, anchor: Vector): void {
+    const diameter = Math.min((this.age + 400) / 10, this.size)
+
     if (artMode) {
       if (mode === "family") {
         return
       }
       p.noFill()
       p.stroke(this.gene.color.p5(p, 0xA0))
-      p.strokeWeight(0.5)
+      p.strokeWeight(diameter)
       p.line(this.previousPosition.x, this.previousPosition.y, this.position.x, this.position.y)
 
     } else {
@@ -541,7 +543,6 @@ class Machine extends Life {
       }
       p.fill(this.gene.color.p5(p, 0xA0))
 
-      const diameter = Math.min((this.age + 400) / 100, this.size)
       p.circle(this.position.x + anchor.x, this.position.y + anchor.y, diameter)
     }
   }
