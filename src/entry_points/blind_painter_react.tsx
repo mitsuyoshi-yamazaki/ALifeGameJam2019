@@ -35,7 +35,7 @@ const App = () => {
       <br/>
       <Button variant="primary" onClick={reset}>Restart</Button>
       <br/>
-      <BoolParameterButton parameters={parameters} initial={true} paramKey={"art_mode"} page={page}
+      <BoolParameterButton parameters={parameters} paramKey={"art_mode"} page={page}
                            effect={value => artMode = value}>ArtMode</BoolParameterButton>
       <br/>
       <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"mode"} page={page} effect={value => mode = value}/>

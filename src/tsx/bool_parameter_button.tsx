@@ -4,7 +4,6 @@ import { URLParameter } from "../utilities"
 
 interface Props {
   parameters: URLParameter
-  initial: boolean
   paramKey: string
   page: string
   children: string
