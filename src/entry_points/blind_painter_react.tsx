@@ -12,11 +12,11 @@ import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
 import { BoolParameterButton } from "../tsx/bool_parameter_button"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
+import { SelectionParameterRadioButton } from "../tsx/selectoin_parameter_radio_button"
 import { Color, random, URLParameter } from "../utilities"
 
 // tslint:disable-next-line:variable-name
 const App = () => {
-  const [radioValue, setRadioValue] = useState("default")
 
   const modes = [
     {"name": "default", "value": "default"},
@@ -38,24 +38,7 @@ const App = () => {
       <BoolParameterButton parameters={parameters} initial={true} paramKey={"art_mode"} page={page}
                            effect={value => artMode = value}>ArtMode</BoolParameterButton>
       <br/>
-      <ButtonGroup toggle>
-        {modes.map((radio, idx) => (
-          <ToggleButton
-            key={idx}
-            type="radio"
-            variant="secondary"
-            name="radio"
-            value={radio.value}
-            checked={radioValue === radio.value}
-            onChange={(e: any) => {
-              mode = e.target.value
-              setRadioValue(e.currentTarget.value)
-            }}
-          >
-            {radio.name}
-          </ToggleButton>
-        ))}
-      </ButtonGroup>
+      <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"mode"} page={page} effect={value => mode = value}/>
     </div>
   )
 }
@@ -804,6 +787,5 @@ function tests(): void {
   log(`Test finished`)
   TEST = false
 }
-
 
 ReactDOM.render(<App/>, document.getElementById("root"))
