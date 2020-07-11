@@ -21,7 +21,7 @@ bool useSingleGene = true;
 Gene initialGene = Gene.randomGene();  
 
 // Color
-float backgroundTransparency = 0x01;
+float backgroundTransparency = 0xff;
 bool enableEatColor = true;
 bool disableResourceColor = false;
 
@@ -47,7 +47,7 @@ float mutationRate = normalMutationRate;
 int mutationRateChange = 300;
 
 if (artMode) {
-  // backgroundTransparency = 0;
+  backgroundTransparency = 0;
   // enableEatColor = false;
   // disableResourceColor = true;
 }
@@ -106,7 +106,7 @@ class Gene {
   string showBinary(){
     String str = "";
     for(int i=0; i!=wholeLength;i++){
-      // console.log(((getWholeGene() >> i) & 0x01));
+      console.log(((getWholeGene() >> i) & 0x01));
       str+=((getWholeGene() >> i) & 0x01);
     }
     return str;
@@ -153,7 +153,6 @@ class Life {
   Gene gene;
   float energy;
   String type = 'Life';
-  String eatenStatus = '';
 
   Life(float x, float y, float _size, float _energy, Gene _gene){
     position = new PVector(x, y);
@@ -193,53 +192,21 @@ class Life {
     energy += other.energy + other.bodyEnergy;
     other.energy = 0;
     other.bodyEnergy = 0;
-
-    String s = '';
-    if (gene.showBinary() === other.gene.showBinary()) {
-      s = 'cannibalism';
-    } else {
-      float e = gene.canEat(other.gene);
-      float o = other.gene.canEat(gene);
-
-      if (o < 0.8) {
-        s = 'pred-prey';
-      } else {
-        s = 'pred-pred';
-      }
-    }
-    other.eaten(s);
+    other.eaten();
   }
 
-  void eaten(String s) {
+  void eaten() {
     isEaten = true;
-    eatenStatus = s;
   }
 
   void draw(){
     if (type == 'Life') {
       if (enableEatColor && isEaten) {
         noStroke();
-
-        switch (eatenStatus) {
-          case 'cannibalism':
-            fill(0, 0xFF, 0);
-          break;
-          case 'pred-prey':
-            fill(0, 0, 0xFF);
-          break;
-          case 'pred-pred':
-            fill(0xFF, 0, 0);
-          break;
-          default:
-          console.log(eatenStatus);
-            fill(0xFF, 0xFF, 0);
-          break;
-        }
+        fill(255, 0, 0);
         ellipse(position.x, position.y, size, size);
 
       } else {  
-        return;
-
         noStroke();
         // fill(gene.geneColor.r, gene.geneColor.g, gene.geneColor.b);
         fill(gene.geneColor.r * 0.3 + gene.geneColor.g * 0.59 + gene.geneColor.b * 0.11);
@@ -253,8 +220,6 @@ class Life {
       }
 
     } else {
-      return;
-
       if (disableResourceColor) return;
 
       noStroke();
