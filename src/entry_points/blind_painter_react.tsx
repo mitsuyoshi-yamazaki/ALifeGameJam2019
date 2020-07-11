@@ -11,6 +11,7 @@ import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
 import { BoolParameterButton } from "../tsx/bool_parameter_button"
+import { NumberParameterInput } from "../tsx/number_parameter_input"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { SelectionParameterRadioButton } from "../tsx/selectoin_parameter_radio_button"
 import { Color, random, URLParameter } from "../utilities"
@@ -35,10 +36,15 @@ const App = () => {
       <br/>
       <Button variant="primary" onClick={reset}>Restart</Button>
       <br/>
-      <BoolParameterButton parameters={parameters} paramKey={"art_mode"} page={page}
+      <BoolParameterButton parameters={parameters} paramKey={"a"} page={page} defaultValue={false}
                            effect={value => artMode = value}>ArtMode</BoolParameterButton>
       <br/>
-      <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"mode"} page={page} effect={value => mode = value}/>
+      <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"m"} page={page} defaultValue={"default"}
+                                     effect={value => mode = value}/>
+      <br/>
+      <br/>
+      <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
+                            effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
     </div>
   )
 }
@@ -58,7 +64,7 @@ let artMode = parameters.boolean("art_mode", false, "a")  // アートモード�
 const transparency = parameters.float("background_transparency", 1, "t")    // アートモード時の背景の透過（0-0xFF）
 const statisticsInterval = parameters.int("statistics_interval", 500, "si") // 統計情報の表示間隔
 const size = parameters.int("size", 1000, "s")                  // canvas サイズ
-const friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
+let friction = parameters.float("friction", 0.99, "f")        // 運動に対する摩擦力（0-1）
 const rawInitialGenes = parameters.string("initial_genes", "33c", "g") // 初期遺伝子の指定（hex）例: initial_genes=20e,169
 const initialGeneType = parameters.int("initial_gene_type", 0, "ig")  // 初期ランダム遺伝子の種類 0: 無制限 initial_genes を指定しない場合のみ有効
 const machineCount = parameters.int("initial_population", 100, "p") // 初期個体数
@@ -185,9 +191,12 @@ const main = (p: p5) => {
 
     world.next()
     world.draw(p)
-    t = Math.floor((new Date()).getTime() / 1000) - Screenshot.launchTime
-    if ((t % statisticsInterval) === 0) {
-      showStatistics()
+    const currentTime = (new Date()).getTime()
+    if (currentTime % 1000 === 0) {
+      t = Math.floor(currentTime / 1000) - Screenshot.launchTime
+      if ((t % statisticsInterval) === 0) {
+        showStatistics()
+      }
     }
 
   }

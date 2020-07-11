@@ -145,15 +145,20 @@ export class URLParameter {
     return str
   }
 
-  public getBoolean(key: string): boolean {
-    return this.parameters.get(key) === "1"
+  public getBoolean(key: string, defaultValue: boolean): boolean {
+    const value = this.parameters.get(key)
+    if (value === undefined) {
+      return defaultValue
+    }
+
+    return value === "1"
   }
 
   public setBoolean(key: string, value: boolean) {
     this.parameters.set(key, (value ? "1" : "0"))
   }
 
-  public getString(key: string, defaultValue: string = ""): string {
+  public getString(key: string, defaultValue: string): string {
     const maybeString = this.parameters.get(key)
 
     return maybeString ? maybeString : defaultValue
@@ -163,7 +168,12 @@ export class URLParameter {
     this.parameters.set(key, value)
   }
 
-  public getNumber(key: string): number {
+  public getNumber(key: string, defaultValue: number): number {
+    const value = this.parameters.get(key)
+    if (value === undefined) {
+      return defaultValue
+    }
+
     return Number(this.parameters.get(key))
   }
 

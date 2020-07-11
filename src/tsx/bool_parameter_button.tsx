@@ -7,12 +7,13 @@ interface Props {
   paramKey: string
   page: string
   children: string
+  defaultValue: boolean
 
   effect(value: boolean): void
 }
 
-export function BoolParameterButton({parameters, paramKey, page, effect, children}: Props) {
-  const [checked, setChecked] = useState(parameters.getBoolean(paramKey))
+export function BoolParameterButton({parameters, paramKey, page, effect, children, defaultValue}: Props) {
+  const [checked, setChecked] = useState(parameters.getBoolean(paramKey, defaultValue))
   useEffect(() => {
     effect(checked)
     parameters.setBoolean(paramKey, checked)

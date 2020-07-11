@@ -7,12 +7,13 @@ interface Props {
   modes: { name: string, value: string }[]
   paramKey: string
   page: string
+  defaultValue: string
 
   effect(value: string): void
 }
 
-export function SelectionParameterRadioButton({modes, effect, parameters, paramKey, page}: Props) {
-  const [radioValue, setRadioValue] = useState(parameters.getString(paramKey))
+export function SelectionParameterRadioButton({modes, effect, parameters, paramKey, page, defaultValue}: Props) {
+  const [radioValue, setRadioValue] = useState(parameters.getString(paramKey, defaultValue))
   useEffect(() => {
     effect(radioValue)
     parameters.setString(paramKey, radioValue)
