@@ -18,7 +18,7 @@ export function NumberParameterInput({parameters, paramKey, page, effect, defaul
   useEffect(() => {
     effect(value)
     parameters.setNumber(paramKey, value)
-    window.history.pushState("page", "blind_painter_react", `/pages/${page}.html${parameters.toURLString()}`)
+    window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
   return <OverlayTrigger

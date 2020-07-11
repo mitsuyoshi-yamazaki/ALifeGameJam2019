@@ -17,7 +17,7 @@ export function BoolParameterButton({parameters, paramKey, page, effect, childre
   useEffect(() => {
     effect(checked)
     parameters.setBoolean(paramKey, checked)
-    window.history.pushState("page", "blind_painter_react", `/pages/${page}.html${parameters.toURLString()}`)
+    window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
   return <ToggleButton

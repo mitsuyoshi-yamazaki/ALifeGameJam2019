@@ -17,7 +17,7 @@ export function SelectionParameterRadioButton({modes, effect, parameters, paramK
   useEffect(() => {
     effect(radioValue)
     parameters.setString(paramKey, radioValue)
-    window.history.pushState("page", "blind_painter_react", `/pages/${page}.html${parameters.toURLString()}`)
+    window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
   return <ButtonGroup toggle>
