@@ -179,7 +179,7 @@
     "no-trailing-whitespace": true,
     "number-literal-format": true,
     "whitespace": [
-      false,
+      true,
       "check-branch",
       "check-decl",
       "check-operator",
