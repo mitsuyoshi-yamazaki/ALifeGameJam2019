@@ -2,14 +2,14 @@
 
 // System
 bool DEBUG = false;
-bool artMode = true;
-bool halfArtMode = false;
+bool artMode = false;
+bool halfArtMode = true;
 int t = 0;
 
 // Population
 Life[] lifes;
-int populationSize = 1000;
-int initialResourceSize = 4000;
+int populationSize = 10;
+int initialResourceSize = 40;
 int resourceGrowth = 4;
 
 // Field
@@ -23,10 +23,10 @@ Gene initialGene = Gene.randomGene();
 // Color
 float backgroundTransparency = 0xff;
 bool enableEatColor = true;
-bool disableResourceColor = false;
+bool disableResourceColor = true;
 
 // Life Parameter
-float lifeRadius = 6;
+float lifeRadius = 60;
 float resourceSize = lifeRadius * 0.3;
 float defaultEnergy = 50;
 float energyConsumptionRate= 1 / (lifeRadius * lifeRadius * 40);
@@ -254,7 +254,7 @@ class Life {
 
       energy = energyAfterBirth;
 
-      return [child];
+      return [];// [child];
     }
 
     // v += 2;
