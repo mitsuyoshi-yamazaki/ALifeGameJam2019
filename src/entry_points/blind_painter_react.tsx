@@ -10,12 +10,12 @@ import { Screenshot } from "../classes/screenshot"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
+import { BoolParameterButton } from "../tsx/bool_parameter_button"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { Color, random, URLParameter } from "../utilities"
 
 // tslint:disable-next-line:variable-name
 const App = () => {
-  const [checked, setChecked] = useState(false)
   const [radioValue, setRadioValue] = useState("default")
 
   const modes = [
@@ -25,6 +25,7 @@ const App = () => {
     {"name": "scroll", "value": "scroll"},
     {"name": "family", "value": "family"},
   ]
+  const page = "blind_painter_react"
 
   return (
     <div className="App">
@@ -34,18 +35,8 @@ const App = () => {
       <br/>
       <Button variant="primary" onClick={reset}>Restart</Button>
       <br/>
-      <ToggleButton
-        type="checkbox"
-        variant="secondary"
-        checked={checked}
-        value="1"
-        onChange={(e: any) => {
-          artMode = (e.currentTarget.checked)
-          parameters.parameters.set('art_mode', artMode.toString())
-          window.history.pushState('page', 'blind_painter_react', '/pages/blind_painter_react.html' + parameters.toURLString())
-          setChecked(e.currentTarget.checked)
-        }}
-      >ArtMode</ToggleButton>
+      <BoolParameterButton parameters={parameters} initial={true} paramKey={"art_mode"} page={page}
+                           effect={value => artMode = value}>ArtMode</BoolParameterButton>
       <br/>
       <ButtonGroup toggle>
         {modes.map((radio, idx) => (
@@ -68,8 +59,6 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App/>, document.getElementById("root"))
 
 const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", true, "d")        // デバッグフラグ
@@ -161,7 +150,7 @@ class Controller {
     if (parsedInitialGenes.length > 0) {
       initialGenes.push(...parsedInitialGenes)
     } else {
-      // tslint:disable-next-line:newline-per-chained-call
+// tslint:disable-next-line:newline-per-chained-call
       initialGenes.push(...[...Array(initialGeneType).keys()].map(_ => Gene.random()))
     }
 
@@ -246,12 +235,12 @@ function showStatistics(): void {
   const genesMap = new Map<number, number>() // {gene: number of genes}
 
   world.lives.forEach(m => {
-    // tslint:disable-next-line: strict-boolean-expressions
+// tslint:disable-next-line: strict-boolean-expressions
     const numberOfMachines = genesMap.get(m.gene.value) || 0
     genesMap.set(m.gene.value, numberOfMachines + 1)
   })
 
-  // tslint:disable-next-line:no-shadowed-variable
+// tslint:disable-next-line:no-shadowed-variable
   const genes: [number, number][] = []
   genesMap.forEach((value, gene) => {
     genes.push([gene, value])
@@ -341,10 +330,10 @@ class Gene {
     return result
   }
 
-  /// i: number of bits to shift the table
+/// i: number of bits to shift the table
   private decode(rawTable: number, i: number): number {
     const table = (((rawTable << Gene.geneLength) + rawTable) >> (Gene.geneLength - i)) & Gene.geneMask
-    // log(`${this.transitionTable.toString(2)} ^ ${table.toString(2)}(${rawTable.toString(2)}, ${i}) -> ${(this.transitionTable ^ table).toString(2)}`)
+// log(`${this.transitionTable.toString(2)} ^ ${table.toString(2)}(${rawTable.toString(2)}, ${i}) -> ${(this.transitionTable ^ table).toString(2)}`)
 
     return this.transitionTable ^ table
   }
@@ -571,7 +560,7 @@ class Family {
 
       this._machines = remains
       result.push(newFamily)
-      // result.push(...newFamily.next())   // Maximum call stack size exceeded
+// result.push(...newFamily.next())   // Maximum call stack size exceeded
       newFamily._velocity = new Vector(-2, newFamily.velocity.y)
     }
 
@@ -588,7 +577,7 @@ class Family {
       }
     })
 
-    // TODO: 中心点を動かしたり周回させたりする
+// TODO: 中心点を動かしたり周回させたりする
     this._center = this.machines.reduce(
       (previous, current) => {
         return previous.add(current.position)
@@ -629,7 +618,7 @@ class MachineWorld extends VanillaWorld {
 
   private families: Family[] = []
 
-  // tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity
   public next(): void {
     const newLives: Machine[] = []
 
@@ -655,19 +644,19 @@ class MachineWorld extends VanillaWorld {
         compareTo.push(this.lives[k])
       }
 
-      // FixMe: 衝突判定が漏れる
-      // for (let k = xIndex + 1; k < sortedX.length; k += 1) {
-      //   if (sortedX[k].position.x > maxX) {
-      //     break
-      //   }
-      //   compareTo.push(sortedX[k])
-      // }
-      // for (let k = xIndex - 1; k >= 0; k -= 1) {
-      //   if (sortedX[k].position.x < minX) {
-      //     break
-      //   }
-      //   compareTo.push(sortedX[k])
-      // }
+// FixMe: 衝突判定が漏れる
+// for (let k = xIndex + 1; k < sortedX.length; k += 1) {
+//   if (sortedX[k].position.x > maxX) {
+//     break
+//   }
+//   compareTo.push(sortedX[k])
+// }
+// for (let k = xIndex - 1; k >= 0; k -= 1) {
+//   if (sortedX[k].position.x < minX) {
+//     break
+//   }
+//   compareTo.push(sortedX[k])
+// }
 
       for (let j = 0; j < compareTo.length; j += 1) {
         const otherLife = compareTo[j]
@@ -741,7 +730,7 @@ class MachineWorld extends VanillaWorld {
           otherLife.didCollide(familyLifespanDecresement)
         } else
 
-          // TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
+// TODO: 歳をとるごとに衝突によるlifespan減少幅が大きくなるようにする
         if (life.age >= matureInterval && otherLife.age >= matureInterval) {
           life.didCollide(1)
           otherLife.didCollide(1)
@@ -790,7 +779,7 @@ class MachineWorld extends VanillaWorld {
 
 function assert(b: boolean, message: string): void {
   if (b !== true) {
-    // FixMe: テストが最後まで実行されるようにする
+// FixMe: テストが最後まで実行されるようにする
     throw new Error(`[Failed] ${message}`)
   }
 }
@@ -815,3 +804,6 @@ function tests(): void {
   log(`Test finished`)
   TEST = false
 }
+
+
+ReactDOM.render(<App/>, document.getElementById("root"))
