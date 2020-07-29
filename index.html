@@ -1,6 +1,14 @@
 <html>
 
-<head>
+<head prefix="og: http://ogp.me/ns#">
+  <title>ALifes and Generative Arts</title>
+  <meta property="og:title" content="ALifes and Generative Arts" />
+  <meta property="og:description" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image"
+    content="https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/resources/docs/image01.png" />
+  <meta property="og:url" content="https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/index.html" />
+
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-154586552-1"></script>
   <script>
@@ -10,13 +18,6 @@
 
     gtag('config', 'UA-154586552-1');
   </script>
-  <script>
-    var isThumbnail = true;
-  </script>
-  <script src="processing.js"></script>
-  <script src="processingjs/screenshot.js"></script>
-  <script src="p5.min.js"></script>
-  <script src="dist/orbital_motion.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <style>
@@ -55,10 +56,10 @@
           <div class="card-body">
             <h5 class="card-title">ALife Core</h5>
             <p class="card-text">
-              An artificial life ecosystem.
+              Artificial life ecosystem.
             </p>
           </div>
-          <a href="pages/droppings.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000"
+          <a href="pages/alife_core.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000"
             class="parent-element-link"></a>
         </div>
       </div>
@@ -66,7 +67,7 @@
         <div class="card">
           <img class="card-img-top" src="resources/docs/image009.png">
           <div class="card-body">
-            <h5 class="card-title">Machines</h5>
+            <h5 class="card-title">ALife Core v2</h5>
             <p class="card-text">
             </p>
           </div>
@@ -78,9 +79,9 @@
         <div class="card">
           <img class="card-img-top" src="resources/docs/image013.gif">
           <div class="card-body">
-            <h5 class="card-title">Atmosphere simulation</h5>
+            <h5 class="card-title">Cellular Atmosphere</h5>
             <p class="card-text">
-              Cellular automata implementation
+              Atmosphere simulator implemented by cellular automata.
             </p>
           </div>
           <a href="pages/cellular_atmosphere.html?debug=1&size=10&spring=0&speed=10" class="parent-element-link"></a>
@@ -90,9 +91,9 @@
         <div class="card">
           <img class="card-img-top" src="resources/docs/image014.gif">
           <div class="card-body">
-            <h5 class="card-title">Orbital motion</h5>
+            <h5 class="card-title">Orbital Motion</h5>
             <p class="card-text">
-              Orbital motion & orbital velocity demo
+              Orbital motion & orbital velocity demo.
             </p>
           </div>
           <a href="pages/orbital_motion.html" class="parent-element-link"></a>
@@ -102,9 +103,9 @@
         <div class="card">
           <img class="card-img-top" src="resources/docs/image015.gif">
           <div class="card-body">
-            <h5 class="card-title">Gravitational field</h5>
+            <h5 class="card-title">Gravitational Field</h5>
             <p class="card-text">
-              Multiple gravity sources.
+              Objects with multiple gravity sources.
             </p>
           </div>
           <a href="pages/gravitational_field.html" class="parent-element-link"></a>
@@ -143,9 +144,9 @@
         <div class="card">
           <img class="card-img-top" src="resources/docs/image007.png">
           <div class="card-body">
-            <h5 class="card-title">Process series</h5>
+            <h5 class="card-title">Casey Reas's Process</h5>
             <p class="card-text">
-              Copy of Casey Reas process series
+              Copy of Casey Reas's Process series.
             </p>
           </div>
           <a href="pages/generative_art_002.html?draw_mode=both&objects=320&behavior=B1,B2,B3,B4"
@@ -158,6 +159,7 @@
           <div class="card-body">
             <h5 class="card-title">Bracketed OL-System</h5>
             <p class="card-text">
+              Expanded L-System
             </p>
           </div>
           <a href="pages/bracketed_ol_system.html?debug=1&length=10&weight=1&depth=5&rules=F:F[+F]F[-F][F]&constants=+:20,-:-20&condition=F"
@@ -220,7 +222,7 @@
         <div class="card">
           <div style="height: 160px; background-color: lightgrey;"></div>
           <div class="card-body">
-            <h5 class="card-title">ALife Typescript implementation</h5>
+            <h5 class="card-title">ALife Core Typescript implementation</h5>
             <p class="card-text">
               Working on it
             </p>
