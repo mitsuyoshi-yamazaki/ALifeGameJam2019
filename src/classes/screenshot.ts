@@ -1,7 +1,6 @@
 export class Screenshot {
   public static link: HTMLElement
-  // tslint:disable-next-line:no-any
-  public static canvas: any
+  public static canvas: HTMLCanvasElement
   public static launchTime = Math.floor((new Date()).getTime() / 1000)
 
   public static saveScreenshot() {
@@ -21,7 +20,7 @@ export class Screenshot {
     // tslint:disable-next-line:no-non-null-assertion
     Screenshot.link = document.getElementById("link")!
     // tslint:disable-next-line:no-non-null-assertion
-    Screenshot.canvas = document.getElementById("canvas")!
+    Screenshot.canvas = document.getElementById("canvas") as HTMLCanvasElement
     console.log(`screenshot set ${Screenshot.canvas}`)
   }
 }
