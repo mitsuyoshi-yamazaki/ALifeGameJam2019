@@ -24,10 +24,8 @@ $ yarn install
 # Compile & build sources
 $ yarn build
 
-# Run SimpleHTTPServer (for Python2.x
-$ python -m SimpleHTTPServer 8000
-
-# Open `0.0.0.0:8000` on the web browser
+# Run local web brownser
+$ yarn start
 ```
 
 

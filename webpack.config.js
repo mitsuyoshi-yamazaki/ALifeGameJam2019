@@ -12,7 +12,9 @@ module.exports = {
     matryoshka_2: './src/entry_points/matryoshka_2.ts',
     lsystem: './src/entry_points/lsystem.ts',
     evo_devo: './src/entry_points/evo_devo.ts',
-    bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts'
+    bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts',
+    react_example: './src/entry_points/react_example.tsx',
+    react_main: './src/entry_points/react_main.tsx'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -20,13 +22,13 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.ts$/, use: "ts-loader" }
+      { test: /\.tsx?$/, use: "ts-loader" }
     ]
   },
   resolve: {
     modules: [
       "node_modules"
     ],
-    extensions: [".ts", ".js"]
+    extensions: [".ts", ".js", ".tsx"]
   }
 };

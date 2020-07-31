@@ -135,4 +135,49 @@ export class URLParameter {
 
     return allKeys.filter(k => this.usedKeys.indexOf(k) === -1)
   }
+
+  public toURLString(): string {
+    let str = "?"
+    this.parameters.forEach((value, key) => {
+      str = `${str}&${key}=${value}`
+    })
+
+    return str
+  }
+
+  public getBoolean(key: string, defaultValue: boolean): boolean {
+    const value = this.parameters.get(key)
+    if (value === undefined) {
+      return defaultValue
+    }
+
+    return value === "1"
+  }
+
+  public setBoolean(key: string, value: boolean) {
+    this.parameters.set(key, (value ? "1" : "0"))
+  }
+
+  public getString(key: string, defaultValue: string): string {
+    const maybeString = this.parameters.get(key)
+
+    return maybeString ? maybeString : defaultValue
+  }
+
+  public setString(key: string, value: string) {
+    this.parameters.set(key, value)
+  }
+
+  public getNumber(key: string, defaultValue: number): number {
+    const value = this.parameters.get(key)
+    if (value === undefined) {
+      return defaultValue
+    }
+
+    return Number(this.parameters.get(key))
+  }
+
+  public setNumber(key: string, value: number) {
+    this.parameters.set(key, value.toString())
+  }
 }
