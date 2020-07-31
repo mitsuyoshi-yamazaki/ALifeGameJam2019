@@ -1,10 +1,19 @@
 import * as p5 from "p5"
 import { random, URLParameter } from "../utilities"
 
+enum Material {
+  Vacuum = 0,
+  Hydrogen = 1,
+  Nitrogen = 2,
+  CarbonDioxide = 3,
+}
+
 const parameters = new URLParameter()
-const DEBUG = parameters.boolean("debug", false)
-const size = parameters.int("size", 100)
+const DEBUG = parameters.boolean("debug", false, "d")
+const size = parameters.int("size", 100, "s")
 const isSpringEnabled = parameters.boolean("spring", false)
+const materials = parseMaterials(parameters.string("materials", "H,N", "m"))  // V, H, N, CO2
+const frame = parameters.int("speed", 10, "sp")
 
 let t = 0
 const cells: Cell[][] = []
@@ -24,7 +33,7 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    if (t % 10 !== 0) {
+    if (t % frame !== 0) {
       t += 1
 
       return
@@ -32,7 +41,6 @@ const main = (p: p5) => {
     update()
     draw()
     t += 1
-    setTimestamp(t)
   }
 
   function draw(): void {
@@ -226,11 +234,37 @@ const main = (p: p5) => {
 
 const sketch = new p5(main)
 
-enum Material {
-  Vacuum = 0,
-  Hydrogen = 1,
-  Nitrogen = 2,
-  CarbonDioxide = 3,
+function parseMaterials(rawMaterials: string): Material[] {
+  const result: Material[] = []
+  rawMaterials.split(",")
+    .forEach(m => {
+      let material: Material | undefined
+      switch (m) {
+        case "V":
+          material = Material.Vacuum
+          break
+
+        case "H":
+          material = Material.Hydrogen
+          break
+
+        case "N":
+          material = Material.Nitrogen
+          break
+
+        case "CO2":
+          material = Material.CarbonDioxide
+          break
+
+        default:
+          break
+      }
+      if ((material != undefined) && (result.indexOf(material) === -1)) {
+        result.push(material)
+      }
+    })
+
+  return result
 }
 
 function colorOf(material: Material, p: p5): p5.Color {
@@ -329,13 +363,6 @@ class State {
 
   public static random(): State {
     const state = new State()
-    const materials: Material[] = [
-      // Material.Vacuum,
-      Material.Hydrogen,
-      Material.Nitrogen,
-      Material.CarbonDioxide,
-    ]
-
     state.material = materials[Math.floor(random(materials.length))]
 
     const isVacuum = state.material === Material.Vacuum

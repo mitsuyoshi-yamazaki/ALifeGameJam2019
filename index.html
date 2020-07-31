@@ -1,6 +1,14 @@
 <html>
 
-<head>
+<head prefix="og: http://ogp.me/ns#">
+  <title>ALifes and Generative Arts</title>
+  <meta property="og:title" content="ALifes and Generative Arts" />
+  <meta property="og:description" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image"
+    content="https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/resources/docs/image01.png" />
+  <meta property="og:url" content="https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/index.html" />
+
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-154586552-1"></script>
   <script>
@@ -10,13 +18,6 @@
 
     gtag('config', 'UA-154586552-1');
   </script>
-  <script>
-    var isThumbnail = true;
-  </script>
-  <script src="processing.js"></script>
-  <script src="processingjs/screenshot.js"></script>
-  <script src="p5.min.js"></script>
-  <script src="dist/orbital_motion.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <style>
@@ -33,13 +34,87 @@
     .card-body {
       height: 180px;
     }
+
+    .parent-element-link {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
   </style>
 </head>
 
 <body>
   <div class="container" style="margin-top: 60px;">
-    <h2>Main</h2>
+    <h2>Simulation</h2>
     <div class="row justify-content-start">
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image003.gif">
+          <div class="card-body">
+            <h5 class="card-title">ALife Core</h5>
+            <p class="card-text">
+              Artificial life ecosystem.
+            </p>
+          </div>
+          <a href="pages/alife_core.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000"
+            class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image009.png">
+          <div class="card-body">
+            <h5 class="card-title">ALife Core v2</h5>
+            <p class="card-text">
+            </p>
+          </div>
+          <a href="pages/machine.html?d=1&m=attracted&a=0&t=0&si=200&s=1000&f=0.94&g=&ig=0&p=200&ls=6&mr=0&l=40&bl=20&mi=210&ri=210&af=0.6&rf=0.5&fd=0.05&fv=0.45"
+            class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image013.gif">
+          <div class="card-body">
+            <h5 class="card-title">Cellular Atmosphere</h5>
+            <p class="card-text">
+              Atmosphere simulator implemented by cellular automata.
+            </p>
+          </div>
+          <a href="pages/cellular_atmosphere.html?debug=1&size=10&spring=0&speed=10" class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image014.gif">
+          <div class="card-body">
+            <h5 class="card-title">Orbital Motion</h5>
+            <p class="card-text">
+              Orbital motion & orbital velocity demo.
+            </p>
+          </div>
+          <a href="pages/orbital_motion.html" class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image015.gif">
+          <div class="card-body">
+            <h5 class="card-title">Gravitational Field</h5>
+            <p class="card-text">
+              Objects with multiple gravity sources.
+            </p>
+          </div>
+          <a href="pages/gravitational_field.html" class="parent-element-link"></a>
+        </div>
+      </div>
+    </div>
+    <!-- Generative Art -->
+    <h2 style="margin-top: 60px;">Generative Art</h2>
+    <div class="row">
       <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
         <div class="card">
           <img class="card-img-top" src="resources/docs/image001.png">
@@ -48,26 +123,10 @@
             <p class="card-text">
               An oil painting like generative art based on artificial life ecosystem.
             </p>
-            <a href="pages/blind_painter_classic.html" class="btn btn-primary">Open</a>
           </div>
+          <a href="pages/blind_painter_classic.html" class="parent-element-link"></a>
         </div>
       </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <img class="card-img-top" src="resources/docs/image003.gif">
-          <div class="card-body">
-            <h5 class="card-title">ALife Core</h5>
-            <p class="card-text">
-              An artificial life ecosystem.
-            </p>
-            <a href="pages/droppings.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1000"
-              class="btn btn-primary align-bottom">Open</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <h2 style="margin-top: 40px;">Generative Art</h2>
-    <div class="row">
       <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
         <div class="card">
           <img class="card-img-top" src="resources/docs/image004.png">
@@ -76,37 +135,53 @@
             <p class="card-text">
               Based on ALife Core. The lines connect between a parent and its children.
             </p>
-            <a href="pages/family_line.html?art_mode=1&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
-              class="btn btn-primary align-bottom">Open</a>
           </div>
+          <a href="pages/family_line.html?art_mode=1&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
+            class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image007.png">
+          <div class="card-body">
+            <h5 class="card-title">Casey Reas's Process</h5>
+            <p class="card-text">
+              Copy of Casey Reas's Process series.
+            </p>
+          </div>
+          <a href="pages/generative_art_002.html?draw_mode=both&objects=320&behavior=B1,B2,B3,B4"
+            class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image011.png">
+          <div class="card-body">
+            <h5 class="card-title">Bracketed OL-System</h5>
+            <p class="card-text">
+              Expanded L-System
+            </p>
+          </div>
+          <a href="pages/bracketed_ol_system.html?debug=1&length=10&weight=1&depth=5&rules=F:F[+F]F[-F][F]&constants=+:20,-:-20&condition=F"
+            class="parent-element-link"></a>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img class="card-img-top" src="resources/docs/image012.png">
+          <div class="card-body">
+            <h5 class="card-title">L-System</h5>
+            <p class="card-text">
+            </p>
+          </div>
+          <a href="pages/lsystem.html?depth=12&angle=30&rules=A:-A++A&constants=+:20,-:-20"
+            class="parent-element-link"></a>
         </div>
       </div>
     </div>
-    <h2 style="margin-top: 40px;">Experimental</h2>
+    <!-- Experimental -->
+    <h2 style="margin-top: 60px;">Experimental</h2>
     <div class="row">
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div style="height: 160px; background-color: lightgrey;"></div>
-          <div class="card-body">
-            <h5 class="card-title">Machines</h5>
-            <p class="card-text">
-            </p>
-            <a href="pages/machine.html?d=1&m=attracted&a=0&t=0&si=200&s=1000&f=0.94&g=&ig=0&p=200&ls=6&mr=0&l=40&bl=20&mi=210&ri=210&af=0.6&rf=0.5&fd=0.05&fv=0.45"
-              class="btn btn-primary align-bottom">Open</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div style="height: 160px; background-color: lightgrey;"></div>
-          <div class="card-body">
-            <h5 class="card-title">Matryoshka</h5>
-            <p class="card-text">
-            </p>
-            <a href="pages/matryoshka_2.html" class="btn btn-primary align-bottom">Open</a>
-          </div>
-        </div>
-      </div>
       <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
         <div class="card">
           <div style="height: 160px; background-color: lightgrey;"></div>
@@ -114,69 +189,20 @@
             <h5 class="card-title">Evo-Devo</h5>
             <p class="card-text">
             </p>
-            <a href="pages/evo_devo.html" class="btn btn-primary align-bottom">Open</a>
           </div>
+          <a href="pages/evo_devo.html" class="parent-element-link"></a>
         </div>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
         <div class="card">
-          <div style="height: 160px; background-color: lightgrey;"></div>
+          <img class="card-img-top" src="resources/docs/image010.png">
           <div class="card-body">
-            <h5 class="card-title">Bracketed OL-System</h5>
+            <h5 class="card-title">Matryoshka</h5>
             <p class="card-text">
             </p>
-            <a href="pages/bracketed_ol_system.html?debug=1&length=10&weight=1&depth=5&rules=F:F[+F]F[-F][F]&constants=+:20,-:-20&condition=F"
-              class="btn btn-primary align-bottom">Open</a>
           </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div style="height: 160px; background-color: lightgrey;"></div>
-          <div class="card-body">
-            <h5 class="card-title">L-System</h5>
-            <p class="card-text">
-            </p>
-            <a href="pages/lsystem.html?depth=9&angle=30&rules=A:-A++A&constants=+:20,-:-20"
-              class="btn btn-primary align-bottom">Open</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div style="height: 160px; background-color: lightgrey;"></div>
-          <div class="card-body">
-            <h5 class="card-title">Atmosphere simulation</h5>
-            <p class="card-text">
-              Cellular automata implementation
-            </p>
-            <a href="pages/cellular_atmosphere.html?size=15&debug=1&spring="
-              class="btn btn-primary align-bottom">Open</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div id="orbital-motion-canvas" style="height: 160px;"></div>
-          <div class="card-body">
-            <h5 class="card-title">Orbital motion</h5>
-            <p class="card-text">
-              Orbital motion & orbital velocity demo
-            </p>
-            <a href="pages/orbital_motion.html" class="btn btn-primary align-bottom">Open</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <div style="height: 160px; background-color: lightgrey;"></div>
-          <div class="card-body">
-            <h5 class="card-title">Gravitational field</h5>
-            <p class="card-text">
-              Multiple gravity sources.
-            </p>
-            <a href="pages/gravitational_field.html" class="btn btn-primary align-bottom">Open</a>
-          </div>
+          <a href="pages/matryoshka_2.html?debug=0&art_mode=0&population=100&size=1000&life_size=6&friction=0.5&mutation_rate=0"
+            class="parent-element-link"></a>
         </div>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
@@ -187,34 +213,21 @@
             <p class="card-text">
               The circle size represents how long has it been alive.
             </p>
-            <a href="pages/generative_art_001.html?art_mode=0&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
-              class="btn btn-primary align-bottom">Open</a>
           </div>
+          <a href="pages/generative_art_001.html?art_mode=0&population_size=1000&mutation_rate=0.01&single_gene=0&mode=default&field_size=1000"
+            class="parent-element-link"></a>
         </div>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
         <div class="card">
           <div style="height: 160px; background-color: lightgrey;"></div>
           <div class="card-body">
-            <h5 class="card-title">ALife Typescript implementation</h5>
+            <h5 class="card-title">ALife Core Typescript implementation</h5>
             <p class="card-text">
               Working on it
             </p>
-            <a href="pages/ts.html" class="btn btn-primary align-bottom">Open</a>
           </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
-          <img class="card-img-top" src="resources/docs/image007.png">
-          <div class="card-body">
-            <h5 class="card-title">Process series</h5>
-            <p class="card-text">
-              Copy of Casey Reas process series
-            </p>
-            <a href="pages/generative_art_002.html?draw_mode=both&objects=320&behavior=B1,B2,B3,B4"
-              class="btn btn-primary align-bottom">Open</a>
-          </div>
+          <a href="pages/ts.html" class="parent-element-link"></a>
         </div>
       </div>
     </div>
