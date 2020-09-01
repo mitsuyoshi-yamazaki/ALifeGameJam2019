@@ -1,4 +1,4 @@
-import { Grid, Table, TableHeaderRow } from "@devexpress/dx-react-grid-bootstrap4"
+import { Grid, Table, TableHeaderRow } from "@devexpress/dx-react-grid-material-ui"
 import React, { useEffect, useState } from "react"
 import { URLParameter } from "../utilities"
 
