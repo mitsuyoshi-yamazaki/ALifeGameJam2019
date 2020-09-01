@@ -20,26 +20,27 @@ import { TextParameterInput } from "../tsx/text_parameter_input"
 import { Color, random, URLParameter } from "../utilities"
 import preventExtensions = Reflect.preventExtensions
 
-let timer: NodeJS.Timeout
-
-interface DataRowTick10 {
-  tick: number,
-  count: number
-}
-
 // tslint:disable-next-line:variable-name
 const App = () => {
-  const x: DataRowTick10[] = []
-  const [dataRowTick10, setDataRowTick10] = useState(x)
+  const [dataRowTick1, setDataRowTick1] = useState([] as DataRowTick[])
+  const [dataRowTick10, setDataRowTick10] = useState([] as DataRowTick[])
 
   function update() {
-    console.log("update")
-    setDataRowTick10([...dataRowTick10, { "tick": world.t, "count": world.lives.length}])
+    if (dataRowTick1.length > 20) {
+      const dataRow = dataRowTick1.shift()
+      if (dataRow) {
+        if (dataRowTick10.length > 100) {
+          dataRowTick10.shift()
+        }
+        setDataRowTick10([...dataRowTick10, dataRow])
+      }
+    }
+
+    setDataRowTick1([...dataRowTick1, { "tick": world.t, "count": world.lives.length}])
   }
 
-  console.log("setInterval")
   clearInterval(timer)
-  timer = setInterval(update, 3 * 1000)
+  timer = setInterval(update, 2 * 1000)
 
   const page = "react_main"
 
@@ -86,14 +87,24 @@ const App = () => {
                               label={ "resourceGenerateRate"}/>
       </Container>
       <br/>
-      <BaseGrid initialRows={ dataRowTick10} columns={ [{ "name": "tick", "title": "tick"},
-                                                      { "name": "count", "title": "Count"}]}/>
+      <BaseGrid title={ "grid per 2 sec"} initialRows={ dataRowTick1} columns={ columns}/>
+      <BaseGrid title={ "grid per 20 sec"} initialRows={ dataRowTick10} columns={ columns}/>
       <br/>
       <br/>
       <br/>
     </div>
   )
 }
+
+let timer: NodeJS.Timeout
+
+interface DataRowTick {
+  tick: number,
+  count: number
+}
+
+const columns = [{ "name": "tick", "title": "tick"},
+                 { "name": "count", "title": "Count"}]
 
 const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
