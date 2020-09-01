@@ -1,7 +1,7 @@
 import * as p5 from "p5"
 import React, { useState } from "react"
 import { Button, ButtonGroup, Container, Dropdown, ToggleButton } from "react-bootstrap"
-import ReactDOM from "react-dom"
+import ReactDOM, { unstable_renderSubtreeIntoContainer } from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Gene } from "../classes/gene"
 import { ActiveLife, GeneticLife, GeneticResource, Life } from "../classes/life"
@@ -11,15 +11,35 @@ import { Screenshot } from "../classes/screenshot"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
+import { BaseGrid } from "../tsx/base_grid"
 import { BoolParameterButton } from "../tsx/bool_parameter_button"
 import { NumberParameterInput } from "../tsx/number_parameter_input"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { SelectionParameterRadioButton } from "../tsx/selectoin_parameter_radio_button"
 import { TextParameterInput } from "../tsx/text_parameter_input"
 import { Color, random, URLParameter } from "../utilities"
+import preventExtensions = Reflect.preventExtensions
+
+let timer: NodeJS.Timeout
+
+interface DataRowTick10 {
+  tick: number,
+  count: number
+}
 
 // tslint:disable-next-line:variable-name
 const App = () => {
+  const x: DataRowTick10[] = []
+  const [dataRowTick10, setDataRowTick10] = useState(x)
+
+  function update() {
+    console.log("update")
+    setDataRowTick10([...dataRowTick10, { "tick": world.t, "count": world.lives.length}])
+  }
+
+  console.log("setInterval")
+  clearInterval(timer)
+  timer = setInterval(update, 3 * 1000)
 
   const page = "react_main"
 
@@ -28,44 +48,46 @@ const App = () => {
       <div id="canvas-parent"/>
       <ScreenShotButton/>
       <br/>
-      <Button variant="primary" onClick={reset}>Restart</Button>
+      <Button variant="primary" onClick={ reset}>Restart</Button>
       <br/>
       <br/>
       <Container>
-        <BoolParameterButton parameters={parameters} paramKey={"a"} page={page} defaultValue={false}
-                             effect={value => artMode = value}>ArtMode</BoolParameterButton>
-        <BoolParameterButton parameters={parameters} paramKey={"sr"} page={page} defaultValue={true}
-                             effect={value => showResource = value}>showResource</BoolParameterButton>
-        <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={0}
-                              effect={value => transparency = value}
-                              detail={"opacity of the background in Art Mode.need page reload. 0-255"}
-                              label={"background transparency"}/>
-        <BoolParameterButton parameters={parameters} paramKey={"sg"} page={page} defaultValue={true}
-                             effect={value => startsWithSingleGene = value}>startsWithSingleGene</BoolParameterButton>
-        <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={100}
-                              effect={value => initialPopulation = value} detail={"initial population "} label={"initial population"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
-                              effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"gv"} page={page} defaultValue={20}
-                              effect={value => gravity = value} detail={"gravity"} label={"gravity"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"im"} page={page} defaultValue={0}
-                              effect={value => immobilizedWidth = value} detail={"immobilizedWidth"} label={"immobilizedWidth"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"e"} page={page} defaultValue={100}
-                              effect={value => initialEnergy = value} detail={"initialEnergy"} label={"initialEnergy"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"re"} page={page} defaultValue={100}
-                              effect={value => resourceEnergy = value} detail={"resourceEnergy"} label={"resourceEnergy"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"mr"} page={page} defaultValue={0.03}
-                              effect={value => mutationRate = value} detail={"mutation rate 0.00-1.00"} label={"mutation rate"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"ls"} page={page} defaultValue={6}
-                              effect={value => lifeSize = value} detail={"lifeSize"} label={"lifeSize"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"ec"} page={page} defaultValue={0.01}
-                              effect={value => energyConsumptionRate = value} detail={"energyConsumptionRate"}
-                              label={"energyConsumptionRate"}/>
-        <NumberParameterInput parameters={parameters} paramKey={"rr"} page={page} defaultValue={1}
-                              effect={value => resourceGenerateRate = value} detail={"resourceGenerateRate"}
-                              label={"resourceGenerateRate"}/>
+        <BoolParameterButton parameters={ parameters} paramKey={ "a"} page={ page} defaultValue={ false}
+                             effect={ value => artMode = value}>ArtMode</BoolParameterButton>
+        <BoolParameterButton parameters={ parameters} paramKey={ "sr"} page={ page} defaultValue={ true}
+                             effect={ value => showResource = value}>showResource</BoolParameterButton>
+        <NumberParameterInput parameters={ parameters} paramKey={ "t"} page={ page} defaultValue={ 0}
+                              effect={ value => transparency = value}
+                              detail={ "opacity of the background in Art Mode.need page reload. 0-255"}
+                              label={ "background transparency"}/>
+        <BoolParameterButton parameters={ parameters} paramKey={ "sg"} page={ page} defaultValue={ true}
+                             effect={ value => startsWithSingleGene = value}>startsWithSingleGene</BoolParameterButton>
+        <NumberParameterInput parameters={ parameters} paramKey={ "p"} page={ page} defaultValue={ 100}
+                              effect={ value => initialPopulation = value} detail={ "initial population "} label={ "initial population"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "f"} page={ page} defaultValue={ 0.99}
+                              effect={ value => friction = value} detail={ "friction 0.00-1.00"} label={ "friction"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "gv"} page={ page} defaultValue={ 20}
+                              effect={ value => gravity = value} detail={ "gravity"} label={ "gravity"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "im"} page={ page} defaultValue={ 0}
+                              effect={ value => immobilizedWidth = value} detail={ "immobilizedWidth"} label={ "immobilizedWidth"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "e"} page={ page} defaultValue={ 100}
+                              effect={ value => initialEnergy = value} detail={ "initialEnergy"} label={ "initialEnergy"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "re"} page={ page} defaultValue={ 100}
+                              effect={ value => resourceEnergy = value} detail={ "resourceEnergy"} label={ "resourceEnergy"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "mr"} page={ page} defaultValue={ 0.03}
+                              effect={ value => mutationRate = value} detail={ "mutation rate 0.00-1.00"} label={ "mutation rate"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "ls"} page={ page} defaultValue={ 6}
+                              effect={ value => lifeSize = value} detail={ "lifeSize"} label={ "lifeSize"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "ec"} page={ page} defaultValue={ 0.01}
+                              effect={ value => energyConsumptionRate = value} detail={ "energyConsumptionRate"}
+                              label={ "energyConsumptionRate"}/>
+        <NumberParameterInput parameters={ parameters} paramKey={ "rr"} page={ page} defaultValue={ 1}
+                              effect={ value => resourceGenerateRate = value} detail={ "resourceGenerateRate"}
+                              label={ "resourceGenerateRate"}/>
       </Container>
       <br/>
+      <BaseGrid initialRows={ dataRowTick10} columns={ [{ "name": "tick", "title": "tick"},
+                                                      { "name": "count", "title": "Count"}]}/>
       <br/>
       <br/>
       <br/>
