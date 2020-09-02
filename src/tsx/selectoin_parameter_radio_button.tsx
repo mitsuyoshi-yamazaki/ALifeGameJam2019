@@ -1,5 +1,8 @@
+import { FormGroup } from "@material-ui/core"
+import FormControlLabel from "@material-ui/core/FormControlLabel"
+import Radio from "@material-ui/core/Radio"
+import RadioGroup from "@material-ui/core/RadioGroup"
 import React, { useEffect, useState } from "react"
-import { ButtonGroup, Col, Row, ToggleButton } from "react-bootstrap"
 import { URLParameter } from "../utilities"
 
 interface Props {
@@ -20,24 +23,18 @@ export function SelectionParameterRadioButton({modes, effect, parameters, paramK
     window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
-  return <Row><Col><ButtonGroup toggle>
+  return <RadioGroup row defaultValue={defaultValue}>
     {modes.map((radio, idx) => (
-      <ToggleButton
-        key={idx}
-        type="radio"
-        variant="secondary"
-        name="radio"
+      <FormControlLabel
+        control={<Radio color="primary"/>}
+        labelPlacement="end"
         value={radio.value}
-        checked={radioValue === radio.value}
+        label={radio.name}
         onChange={(e: any) => {
           setRadioValue(e.currentTarget.value)
         }}
-      >
-        {radio.name}
-      </ToggleButton>
+      ></FormControlLabel>
     ))}
-  </ButtonGroup>
-  </Col>
-  </Row>
+  </RadioGroup>
 
 }

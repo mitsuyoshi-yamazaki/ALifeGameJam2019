@@ -1,8 +1,6 @@
 // tslint:disable:object-literal-sort-keys whitespace
-import { Button, createStyles, FormGroup, Popover, Theme, Typography } from "@material-ui/core"
-import { makeStyles } from "@material-ui/core/styles"
+import { FormGroup } from "@material-ui/core"
 import TextField from "@material-ui/core/TextField"
-import { Label, TextFields } from "@material-ui/icons"
 import React, { useEffect, useState } from "react"
 import { URLParameter } from "../utilities"
 import { CommonPopover } from "./popover"

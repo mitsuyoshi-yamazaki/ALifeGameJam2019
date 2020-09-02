@@ -36,7 +36,6 @@
     "material-table": "^1.69.0",
     "p5": "^0.8.0",
     "react": "^16.13.1",
-    "react-bootstrap": "1.0.1",
     "react-dom": "^16.13.1",
     "webpack-dev-server": "^3.11.0"
   },
