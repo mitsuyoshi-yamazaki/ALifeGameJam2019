@@ -45,7 +45,7 @@ export function CommonPopover({paramKey, open, anchorEl, handlePopoverClose, det
       "horizontal": "left",
     }}
     onClose={handlePopoverClose}
-    disableRestoreFocus
+    disableEnforceFocus
   >
     <Typography>{detail}</Typography>
   </Popover>
