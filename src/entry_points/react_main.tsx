@@ -18,20 +18,20 @@ import { random, URLParameter } from "../utilities"
 // tslint:disable-next-line:variable-name
 const App = () => {
   const [dataRowTick1, setDataRowTick1] = useState([] as DataRowTick[])
-  const [dataRowTick10, setDataRowTick10] = useState([] as DataRowTick[])
+  const [dataRowTick2, setDataRowTick2] = useState([] as DataRowTick[])
 
   updateChart = (_world: World) => {
     const newRow = { "tick": world.t, "count": world.lives.length}
-    if (_world.t % 200 === 1) {
+    if (_world.t % 100 === 1) {
       setDataRowTick1([...dataRowTick1, newRow])
       if (dataRowTick1.length > 20) {
         dataRowTick1.shift()
       }
     }
-    if (_world.t % 2000 === 1) {
-      setDataRowTick10([...dataRowTick10, newRow])
-      if (dataRowTick10.length > 100) {
-        dataRowTick10.shift()
+    if (_world.t % 500 === 1) {
+      setDataRowTick2([...dataRowTick2, newRow])
+      if (dataRowTick2.length > 100) {
+        dataRowTick2.shift()
       }
     }
   }
@@ -79,10 +79,10 @@ const App = () => {
                             effect={ value => resourceGenerateRate = value} detail={ "resourceGenerateRate"}
                             label={ "resourceGenerateRate"}/>
       <br/>
-      <BaseGrid title={ "grid per 2 sec"} initialRows={ dataRowTick1} columns={ columns}/>
-      <BaseChart title={ "chart per 2 sec"} initialRows={ dataRowTick1}/>
-      <BaseGrid title={ "grid per 20 sec"} initialRows={ dataRowTick10} columns={ columns}/>
-      <BaseChart title={ "chart per 20 sec"} initialRows={ dataRowTick10}/>
+      <BaseGrid title={ "grid short term"} initialRows={ dataRowTick1} columns={ columns}/>
+      <BaseChart title={ "chart short term"} initialRows={ dataRowTick1}/>
+      <BaseGrid title={ "grid long term"} initialRows={ dataRowTick2} columns={ columns}/>
+      <BaseChart title={ "chart long term"} initialRows={ dataRowTick2}/>
       <br/>
       <br/>
       <br/>
