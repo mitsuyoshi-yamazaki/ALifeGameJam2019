@@ -20,22 +20,21 @@ const App = () => {
   const [dataRowTick1, setDataRowTick1] = useState([] as DataRowTick[])
   const [dataRowTick10, setDataRowTick10] = useState([] as DataRowTick[])
 
-  function update() {
-    if (dataRowTick1.length > 20) {
-      const dataRow = dataRowTick1.shift()
-      if (dataRow) {
-        if (dataRowTick10.length > 100) {
-          dataRowTick10.shift()
-        }
-        setDataRowTick10([...dataRowTick10, dataRow])
+  updateChart = (_world: World) => {
+    const newRow = { "tick": world.t, "count": world.lives.length}
+    if (_world.t % 200 === 1) {
+      setDataRowTick1([...dataRowTick1, newRow])
+      if (dataRowTick1.length > 20) {
+        dataRowTick1.shift()
       }
     }
-
-    setDataRowTick1([...dataRowTick1, { "tick": world.t, "count": world.lives.length}])
+    if (_world.t % 2000 === 1) {
+      setDataRowTick10([...dataRowTick10, newRow])
+      if (dataRowTick10.length > 100) {
+        dataRowTick10.shift()
+      }
+    }
   }
-
-  clearInterval(timer)
-  timer = setInterval(update, 2 * 1000)
 
   const page = "react_main"
 
@@ -91,7 +90,7 @@ const App = () => {
   )
 }
 
-let timer: NodeJS.Timeout
+let updateChart: (world: World) => void
 
 interface DataRowTick {
   tick: number,
@@ -203,6 +202,7 @@ const main = (p: p5) => {
     world.addLives(resources)
     world.next()
     world.draw(p)
+    updateChart(world)
   }
 
 }
