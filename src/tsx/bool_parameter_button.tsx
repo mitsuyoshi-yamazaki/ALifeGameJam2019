@@ -1,5 +1,7 @@
+import { FormGroup } from "@material-ui/core"
+import Checkbox from "@material-ui/core/Checkbox"
+import FormControlLabel from "@material-ui/core/FormControlLabel"
 import React, { useEffect, useState } from "react"
-import { Col, Row, ToggleButton } from "react-bootstrap"
 import { URLParameter } from "../utilities"
 
 interface Props {
@@ -12,7 +14,7 @@ interface Props {
   effect(value: boolean): void
 }
 
-export function BoolParameterButton({parameters, paramKey, page, effect, children, defaultValue}: Props) {
+export function BoolParameterButton({ parameters, paramKey, page, effect, children, defaultValue}: Props) {
   const [checked, setChecked] = useState(parameters.getBoolean(paramKey, defaultValue))
   useEffect(() => {
     effect(checked)
@@ -20,15 +22,19 @@ export function BoolParameterButton({parameters, paramKey, page, effect, childre
     window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
-  return <Row><Col><ToggleButton
-    type="checkbox"
-    variant="secondary"
-    checked={checked}
-    value="1"
-    onChange={(e: any) => {
-      setChecked(e.currentTarget.checked)
-    }}
-  >{children}</ToggleButton>
-  </Col>
-  </Row>
+  return <FormGroup row>
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={ checked}
+          value="1"
+          onChange={ (e: any) => {
+            setChecked(e.currentTarget.checked)
+          }}
+        />
+      }
+      label={ children}
+    />
+  </FormGroup>
+
 }

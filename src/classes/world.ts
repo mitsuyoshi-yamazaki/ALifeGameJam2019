@@ -13,7 +13,9 @@ export interface World {
   lives: Life[]
 
   addObjects(objects: WorldObject[]): void
+
   addLives(lives: Life[]): void
+
   next(): void
 
   draw(p: p5): void
@@ -23,15 +25,19 @@ export class VanillaWorld implements World {
   public get size(): Vector {
     return this._size
   }
+
   public get t(): number {
     return this._t
   }
+
   public get terrains(): Terrain[] {
     return this._terrains
   }
+
   public get objects(): WorldObject[] {
     return this._objects
   }
+
   public get lives(): Life[] {
     return this._lives
   }
@@ -39,7 +45,7 @@ export class VanillaWorld implements World {
   protected _lives: Life[] = []
   private readonly _size: Vector
 
-  private _t = 0
+  protected _t = 0
 
   private readonly _terrains: Terrain[]
 
@@ -129,11 +135,14 @@ export class VanillaWorld implements World {
 
 export class PredPreyWorld extends VanillaWorld {
   protected _lives: GeneticLife[] = []
+  protected _t = 0
+
   public get lives(): GeneticLife[] {
     return this._lives
   }
 
   public next(): void {
+    this._t += 1
     const eatProbability = 0.9
 
     const killed: GeneticLife[] = []

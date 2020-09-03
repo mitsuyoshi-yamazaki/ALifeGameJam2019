@@ -1,6 +1,6 @@
+import { Button } from "@material-ui/core"
 import * as p5 from "p5"
 import React, { useState } from "react"
-import { Button, ButtonGroup, Container, Dropdown, ToggleButton } from "react-bootstrap"
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
 import { Life } from "../classes/life"
@@ -34,9 +34,8 @@ const App = () => {
       <div id="canvas-parent"/>
       <ScreenShotButton/>
       <br/>
-      <Button variant="primary" onClick={reset}>Restart</Button>
+      <Button variant="contained" onClick={reset}>Restart</Button>
       <br/>
-      <Container>
         <BoolParameterButton parameters={parameters} paramKey={"a"} page={page} defaultValue={false}
                              effect={value => artMode = value}>ArtMode</BoolParameterButton>
         <SelectionParameterRadioButton parameters={parameters} modes={modes} paramKey={"m"} page={page} defaultValue={"default"}
@@ -78,7 +77,6 @@ const App = () => {
                               effect={value => familyVelocity = value} detail={"family velocity"} label={"family velocity"}/>
         <NumberParameterInput parameters={parameters} paramKey={"ld"} page={page} defaultValue={0.001}
                               effect={value => lifespanDecresement = value} detail={"lifespan decresement"} label={"lifespan decresement"}/>
-      </Container>
     </div>
   )
 }

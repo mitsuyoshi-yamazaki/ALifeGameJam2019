@@ -1,6 +1,8 @@
+import { FormGroup } from "@material-ui/core"
+import TextField from "@material-ui/core/TextField"
 import React, { useEffect, useState } from "react"
-import { InputGroup, FormControl, OverlayTrigger, Tooltip, Row, Col } from "react-bootstrap"
 import { URLParameter } from "../utilities"
+import { CommonPopover } from "./popover"
 
 interface Props {
   parameters: URLParameter
@@ -21,31 +23,29 @@ export function TextParameterInput({parameters, paramKey, page, effect, defaultV
     window.history.pushState("page", page, `/pages/${page}.html${parameters.toURLString()}`)
   })
 
-  return <Row>
-    <Col>
-      <label>{label}</label>
-    </Col>
-    <Col>
-      <OverlayTrigger
-        key={paramKey}
-        placement="bottom"
-        overlay={
-          <Tooltip id={`tooltip-${paramKey}`}>
-            {detail}
-          </Tooltip>
-        }
-      >
-        <FormControl
-          type="text"
-          placeholder={label}
-          aria-label={label}
-          aria-describedby="btnGroupAddon2"
-          value={value}
-          onChange={(e: any) => {
-            setValue(e.currentTarget.value)
-          }}
-        />
-      </OverlayTrigger>
-    </Col>
-  </Row>
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
+  const open = Boolean(anchorEl)
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handlePopoverClose = () => {
+    setAnchorEl(null)
+  }
+
+  return <FormGroup row>
+    <TextField
+      label={label}
+      variant="standard"
+      value={value}
+      onChange={(e: any) => {
+        setValue(e.currentTarget.value)
+      }}
+      aria-owns={open ? "mouse-over-popover" : undefined}
+      aria-haspopup="true"
+      onMouseEnter={handlePopoverOpen}
+      onMouseLeave={handlePopoverClose}
+    />
+    <CommonPopover paramKey={paramKey} anchorEl={anchorEl} detail={detail} open={open} handlePopoverClose={handlePopoverClose}/>
+  </FormGroup>
+
 }
