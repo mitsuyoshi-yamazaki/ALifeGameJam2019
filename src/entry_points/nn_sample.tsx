@@ -58,7 +58,7 @@ const App = () => {
                             effect={value => transparency = value}
                             detail={"opacity of the background in Art Mode.need page reload. 0-255"}
                             label={"background transparency"}/>
-      <BoolParameterButton parameters={parameters} paramKey={"sg"} page={page} defaultValue={true}
+      <BoolParameterButton parameters={parameters} paramKey={"sg"} page={page} defaultValue={false}
                            effect={value => startsWithSingleGene = value}>startsWithSingleGene</BoolParameterButton>
       <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={10}
                             effect={value => initialPopulation = value} detail={"initial population "} label={"initial population"}/>
@@ -79,7 +79,7 @@ const App = () => {
       <NumberParameterInput parameters={parameters} paramKey={"ec"} page={page} defaultValue={0.01}
                             effect={value => energyConsumptionRate = value} detail={"energyConsumptionRate"}
                             label={"energyConsumptionRate"}/>
-      <NumberParameterInput parameters={parameters} paramKey={"rr"} page={page} defaultValue={0}
+      <NumberParameterInput parameters={parameters} paramKey={"rr"} page={page} defaultValue={0.01}
                             effect={value => resourceGenerateRate = value} detail={"resourceGenerateRate"}
                             label={"resourceGenerateRate"}/>
       <br/>
@@ -102,7 +102,7 @@ interface DataRowTick {
 }
 
 const columns = [{"name": "tick", "title": "tick"},
-  {"name": "count", "title": "Count"}]
+                 {"name": "count", "title": "Count"}]
 
 const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
@@ -235,16 +235,20 @@ class Brain {
   }
 
   public static randomBrain(): Brain {
-    const wih = tf.fill([5, 6], random(1, -1))
-    const who = tf.fill([2, 5], random(1, -1))
+    const wih = Brain.getRandomFillTensor(5, 6)
+    const who = Brain.getRandomFillTensor(2, 5)
 
     return new Brain(wih, who)
+  }
+
+  private static getRandomFillTensor(a: number, b: number): Tensor {
+    return tf.tensor2d(Array.from(Array(a * b).keys()).map(_ => random(1, -1)), [a, b])
   }
 
   public think(vx: number, vy: number, distFoodX: number, distFoodY: number, distNeighborX: number, distNeighborY: number): number[] {
     const input = tf.tensor1d([vx, vy, distFoodX, distFoodY, distNeighborX, distNeighborY])
     const h1 = this.af(this._wih.dot(input))
-    const r = this.af(this._who.dot(h1)).mul(0.5).arraySync() as number[]
+    const r = this.af(this._who.dot(h1)).mul(0.01).arraySync() as number[]
     const fx = r[0] ?? 0
     const fy = r[1] ?? 0
 
@@ -305,7 +309,7 @@ export class PaintActiveLife extends ActiveLife {
     // const max = 1
     // const vx = random(max, -max)
     // const vy = random(max, -max)
-    if (world.t % 100 === 0) {
+    if (world.t % 10 === 0) {
       let nFoodPosition = Vector.zero()
       let nFoodDist = 100000
       let nNeighborPosition = Vector.zero()
