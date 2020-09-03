@@ -1,4 +1,5 @@
 import { Button } from "@material-ui/core"
+import * as tf from "@tensorflow/tfjs"
 import { Tensor } from "@tensorflow/tfjs-core"
 import * as p5 from "p5"
 import React, { useState } from "react"
@@ -22,7 +23,7 @@ const App = () => {
   const [dataRowTick2, setDataRowTick2] = useState([] as DataRowTick[])
 
   updateChart = (_world: World) => {
-    const newRow = { "tick": world.t, "count": world.lives.length}
+    const newRow = {"tick": world.t, "count": world.lives.length}
     if (_world.t % 100 === 1) {
       setDataRowTick1([...dataRowTick1, newRow])
       if (dataRowTick1.length > 20) {
@@ -44,46 +45,46 @@ const App = () => {
       <div id="canvas-parent"/>
       <ScreenShotButton/>
       <br/>
-      <Button variant="contained" onClick={ reset}>Restart</Button>
+      <Button variant="contained" onClick={reset}>Restart</Button>
       <br/>
       <br/>
-      <BoolParameterButton parameters={ parameters} paramKey={ "a"} page={ page} defaultValue={ false}
-                           effect={ value => artMode = value}>ArtMode</BoolParameterButton>
-      <BoolParameterButton parameters={ parameters} paramKey={ "sr"} page={ page} defaultValue={ true}
-                           effect={ value => showResource = value}>showResource</BoolParameterButton>
-      <NumberParameterInput parameters={ parameters} paramKey={ "t"} page={ page} defaultValue={ 0}
-                            effect={ value => transparency = value}
-                            detail={ "opacity of the background in Art Mode.need page reload. 0-255"}
-                            label={ "background transparency"}/>
-      <BoolParameterButton parameters={ parameters} paramKey={ "sg"} page={ page} defaultValue={ true}
-                           effect={ value => startsWithSingleGene = value}>startsWithSingleGene</BoolParameterButton>
-      <NumberParameterInput parameters={ parameters} paramKey={ "p"} page={ page} defaultValue={ 100}
-                            effect={ value => initialPopulation = value} detail={ "initial population "} label={ "initial population"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "f"} page={ page} defaultValue={ 0.99}
-                            effect={ value => friction = value} detail={ "friction 0.00-1.00"} label={ "friction"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "gv"} page={ page} defaultValue={ 20}
-                            effect={ value => gravity = value} detail={ "gravity"} label={ "gravity"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "im"} page={ page} defaultValue={ 0}
-                            effect={ value => immobilizedWidth = value} detail={ "immobilizedWidth"} label={ "immobilizedWidth"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "e"} page={ page} defaultValue={ 100}
-                            effect={ value => initialEnergy = value} detail={ "initialEnergy"} label={ "initialEnergy"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "re"} page={ page} defaultValue={ 100}
-                            effect={ value => resourceEnergy = value} detail={ "resourceEnergy"} label={ "resourceEnergy"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "mr"} page={ page} defaultValue={ 0.03}
-                            effect={ value => mutationRate = value} detail={ "mutation rate 0.00-1.00"} label={ "mutation rate"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "ls"} page={ page} defaultValue={ 6}
-                            effect={ value => lifeSize = value} detail={ "lifeSize"} label={ "lifeSize"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "ec"} page={ page} defaultValue={ 0.01}
-                            effect={ value => energyConsumptionRate = value} detail={ "energyConsumptionRate"}
-                            label={ "energyConsumptionRate"}/>
-      <NumberParameterInput parameters={ parameters} paramKey={ "rr"} page={ page} defaultValue={ 0}
-                            effect={ value => resourceGenerateRate = value} detail={ "resourceGenerateRate"}
-                            label={ "resourceGenerateRate"}/>
+      <BoolParameterButton parameters={parameters} paramKey={"a"} page={page} defaultValue={false}
+                           effect={value => artMode = value}>ArtMode</BoolParameterButton>
+      <BoolParameterButton parameters={parameters} paramKey={"sr"} page={page} defaultValue={true}
+                           effect={value => showResource = value}>showResource</BoolParameterButton>
+      <NumberParameterInput parameters={parameters} paramKey={"t"} page={page} defaultValue={0}
+                            effect={value => transparency = value}
+                            detail={"opacity of the background in Art Mode.need page reload. 0-255"}
+                            label={"background transparency"}/>
+      <BoolParameterButton parameters={parameters} paramKey={"sg"} page={page} defaultValue={true}
+                           effect={value => startsWithSingleGene = value}>startsWithSingleGene</BoolParameterButton>
+      <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={100}
+                            effect={value => initialPopulation = value} detail={"initial population "} label={"initial population"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
+                            effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"gv"} page={page} defaultValue={20}
+                            effect={value => gravity = value} detail={"gravity"} label={"gravity"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"im"} page={page} defaultValue={0}
+                            effect={value => immobilizedWidth = value} detail={"immobilizedWidth"} label={"immobilizedWidth"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"e"} page={page} defaultValue={100}
+                            effect={value => initialEnergy = value} detail={"initialEnergy"} label={"initialEnergy"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"re"} page={page} defaultValue={100}
+                            effect={value => resourceEnergy = value} detail={"resourceEnergy"} label={"resourceEnergy"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"mr"} page={page} defaultValue={0.03}
+                            effect={value => mutationRate = value} detail={"mutation rate 0.00-1.00"} label={"mutation rate"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"ls"} page={page} defaultValue={6}
+                            effect={value => lifeSize = value} detail={"lifeSize"} label={"lifeSize"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"ec"} page={page} defaultValue={0.01}
+                            effect={value => energyConsumptionRate = value} detail={"energyConsumptionRate"}
+                            label={"energyConsumptionRate"}/>
+      <NumberParameterInput parameters={parameters} paramKey={"rr"} page={page} defaultValue={0}
+                            effect={value => resourceGenerateRate = value} detail={"resourceGenerateRate"}
+                            label={"resourceGenerateRate"}/>
       <br/>
-      <BaseGrid title={ "grid short term"} initialRows={ dataRowTick1} columns={ columns}/>
-      <BaseChart title={ "chart short term"} initialRows={ dataRowTick1}/>
-      <BaseGrid title={ "grid long term"} initialRows={ dataRowTick2} columns={ columns}/>
-      <BaseChart title={ "chart long term"} initialRows={ dataRowTick2}/>
+      <BaseGrid title={"grid short term"} initialRows={dataRowTick1} columns={columns}/>
+      <BaseChart title={"chart short term"} initialRows={dataRowTick1}/>
+      <BaseGrid title={"grid long term"} initialRows={dataRowTick2} columns={columns}/>
+      <BaseChart title={"chart long term"} initialRows={dataRowTick2}/>
       <br/>
       <br/>
       <br/>
@@ -98,8 +99,8 @@ interface DataRowTick {
   count: number
 }
 
-const columns = [{ "name": "tick", "title": "tick"},
-                 { "name": "count", "title": "Count"}]
+const columns = [{"name": "tick", "title": "tick"},
+  {"name": "count", "title": "Count"}]
 
 const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
@@ -158,7 +159,7 @@ class Controller {
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x), random(positionSpace.y))
       const gene = startsWithSingleGene ? initialGene : Gene.random()
-      lives.push(new PaintActiveLife(position, gene, lifeSize, initialEnergy, mutationRate))
+      lives.push(new PaintActiveLife(position, gene, lifeSize, initialEnergy, mutationRate, new Brain()))
     }
     if (velocity != undefined) {
       lives.forEach(life => {
@@ -188,16 +189,26 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
+    function makeResource() {
+      const position = new Vector(random(fieldWidth * 0.99), random(fieldHeight * 0.99))
+      const resource = new GeneticResource(position, Gene.random(), resourceSize, resourceEnergy)
+      resource.velocity = calculateOrbitalVelocity(position, gravityCenter, gravity)
+      resources.push(resource)
+    }
+
     p.fill(0xFF, backgroundTransparency())
     p.rect(0, 0, fieldWidth, fieldHeight) // background() では動作しない
 
     const resources: GeneticLife[] = []
     const resourceSize = showResource ? lifeSize * 0.6 : 0
-    for (let i = 0; i < resourceGenerateRate; i += 1) {
-      const position = new Vector(random(fieldWidth * 0.99), random(fieldHeight * 0.99))
-      const resource = new GeneticResource(position, Gene.random(), resourceSize, resourceEnergy)
-      resource.velocity = calculateOrbitalVelocity(position, gravityCenter, gravity)
-      resources.push(resource)
+    if (resourceGenerateRate < 1) {
+      if (Math.random() < resourceGenerateRate) {
+        makeResource()
+      }
+    } else {
+      for (let i = 0; i < resourceGenerateRate; i += 1) {
+        makeResource()
+      }
     }
 
     world.addLives(resources)
@@ -212,7 +223,16 @@ ReactDOM.render(<App/>, document.getElementById("root"))
 
 const sketch = new p5(main)
 
+class Brain {
+  public think(): [number, number] {
+    const max = 1
+
+    return [random(-max, max), random(-max, max)]
+  }
+}
+
 export class PaintActiveLife extends ActiveLife {
+  protected _brain: Brain
   protected _gene: Gene
   protected _energy: number
 
@@ -235,12 +255,14 @@ export class PaintActiveLife extends ActiveLife {
     energy: number,
     // tslint:disable-next-line:no-shadowed-variable
     public readonly mutationRate: number,
+    brain: Brain,
   ) {
     super(position)
     this._size = size
     this._mass = 0.5
     this._energy = energy
     this._gene = gene
+    this._brain = brain
   }
 
   public eaten(): WorldObject[] {
@@ -254,9 +276,10 @@ export class PaintActiveLife extends ActiveLife {
       return [Force.zero(), []]
     }
 
-    const max = 1
-    const vx = random(max, -max)
-    const vy = random(max, -max)
+    // const max = 1
+    // const vx = random(max, -max)
+    // const vy = random(max, -max)
+    const [vx, vy] = this._brain.think()
 
     const force = new Force(new Vector(vx, vy))
     this._energy = Math.max(this.energy - (force.consumedEnergyWith(this.mass) * energyConsumptionRate), 0)
@@ -306,7 +329,7 @@ export class PaintActiveLife extends ActiveLife {
     } else {
       gene = this.gene.copy()
     }
-    const offspring = new PaintActiveLife(position, gene, this.size, energyAfterReproduction, this.mutationRate)
+    const offspring = new PaintActiveLife(position, gene, this.size, energyAfterReproduction, this.mutationRate, this._brain)
     offspring.velocity = this.velocity.sized(-1)
 
     return [offspring]
