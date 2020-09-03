@@ -5,7 +5,7 @@ import * as p5 from "p5"
 import React, { useState } from "react"
 import ReactDOM from "react-dom"
 import { Gene } from "../classes/gene"
-import { ActiveLife, GeneticLife, GeneticResource, Life } from "../classes/life"
+import { ActiveLife, GeneticActiveLife, GeneticLife, GeneticResource, Life } from "../classes/life"
 import { WorldObject } from "../classes/object"
 import { calculateOrbitalVelocity, Force, Vector } from "../classes/physics"
 import { Terrain, VanillaTerrain } from "../classes/terrain"
@@ -17,6 +17,8 @@ import { NumberParameterInput } from "../tsx/number_parameter_input"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { random, URLParameter } from "../utilities"
 
+// tslint:disable:newline-per-chained-call
+// tslint:disable:whitespace
 // tslint:disable-next-line:variable-name
 const App = () => {
   const [dataRowTick1, setDataRowTick1] = useState([] as DataRowTick[])
@@ -58,7 +60,7 @@ const App = () => {
                             label={"background transparency"}/>
       <BoolParameterButton parameters={parameters} paramKey={"sg"} page={page} defaultValue={true}
                            effect={value => startsWithSingleGene = value}>startsWithSingleGene</BoolParameterButton>
-      <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={100}
+      <NumberParameterInput parameters={parameters} paramKey={"p"} page={page} defaultValue={10}
                             effect={value => initialPopulation = value} detail={"initial population "} label={"initial population"}/>
       <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
                             effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
@@ -159,7 +161,7 @@ class Controller {
     for (let i = 0; i < numberOfLives; i += 1) {
       const position = new Vector(random(positionSpace.x), random(positionSpace.y))
       const gene = startsWithSingleGene ? initialGene : Gene.random()
-      lives.push(new PaintActiveLife(position, gene, lifeSize, initialEnergy, mutationRate, new Brain()))
+      lives.push(new PaintActiveLife(position, gene, lifeSize, initialEnergy, mutationRate, Brain.randomBrain()))
     }
     if (velocity != undefined) {
       lives.forEach(life => {
@@ -171,7 +173,7 @@ class Controller {
   }
 }
 
-let world: World
+let world: PredPreyWorld
 const fieldWidth = 1200
 const fieldHeight = Math.floor(fieldWidth * 10 / 16)
 const worldSize = new Vector(fieldWidth, fieldHeight)
@@ -224,10 +226,33 @@ ReactDOM.render(<App/>, document.getElementById("root"))
 const sketch = new p5(main)
 
 class Brain {
-  public think(): [number, number] {
-    const max = 1
+  private _wih: Tensor
+  private _who: Tensor
 
-    return [random(-max, max), random(-max, max)]
+  public constructor(wih: Tensor, who: Tensor) {
+    this._wih = wih
+    this._who = who
+  }
+
+  public static randomBrain(): Brain {
+    const wih = tf.fill([5, 6], random(1, -1))
+    const who = tf.fill([2, 5], random(1, -1))
+
+    return new Brain(wih, who)
+  }
+
+  public think(vx: number, vy: number, distFoodX: number, distFoodY: number, distNeighborX: number, distNeighborY: number): number[] {
+    const input = tf.tensor1d([vx, vy, distFoodX, distFoodY, distNeighborX, distNeighborY])
+    const h1 = this.af(this._wih.dot(input))
+    const r = this.af(this._who.dot(h1)).mul(0.5).arraySync() as number[]
+    const fx = r[0] ?? 0
+    const fy = r[1] ?? 0
+
+    return [fx, fy]
+  }
+
+  private af(tensor: Tensor): Tensor {
+    return tensor.atan()
   }
 }
 
@@ -235,6 +260,7 @@ export class PaintActiveLife extends ActiveLife {
   protected _brain: Brain
   protected _gene: Gene
   protected _energy: number
+  protected will: Vector = Vector.zero()
 
   public get gene(): Gene {
     return this._gene
@@ -279,9 +305,45 @@ export class PaintActiveLife extends ActiveLife {
     // const max = 1
     // const vx = random(max, -max)
     // const vy = random(max, -max)
-    const [vx, vy] = this._brain.think()
+    if (world.t % 100 === 0) {
+      let nFoodPosition = Vector.zero()
+      let nFoodDist = 100000
+      let nNeighborPosition = Vector.zero()
+      let nNeighborDist = 100000
+      world.lives.forEach(value => {
+                            if (value === this) {
+                              return
+                            }
+                            // FIXME 定数化
+                            if (!this.gene.canEat(value.gene, 0.9)) {
+                              return
+                            }
+                            const dist = this.position.dist(value.position)
+                            if (value instanceof GeneticResource) {
+                              if (dist < nFoodDist) {
+                                nFoodPosition = value.position.sub(this.position)
+                                nFoodDist = value.position.dist(this.position)
+                              }
+                            }
+                            if (value instanceof GeneticActiveLife) {
+                              if (dist < nNeighborDist) {
+                                nNeighborPosition = value.position.sub(this.position)
+                                nNeighborDist = value.position.dist(this.position)
+                              }
+                            }
 
-    const force = new Force(new Vector(vx, vy))
+                          },
+      )
+
+      const [vx, vy] = this._brain.think(this.velocity.x,
+                                         this.velocity.y,
+                                         nFoodPosition.x,
+                                         nFoodPosition.y,
+                                         nNeighborPosition.x,
+                                         nNeighborPosition.y)
+      this.will = new Vector(vx, vy)
+    }
+    const force = new Force(this.will)
     this._energy = Math.max(this.energy - (force.consumedEnergyWith(this.mass) * energyConsumptionRate), 0)
 
     const offsprings = this.reproduce()
