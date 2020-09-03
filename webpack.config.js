@@ -14,7 +14,8 @@ module.exports = {
     evo_devo: './src/entry_points/evo_devo.ts',
     bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts',
     react_example: './src/entry_points/react_example.tsx',
-    react_main: './src/entry_points/react_main.tsx'
+    react_main: './src/entry_points/react_main.tsx',
+    nn_sample: './src/entry_points/nn_sample.tsx'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
