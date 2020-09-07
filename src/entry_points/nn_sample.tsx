@@ -64,7 +64,7 @@ const App = () => {
                             effect={value => initialPopulation = value} detail={"initial population "} label={"initial population"}/>
       <NumberParameterInput parameters={parameters} paramKey={"f"} page={page} defaultValue={0.99}
                             effect={value => friction = value} detail={"friction 0.00-1.00"} label={"friction"}/>
-      <NumberParameterInput parameters={parameters} paramKey={"gv"} page={page} defaultValue={20}
+      <NumberParameterInput parameters={parameters} paramKey={"gv"} page={page} defaultValue={0}
                             effect={value => gravity = value} detail={"gravity"} label={"gravity"}/>
       <NumberParameterInput parameters={parameters} paramKey={"im"} page={page} defaultValue={0}
                             effect={value => immobilizedWidth = value} detail={"immobilizedWidth"} label={"immobilizedWidth"}/>
@@ -102,7 +102,7 @@ interface DataRowTick {
 }
 
 const columns = [{"name": "tick", "title": "tick"},
-                 {"name": "count", "title": "Count"}]
+  {"name": "count", "title": "Count"}]
 
 const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
@@ -314,28 +314,25 @@ export class PaintActiveLife extends ActiveLife {
       let nFoodDist = 100000
       let nNeighborPosition = Vector.zero()
       let nNeighborDist = 100000
-      world.lives.forEach(value => {
-                            if (value === this) {
+      world.lives.forEach(life => {
+                            if (life === this) {
                               return
                             }
+                            const dist = this.position.dist(life.position)
                             // FIXME 定数化
-                            if (!this.gene.canEat(value.gene, 0.9)) {
-                              return
-                            }
-                            const dist = this.position.dist(value.position)
-                            if (value instanceof GeneticResource) {
+                            if (this.gene.canEat(life.gene, 0.9)) {
                               if (dist < nFoodDist) {
-                                nFoodPosition = value.position.sub(this.position)
-                                nFoodDist = value.position.dist(this.position)
+                                nFoodPosition = life.position.sub(this.position)
+                                nFoodDist = life.position.dist(this.position)
                               }
                             }
-                            if (value instanceof GeneticActiveLife) {
+                            if (life instanceof GeneticResource &&
+                              life.gene.canEat(this.gene, 0.9)) {
                               if (dist < nNeighborDist) {
-                                nNeighborPosition = value.position.sub(this.position)
-                                nNeighborDist = value.position.dist(this.position)
+                                nNeighborPosition = life.position.sub(this.position)
+                                nNeighborDist = life.position.dist(this.position)
                               }
                             }
-
                           },
       )
 
