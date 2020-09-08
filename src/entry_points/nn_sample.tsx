@@ -25,18 +25,23 @@ const App = () => {
   const [dataRowTick2, setDataRowTick2] = useState([] as DataRowTick[])
 
   updateChart = (_world: World) => {
-    const newRow = {"tick": world.t, "count": world.lives.length}
+    const newRow = {
+      "tick": world.t, "count": world.lives.filter(life => {
+                                                     return life instanceof GeneticActiveLife
+                                                   },
+      ).length,
+    }
     if (_world.t % 100 === 1) {
-      setDataRowTick1([...dataRowTick1, newRow])
       if (dataRowTick1.length > 20) {
         dataRowTick1.shift()
       }
+      setDataRowTick1([...dataRowTick1, newRow])
     }
     if (_world.t % 500 === 1) {
-      setDataRowTick2([...dataRowTick2, newRow])
       if (dataRowTick2.length > 100) {
         dataRowTick2.shift()
       }
+      setDataRowTick2([...dataRowTick2, newRow])
     }
   }
 
@@ -102,7 +107,7 @@ interface DataRowTick {
 }
 
 const columns = [{"name": "tick", "title": "tick"},
-  {"name": "count", "title": "Count"}]
+                 {"name": "count", "title": "Count"}]
 
 const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
@@ -179,6 +184,7 @@ const fieldHeight = Math.floor(fieldWidth * 10 / 16)
 const worldSize = new Vector(fieldWidth, fieldHeight)
 const gravityCenter = worldSize.mult(0.5)
 const worldCenter = worldSize.div(2)
+
 
 const main = (p: p5) => {
   controller = new Controller(p)
