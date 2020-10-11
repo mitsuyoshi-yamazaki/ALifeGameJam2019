@@ -12,19 +12,26 @@ function log(message: string): void {
 }
 
 const gridSize = parameters.int("grid_size", 100, "g")
-const fieldSize = parameters.int("field_size", 1000, "s")
+const canvasSize = parameters.int("canvas_size", 1000, "s")
 
 let t = 0
+const fieldSize = new Vector(Math.floor(canvasSize / gridSize) * gridSize, Math.floor(canvasSize / gridSize) * gridSize)
+const numberOfRows = Math.floor(fieldSize.y / gridSize)
+const numberOfLines = Math.floor(fieldSize.x / gridSize)
+const neighbourRadius = 1
+const neighbourDiameter = neighbourRadius * 2 + 1
 const grids: Grid[][] = []
+const neighbours: Grid[][][] = []
 const objects: Obj[] = []
 
 const main = (p: p5) => {
   p.setup = () => {
-    const canvas = p.createCanvas(fieldSize, fieldSize)
+    const canvas = p.createCanvas(fieldSize.x, fieldSize.y)
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
-    setupWorld()
+    setupGrids()
+    setupNeighbours()
     setupObjects()
   }
 
@@ -32,8 +39,9 @@ const main = (p: p5) => {
     p.background(0xFF)
 
     objects.forEach(o => {
+      const properties = o.grid.properties
       o.attributes.forEach(attribute => {
-        // attribute.execute()  // TODO:
+        attribute.execute(properties) // TODO: gridに渡す
       })
     })
 
@@ -49,19 +57,54 @@ const sketch = new p5(main)
 
 /// Setup
 
-function setupWorld(): void {
+function setupGrids(): void {
+  for (let y = 0; y < numberOfRows; y += 1) {
+    const line: Grid[] = []
+    for (let x = 0; x < numberOfLines; x += 1) {
+      const position = new Vector(x, y)
+      const grid = new Grid(position)
+      line.push(grid)
+    }
+    grids.push(line)
+  }
+}
 
+function setupNeighbours(): void {
+  for (let y = 0; y < numberOfRows; y += 1) {
+    const line: Grid[][] = []
+    for (let x = 0; x < numberOfLines; x += 1) {
+      const position = new Vector(x, y)
+      line.push(getNeighbours(position))
+    }
+    neighbours.push(line)
+  }
+}
+
+function getNeighbours(position: Vector): Grid[] {
+  // TODO: トーラスではなく、外周に壁を張る
+  const neighbourGrids: Grid[] = []
+  for (let j = position.x - neighbourRadius; j < neighbourDiameter; j += 1) {
+    for (let i = position.y - neighbourRadius; i < neighbourDiameter; i += 1) {
+      if (i === 0 && j === 0) {
+        continue
+      }
+      const x = (i + numberOfLines) % numberOfLines
+      const y = (j + numberOfRows) % numberOfRows
+      neighbourGrids.push(grids[y][x])
+    }
+  }
+
+  return neighbourGrids
 }
 
 function setupObjects(): void {
   const halfGridSize = gridSize / 2
-  const gridMax = fieldSize / gridSize
   const objectSize = gridSize * 0.6
   const burnableAttribute = new Burnable(100, 10)
   const burnableRate = 0.5
 
-  for (let y = 0; y < gridMax; y += 1) {
-    for (let x = 0; x < gridMax; x += 1) {
+  for (let y = 0; y < numberOfRows; y += 1) {
+    for (let x = 0; x < numberOfLines; x += 1) {
       const position = new Vector(x * gridSize + halfGridSize, y * gridSize + halfGridSize)
       const attributes: Attribute[] = (random(1) < burnableRate) ? [burnableAttribute] : []
       const obj = new Obj(position, objectSize, attributes)
@@ -81,6 +124,11 @@ class Grid {
   }
 
   public constructor(public readonly position: Vector) {
+    this._properties = { "temperature": 0}
+  }
+
+  public update(): void {
+
   }
 }
 
@@ -133,6 +181,13 @@ class Burnable implements Attribute {
 }
 
 class Obj {
+  public get grid(): Grid {
+    const x = Math.floor(this.position.x / gridSize)
+    const y = Math.floor(this.position.y / gridSize)
+
+    return grids[y][x]
+  }
+
   public constructor(public position: Vector, public size: number, public attributes: Attribute[]) {
   }
 
