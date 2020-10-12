@@ -11,17 +11,10 @@ function log(message: string): void {
   }
 }
 
-const gridSize = parameters.int("grid_size", 100, "g")
 const canvasSize = parameters.int("canvas_size", 1000, "s")
 
 let t = 0
-const fieldSize = new Vector(Math.floor(canvasSize / gridSize) * gridSize, Math.floor(canvasSize / gridSize) * gridSize)
-const numberOfRows = Math.floor(fieldSize.y / gridSize)
-const numberOfLines = Math.floor(fieldSize.x / gridSize)
-const neighbourRadius = 1
-const neighbourDiameter = neighbourRadius * 2 + 1
-const grids: Grid[][] = []
-const neighbours: Grid[][][] = []
+const fieldSize = new Vector(canvasSize, canvasSize)
 const objects: Obj[] = []
 
 const main = (p: p5) => {
@@ -30,8 +23,6 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
-    setupGrids()
-    setupNeighbours()
     setupObjects()
   }
 
@@ -39,9 +30,8 @@ const main = (p: p5) => {
     p.background(0xFF)
 
     objects.forEach(o => {
-      const properties = o.grid.properties
       o.attributes.forEach(attribute => {
-        attribute.execute(properties) // TODO: gridに渡す
+        attribute.execute(o)
       })
     })
 
@@ -49,6 +39,9 @@ const main = (p: p5) => {
       o.draw(p)
     })
 
+    if (t % 100 === 0) {
+      log(`t: ${t}`)
+    }
     t += 1
   }
 }
@@ -56,58 +49,32 @@ const main = (p: p5) => {
 const sketch = new p5(main)
 
 /// Setup
-
-function setupGrids(): void {
-  for (let y = 0; y < numberOfRows; y += 1) {
-    const line: Grid[] = []
-    for (let x = 0; x < numberOfLines; x += 1) {
-      const position = new Vector(x, y)
-      const grid = new Grid(position)
-      line.push(grid)
-    }
-    grids.push(line)
-  }
-}
-
-function setupNeighbours(): void {
-  for (let y = 0; y < numberOfRows; y += 1) {
-    const line: Grid[][] = []
-    for (let x = 0; x < numberOfLines; x += 1) {
-      const position = new Vector(x, y)
-      line.push(getNeighbours(position))
-    }
-    neighbours.push(line)
-  }
-}
-
-function getNeighbours(position: Vector): Grid[] {
-  // TODO: トーラスではなく、外周に壁を張る
-  const neighbourGrids: Grid[] = []
-  for (let j = position.x - neighbourRadius; j < neighbourDiameter; j += 1) {
-    for (let i = position.y - neighbourRadius; i < neighbourDiameter; i += 1) {
-      if (i === 0 && j === 0) {
-        continue
-      }
-      const x = (i + numberOfLines) % numberOfLines
-      const y = (j + numberOfRows) % numberOfRows
-      neighbourGrids.push(grids[y][x])
-    }
-  }
-
-  return neighbourGrids
-}
-
 function setupObjects(): void {
+  const gridSize = 100
   const halfGridSize = gridSize / 2
   const objectSize = gridSize * 0.6
-  const burnableAttribute = new Burnable(100, 10)
   const burnableRate = 0.5
 
-  for (let y = 0; y < numberOfRows; y += 1) {
-    for (let x = 0; x < numberOfLines; x += 1) {
+  function attributes(x: number, y: number): Attribute[] {
+    if (x === 0 && y === 0) {
+      const burningAttribute = new Burnable(100, 10)
+      burningAttribute.isBurning = true
+
+      return [burningAttribute]
+    }
+    if (random(1) > burnableRate) {
+      return []
+    }
+
+    const burnableAttribute = new Burnable(100, 10)
+
+    return [burnableAttribute]
+  }
+
+  for (let y = 0; y < Math.floor(fieldSize.y / gridSize); y += 1) {
+    for (let x = 0; x < Math.floor(fieldSize.x / gridSize); x += 1) {
       const position = new Vector(x * gridSize + halfGridSize, y * gridSize + halfGridSize)
-      const attributes: Attribute[] = (random(1) < burnableRate) ? [burnableAttribute] : []
-      const obj = new Obj(position, objectSize, attributes)
+      const obj = new Obj(position, objectSize, attributes(x, y))
       objects.push(obj)
     }
   }
@@ -117,23 +84,7 @@ function setupObjects(): void {
 
 /// World
 
-class Grid {
-  private _properties: Properties
-  public get properties(): Properties {
-    return this._properties
-  }
-
-  public constructor(public readonly position: Vector) {
-    this._properties = { "temperature": 0}
-  }
-
-  public update(): void {
-
-  }
-}
-
 /// Objects
-
 class AI {
   public constructor() {
 
@@ -145,28 +96,51 @@ interface Properties {
 }
 
 interface Attribute {
-  execute(properties: Properties): void // propertiesは自身のObjの状態
+  receive(heat: number): void // 熱量ではなく熱（計算が煩雑なので熱量は考えないものとする
+
+  execute(obj: Obj): void
 
   draw(p: p5, position: Vector, size: number): void
 }
 
 class Burnable implements Attribute {
-  public isBurning = false
+  public isBurning = false  // FixMe: 仕組み上privateにしたほうが良い
   private duration = 0
+  private isReceivingHeat = false
 
   public constructor(public readonly combustionTemperature: number, public readonly combustionDuration: number) {
   }
 
-  public execute(properties: Properties): void {
-    if (properties.temperature < this.combustionTemperature) {
-      this.duration = Math.max(this.duration - 1, 0)
+  public receive(heat: number): void {
+    if (heat < this.combustionTemperature) {
+      return
+    }
+    this.isReceivingHeat = true
+  }
+
+  public execute(obj: Obj): void {
+    if (this.isBurning) {
+      // TODO: 燃え尽きたときにObjを炭に変化させる
+      const flameRadius = 150
+      const flameTemprature = 200
+      obj.getNeighbours(flameRadius)
+        .forEach(neighbour => {
+          neighbour.attributes.forEach(attribute => {
+            attribute.receive(flameTemprature)
+          })
+        })
+      this.duration = this.combustionDuration
+      this.isReceivingHeat = false
 
       return
     }
-    this.duration += 1
-    if (this.duration >= this.combustionDuration) {
-      // on fire
+    if (this.isReceivingHeat) {
+      this.duration += 1
     }
+    if (this.duration >= this.combustionDuration) {
+      this.isBurning = true
+    }
+    this.isReceivingHeat = false
   }
 
   public draw(p: p5, position: Vector, size: number): void {
@@ -181,14 +155,22 @@ class Burnable implements Attribute {
 }
 
 class Obj {
-  public get grid(): Grid {
-    const x = Math.floor(this.position.x / gridSize)
-    const y = Math.floor(this.position.y / gridSize)
-
-    return grids[y][x]
+  public constructor(public position: Vector, public size: number, public attributes: Attribute[]) {
   }
 
-  public constructor(public position: Vector, public size: number, public attributes: Attribute[]) {
+  public getNeighbours(radius: number): Obj[] {
+    const neighbours: Obj[] = []
+
+    objects.forEach(o => {
+      if (o === this) {
+        return
+      }
+      if (o.position.dist(this.position) <= radius) {
+        neighbours.push(o)
+      }
+    })
+
+    return neighbours
   }
 
   public draw(p: p5): void {

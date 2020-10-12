@@ -197,7 +197,8 @@
     "no-empty": [
       true,
       "allow-empty-functions"
-    ]
+    ],
+    "object-literal-sort-keys": false
   },
   "rulesDirectory": []
 }
