@@ -90,7 +90,7 @@ String launchTime = '' + Math.floor((new Date()).getTime() / 1000);
 // Population
 Life[] lifes;
 int populationSize = 50;
-int initialResourceSize = 500;
+int initialResourceSize = 10;
 int resourceGrowth = 1 + 4.01;
 
 int maxResourceSize = 10000;
@@ -1205,11 +1205,15 @@ void clearGraph(){
 
 var timer = makeTimer();
 
+int goalPopulation=50;
+
 void addResources() {
   if(populationOfResource > maxResourceSize) {
     return
   }
-  int numberOfResources = int(random(0, resourceGrowth));
+  int totalPopulation = populationPerSpecies.reduce(function(x,y){return x+y});
+  console.log(totalPopulation);
+  int numberOfResources = ((goalPopulation-totalPopulation)*0.3);
   Gene g;
   if(predator_prey_mode){g=Gene.fromWholeGene(plant1);}
   else {g=new Gene(0, 0, 0);}
