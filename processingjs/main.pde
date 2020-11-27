@@ -102,7 +102,7 @@ float graphSize = 0.4;
 // Field
 float initialPopulationFieldSize = 600; // 起動時に生まれるLifeの置かれる場所の大きさ
 
-float fieldWidth = 500;
+float fieldWidth = 700;
 float fieldHeight = 500;
 bool useSingleGene = true;
 
@@ -131,7 +131,7 @@ int wallWidth = 40;
 int space = fieldHeight / 10;
 Wall[] walls = [];
 
-if (isNormalMode) {
+/* if (isNormalMode) {
 	walls = [
 		//new Wall(fieldWidth /6 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
 		new Wall(fieldWidth/3 - wallWidth / 2, 0, wallWidth, (fieldHeight - space) / 2),
@@ -144,7 +144,7 @@ if (isNormalMode) {
 		new Wall(fieldWidth/3*2 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 		new Wall(fieldWidth/6*5 - wallWidth / 2, (fieldHeight + space) / 2, wallWidth, (fieldHeight - space) / 2),
 	];
-}
+} */
 if (artMode) {
  walls = [];
 	console.log("No walls in artistic mode");
@@ -169,7 +169,7 @@ bool droppingsEnabled = false;
 bool mutatingSizeEnabled = false;
 
 // Gene Parameter
-int geneLength = 4;
+int geneLength = 1;
 int geneMaxValue = Math.pow(2, geneLength) - 1;
 int wholeLength = geneLength*2;
 int wholeMax = Math.pow(2, wholeLength) - 1;
@@ -849,7 +849,7 @@ void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _back
   	backgroundTransparency = _backgroundTransparency;
 		}
 
-  size(appFieldWidth, appFieldHeight);
+  size(appFieldWidth+100, appFieldHeight+100);
   background(0xff);
 
   //noLoop();
@@ -944,6 +944,17 @@ void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _back
     	}
     }
     lifes[lifes.length] = Life.makeResource(position.x, position.y, resourceSize, Gene.randomGene());
+  }
+
+  //グラフの目盛り(時間軸)
+  int interval=25;
+  for(int i = 0; i< (fieldWidth/interval) ; i++){
+    fill(0);
+    line(i*interval, appFieldHeight-5, i*interval, appFieldHeight+5);
+
+    textSize(8);
+    fill(0);
+    text((i*interval)*2, i*interval, appFieldHeight+20);
   }
 }
 
@@ -1086,6 +1097,9 @@ void defaultDraw(){
 		t += 1;
 }
 
+int resourcePopulationDynamics = [];
+int averageResourcePopulation = 0;
+
 void drawGraph(){
   strokeWeight(2);
   var t;
@@ -1093,14 +1107,40 @@ void drawGraph(){
 
   t= timer();
   unit = t/2;
+
+  // グラフの目盛りを消す
+  int interval=10;
+  fill(0xee, 0xee, 0xee);
+  int distanceFromRuler=20;
+  rect((unit%appFieldWidth)+distanceFromRuler, fieldHeight, distanceFromRuler, graphHeight);
+
+
   populationPerSpecies.forEach(function(int pop, int gene){
     Gene g = Gene.fromWholeGene(gene);
     stroke(g.geneColor.r, g.geneColor.g, g.geneColor.b);
     point(unit%appFieldWidth, appFieldHeight-(pop * graphSize));
   });
 
-  stroke(0xff, 0xff, 0);
+  stroke(0xff, 0x00, 0);
   point(unit%appFieldWidth, appFieldHeight-(populationOfResource * graphSize));
+  resourcePopulationDynamics.push(populationOfResource);
+
+  if(t>100 && t%10==0){
+    averageResourcePopulation = (resourcePopulationDynamics.reduce(function(x, y){return x+y})) / resourcePopulationDynamics.length;
+  }
+  stroke(0x00, 0xff, 0x00);
+  point(unit%appFieldWidth, appFieldHeight-(averageResourcePopulation * graphSize));
+  resourcePopulationDynamics.push(populationOfResource);
+
+
+
+  // グラフの目盛り
+  for(int i = 0; i< (graphHeight/interval) ; i++){
+    textSize("10");
+    fill(0);
+    text((i*interval)/graphSize, (unit%appFieldWidth)+distanceFromRuler, appFieldHeight-(i*interval));
+  }
+
 
   if((Math.floor(unit))%fieldWidth < 4) {
     clearGraph();
