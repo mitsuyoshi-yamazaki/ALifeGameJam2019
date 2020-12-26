@@ -136,6 +136,14 @@ if (artMode) {
 	console.log("No walls in artistic mode");
 }
 
+// Landscape
+bool landscapeEnabled = false;
+void setLandscapeEnabled() {
+  landscapeEnabled = true;
+  walls = [];
+  console.log("setLandscapeEnabled");
+}
+
 // Color
 float backgroundTransparency = 0xff;
 bool enableEatColor = false;
