@@ -15,6 +15,7 @@ const canvasSize = parameters.int("canvas_size", 1000, "s")
 
 let t = 0
 const fieldSize = new Vector(canvasSize, canvasSize)
+const defaultTextSize = 32
 const objects: Obj[] = []
 
 const main = (p: p5) => {
@@ -23,7 +24,8 @@ const main = (p: p5) => {
     canvas.id("canvas")
     canvas.parent("canvas-parent")
 
-    setupObjects()
+    addAgents(30)
+    add(Meat, 50, 30)
   }
 
   p.draw = () => {
@@ -33,6 +35,7 @@ const main = (p: p5) => {
       o.attributes.forEach(attribute => {
         attribute.execute(o)
       })
+      o.execute()
     })
 
     objects.forEach(o => {
@@ -49,19 +52,14 @@ const main = (p: p5) => {
 const sketch = new p5(main)
 
 /// Setup
-function setupObjects(): void {
+function addObjects(): void {
   const gridSize = 100
   const halfGridSize = gridSize / 2
   const objectSize = gridSize * 0.6
+  const halfObjectSize = objectSize / 2
   const burnableRate = 0.5
 
-  function attributes(x: number, y: number): Attribute[] {
-    if (x === 0 && y === 0) {
-      const burningAttribute = new Burnable(100, 10)
-      burningAttribute.isBurning = true
-
-      return [burningAttribute]
-    }
+  function attributes(): Attribute[] {
     if (random(1) > burnableRate) {
       return []
     }
@@ -71,29 +69,54 @@ function setupObjects(): void {
     return [burnableAttribute]
   }
 
-  for (let y = 0; y < Math.floor(fieldSize.y / gridSize); y += 1) {
-    for (let x = 0; x < Math.floor(fieldSize.x / gridSize); x += 1) {
-      const position = new Vector(x * gridSize + halfGridSize, y * gridSize + halfGridSize)
-      const obj = new Obj(position, objectSize, attributes(x, y))
-      objects.push(obj)
-    }
+  const burningAttribute = new Burnable(100, 10)
+  burningAttribute.isBurning = true
+
+  objects.push(new Obj(new Vector(100, 100), objectSize, [burningAttribute]))
+
+  for (let i = 0; i < 100; i += 1) {
+    const position = Vector.random(halfObjectSize, canvasSize - halfObjectSize)
+    const obj = new Obj(position, objectSize, attributes())
+    objects.push(obj)
   }
 
   log(`${objects.length} objects`)
 }
 
+function addAgents(numberOfAgents: number): void {
+  const agentSize = 60
+  const halfSize = agentSize / 2
+
+  for (let i = 0; i < numberOfAgents; i += 1) {
+    const position = Vector.random(halfSize, canvasSize - halfSize)
+    const obj = new Agent(position, agentSize, [])
+    objects.push(obj)
+  }
+
+  log(`${objects.length} agents`)
+}
+
+function add<T extends Obj>(c: new (positon: Vector, size: number, attributes: Attribute[]) => T, numberOfObjects: number, size: number): void {
+  const halfSize = size / 2
+
+  for (let i = 0; i < numberOfObjects; i += 1) {
+    const position = Vector.random(halfSize, canvasSize - halfSize)
+    const obj = new c(position, size, [])
+    objects.push(obj)
+  }
+
+  log(`${objects.length} agents`)
+}
+
 /// World
 
-/// Objects
-class AI {
-  public constructor() {
+class World {
+  public burned(obj: Obj): void {
 
   }
 }
 
-interface Properties {
-  temperature: number
-}
+/// Objects
 
 interface Attribute {
   receive(heat: number): void // 熱量ではなく熱（計算が煩雑なので熱量は考えないものとする
@@ -148,9 +171,13 @@ class Burnable implements Attribute {
       return
     }
 
-    p.noStroke()
-    p.fill(0xFF, 0, 0, 0x40)
-    p.circle(position.x, position.y, size * 1.4)
+    // p.noStroke()
+    // p.fill(0xFF, 0, 0, 0x40)
+    // p.circle(position.x, position.y, size * 1.4)
+
+    const textSize = 32
+    p.textSize(textSize)
+    p.text("🔥", position.x - textSize / 2, position.y + textSize / 2)
   }
 }
 
@@ -173,6 +200,9 @@ class Obj {
     return neighbours
   }
 
+  public execute(): void {
+  }
+
   public draw(p: p5): void {
     // FixMe: 仮実装
     const isBurnable = this.attributes.length > 0
@@ -192,15 +222,50 @@ class Obj {
   }
 }
 
-class Agent extends Obj {
-  private ai: AI
+class Meat extends Obj {
+  public draw(p: p5): void {
+    p.fill(0)
+    p.textSize(defaultTextSize)
+    p.text("🍖", this.position.x, this.position.y)
+  }
+}
 
-  public constructor(position: Vector, size: number, attributes: Attribute[], ai: AI) {
+/// Agent
+
+class State<T> {
+  public constructor(public value: T, public description: string) { }
+}
+
+class Agent extends Obj {
+  private stomach = new State(0, "腹")
+  public get state(): State<number> {
+    let value = 0
+    let description = "💤"
+    value += this.stomach.value - 50
+    if (this.stomach.value < 20) {
+      description = "🍖"
+    }
+
+    return new State(value, description)
+  }
+
+  public constructor(position: Vector, size: number, attributes: Attribute[]) {
     super(position, size, attributes)
-    this.ai = ai
+    this.stomach.value = Math.floor(random(100))
+  }
+
+  public execute(): void {
+
   }
 
   public draw(p: p5): void {
-    // TODO:
+    p.noFill()
+    p.strokeWeight(1.5)
+    p.stroke(0x20)
+    p.ellipse(this.position.x, this.position.y, this.size, this.size * 0.8)
+
+    p.fill(0)
+    p.textSize(defaultTextSize)
+    p.text(this.state.description, this.position.x, this.position.y)
   }
 }
