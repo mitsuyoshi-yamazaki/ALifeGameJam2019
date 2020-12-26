@@ -336,7 +336,34 @@ class Landscape {
     gene = _gene;
     amount = _amount;
   }
+
+  Gene getGene() {
+    return gene;
+  }
+
+  String description() {
+    return "(" + x + "," + y + ") " + size + ", " + getGene().description() + ", " + amount;
+  }
 }
+
+class RandomGeneLandscape extends Landscape {
+  RandomGeneLandscape(float _amount) {
+    x = 0;
+    y = 0;
+    size = Math.max(fieldWidth, fieldHeight);
+    gene = null;
+    amount = _amount;
+  }
+
+  Gene getGene() {
+    return Gene.randomGene();
+  }
+
+  String description() {
+    return "Random gene " + amount;
+  }
+}
+
 bool landscapeEnabled = false;
 Landscape[] landscapes = [];
 float landscapeTotalAmount = 0.0;
@@ -345,7 +372,9 @@ void setLandscapeEnabled() {
   landscapeEnabled = true;
   resourceGrowth *= 0.6;
   walls = [];
-  landscapes = [];
+  landscapes = [
+    new RandomGeneLandscape(50)
+  ];
   landscapeTotalAmount = 0.0;
 
   console.log("(" + fieldWidth + "," + fieldHeight + ")");
@@ -361,7 +390,7 @@ void setLandscapeEnabled() {
     Landscape landscape = new Landscape(x, y, size, gene, amount);
     landscapes[landscapes.length] = landscape;
 
-    console.log("(" + x + "," + y + ") " + size + ", " + gene.description() + ", " + amount);
+    console.log(landscape.description());
   }
 
   console.log("Total " + landscapes.length + " landscapes");
@@ -872,8 +901,8 @@ void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _back
   textFont(fontA, 14);
 
   lifes = [];
-  int paddingWidth =  max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
-  int paddingHeight =  max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
+  int paddingWidth =  0;//max(fieldWidth - (initialPopulationFieldSize), 20) / 2;
+  int paddingHeight =  0;//max(fieldHeight - (initialPopulationFieldSize / 4), 20) / 2;
 
   Gene[] initialGenesArray = [new Gene(0, 0, 0)]; //[Gene.randomGene()];
   for(int i=0; i < populationSize;i++){
@@ -1161,6 +1190,6 @@ void addResourcesOnLandscapes() {
     float radius = landscape.size / 2.0;
     float x = random(Math.max(landscape.x - radius, 0), Math.min(landscape.x + radius, fieldWidth));
     float y = random(Math.max(landscape.y - radius, 0), Math.min(landscape.y + radius, fieldWidth));
-    lifes[lifes.length] = Life.makeResource(x, y, resourceSize, landscape.gene);
+    lifes[lifes.length] = Life.makeResource(x, y, resourceSize, landscape.getGene());
   }
 }
