@@ -339,22 +339,25 @@ class Landscape {
 }
 bool landscapeEnabled = false;
 Landscape[] landscapes = [];
-float totalAmount = 0.0;
+float landscapeTotalAmount = 0.0;
 void setLandscapeEnabled() {
   console.log("setLandscapeEnabled");
   landscapeEnabled = true;
+  resourceGrowth *= 0.6;
   walls = [];
   landscapes = [];
-  totalAmount = 0.0;
+  landscapeTotalAmount = 0.0;
 
-  int numberOfLandscapes = Math.floor(random(1, populationSize / 400));
+  console.log("(" + fieldWidth + "," + fieldHeight + ")");
+
+  int numberOfLandscapes = Math.floor(random(1, populationSize / 300));
   for (int i = 0; i < numberOfLandscapes; i++) {
     float x = Math.floor(random(0, fieldWidth));
     float y = Math.floor(random(0, fieldHeight));
     float size = Math.floor(random(100, Math.min(fieldWidth, fieldHeight) / 2));
     Gene gene = Gene.randomGene();
     float amount = Math.floor(random(1, 100));
-    totalAmount += amount;
+    landscapeTotalAmount += amount;
     Landscape landscape = new Landscape(x, y, size, gene, amount);
     landscapes[landscapes.length] = landscape;
 
@@ -1102,7 +1105,11 @@ var timer = makeTimer();
 
 void addResources() {
   if(populationOfResource > maxResourceSize) {
-    return
+    return;
+  }
+  if (landscapeEnabled) {
+    addResourcesOnLandscapes();
+    return;
   }
   int numberOfResources = int(random(0, resourceGrowth));
 //  Gene g = new Gene(0, 0, 0);
@@ -1130,5 +1137,30 @@ void addResources() {
 						}
       lifes[lifes.length] = Life.makeResource(position.x, position.y, resourceSize, Gene.randomGene());
     }
+  }
+}
+
+void addResourcesOnLandscapes() {
+  int numberOfResources = int(random(0, resourceGrowth));
+
+  for (int i = 0; i < numberOfResources; i++) {
+    float selection = random(landscapeTotalAmount);
+    Landscape landscape;
+    for (int j = 0; j < landscapes.length; j++) {
+      if (selection < landscapes[j].amount) {
+        landscape = landscapes[j];
+        break;
+      }
+      selection -= landscapes[j].amount;
+    }
+    if (landscape == null) {
+      console.log("バグがあります");
+      continue;
+    }
+
+    float radius = landscape.size / 2.0;
+    float x = random(Math.max(landscape.x - radius, 0), Math.min(landscape.x + radius, fieldWidth));
+    float y = random(Math.max(landscape.y - radius, 0), Math.min(landscape.y + radius, fieldWidth));
+    lifes[lifes.length] = Life.makeResource(x, y, resourceSize, landscape.gene);
   }
 }
