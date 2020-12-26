@@ -383,9 +383,11 @@ void setLandscapeEnabled() {
   for (int i = 0; i < numberOfLandscapes; i++) {
     float x = Math.floor(random(0, fieldWidth));
     float y = Math.floor(random(0, fieldHeight));
-    float size = Math.floor(random(100, Math.min(fieldWidth, fieldHeight) / 2));
+    float fieldSizeMultipler = Math.min(fieldWidth, fieldHeight) / 4.0;
+    float size = Math.floor(random(100, fieldSizeMultipler));
     Gene gene = Gene.randomGene();
-    float amount = Math.floor(random(1, 100));
+    float maxAmount = (size / fieldSizeMultipler) * 100.0;
+    float amount = Math.floor(random(1, maxAmount));
     landscapeTotalAmount += amount;
     Landscape landscape = new Landscape(x, y, size, gene, amount);
     landscapes[landscapes.length] = landscape;
