@@ -136,13 +136,6 @@ if (artMode) {
 	console.log("No walls in artistic mode");
 }
 
-// Landscape
-bool landscapeEnabled = false;
-void setLandscapeEnabled() {
-  landscapeEnabled = true;
-  walls = [];
-  console.log("setLandscapeEnabled");
-}
 
 // Color
 float backgroundTransparency = 0xff;
@@ -326,6 +319,49 @@ class Gene {
   String description() {
     return '' + predatorGene + ' | ' + preyGene + ' | ' + droppingsGene + ' | ' + round(size)
   }
+}
+
+// Landscape
+class Landscape {
+  float x;
+  float y;
+  float size;
+  Gene gene;
+  float amount;
+
+  Landscape(float _x, float _y, float _size, Gene _gene, float _amount) {
+    x = _x;
+    y = _y;
+    size = _size;
+    gene = _gene;
+    amount = _amount;
+  }
+}
+bool landscapeEnabled = false;
+Landscape[] landscapes = [];
+float totalAmount = 0.0;
+void setLandscapeEnabled() {
+  console.log("setLandscapeEnabled");
+  landscapeEnabled = true;
+  walls = [];
+  landscapes = [];
+  totalAmount = 0.0;
+
+  int numberOfLandscapes = Math.floor(random(1, populationSize / 400));
+  for (int i = 0; i < numberOfLandscapes; i++) {
+    float x = Math.floor(random(0, fieldWidth));
+    float y = Math.floor(random(0, fieldHeight));
+    float size = Math.floor(random(100, Math.min(fieldWidth, fieldHeight) / 2));
+    Gene gene = Gene.randomGene();
+    float amount = Math.floor(random(1, 100));
+    totalAmount += amount;
+    Landscape landscape = new Landscape(x, y, size, gene, amount);
+    landscapes[landscapes.length] = landscape;
+
+    console.log("(" + x + "," + y + ") " + size + ", " + gene.description() + ", " + amount);
+  }
+
+  console.log("Total " + landscapes.length + " landscapes");
 }
 
 var makeTimer = (function(){
