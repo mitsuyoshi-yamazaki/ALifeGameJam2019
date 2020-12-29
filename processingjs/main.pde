@@ -379,7 +379,7 @@ void setLandscapeEnabled() {
 
   console.log("(" + fieldWidth + "," + fieldHeight + ")");
 
-  int numberOfLandscapes = Math.floor(random(1, populationSize / 300));
+  int numberOfLandscapes = Math.floor(random(10, populationSize / 10));
   for (int i = 0; i < numberOfLandscapes; i++) {
     float x = Math.floor(random(0, fieldWidth));
     float y = Math.floor(random(0, fieldHeight));
@@ -1191,7 +1191,7 @@ void addResourcesOnLandscapes() {
 
     float radius = landscape.size / 2.0;
     float x = random(Math.max(landscape.x - radius, 0), Math.min(landscape.x + radius, fieldWidth));
-    float y = random(Math.max(landscape.y - radius, 0), Math.min(landscape.y + radius, fieldWidth));
+    float y = random(Math.max(landscape.y - radius, 0), Math.min(landscape.y + radius, fieldHeight));
     lifes[lifes.length] = Life.makeResource(x, y, resourceSize, landscape.getGene());
   }
 }
