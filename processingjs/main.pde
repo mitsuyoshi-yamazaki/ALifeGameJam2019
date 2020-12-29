@@ -397,6 +397,11 @@ void setLandscapeEnabled() {
 
   console.log("Total " + landscapes.length + " landscapes");
 }
+if (parameters['landscape'] != null) {
+  if (int(parameters['landscape'])) {
+    setLandscapeEnabled();
+  }
+}
 
 var makeTimer = (function(){
   var t = 0;
