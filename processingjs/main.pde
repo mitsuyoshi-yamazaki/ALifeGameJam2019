@@ -97,6 +97,11 @@ int[] populationPerSpecies = [];
 float graphSize = 0.4;
 float graphHeight = 400;
 bool graphEnabled = true;
+if (parameters['graph'] != null) {
+  if (!int(parameters['graph'])) {
+    graphEnabled = false;
+  }
+}
 if (artMode) {
 	graphEnabled = false;
 }
