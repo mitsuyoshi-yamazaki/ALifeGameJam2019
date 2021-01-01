@@ -354,10 +354,11 @@ class Gene {
 
 var makeTimer = (function(){
   var t = 0;
-  return (function(){
-    t++;
-    return t;
-    });
+
+  return ({
+    update: (function(){ t++; return t; }),
+    lookup: (function(){ return t; })
+  })
 });
 
 class RotateLife extends Life{
@@ -947,14 +948,16 @@ void defaultSetup(bool _droppingsEnabled, bool _mutatingSizeEnabled, float _back
   }
 
   //グラフの目盛り(時間軸)
-  int interval=25;
-  for(int i = 0; i< (fieldWidth/interval) ; i++){
-    fill(0);
-    line(i*interval, appFieldHeight-5, i*interval, appFieldHeight+5);
+  if(graphEnabled){
+    int interval=25;
+    for(int i = 0; i< (fieldWidth/interval) ; i++){
+      fill(0);
+      line(i*interval, appFieldHeight-5, i*interval, appFieldHeight+5);
 
-    textSize(8);
-    fill(0);
-    text((i*interval)*2, i*interval, appFieldHeight+20);
+      textSize(8);
+      fill(0);
+      text((i*interval)*2, i*interval, appFieldHeight+20);
+    }
   }
 }
 
@@ -1105,7 +1108,7 @@ void drawGraph(){
   var t;
   var unit;
 
-  t= timer();
+  t= timer.update();
   unit = t/2;
 
   // グラフの目盛りを消す
@@ -1163,7 +1166,7 @@ void drawGraphXY(){
   first = predator1;
   second = prey1;
 
-  t= timer();
+  t= timer.update();
 
   Gene g1 = Gene.fromWholeGene(first);
   strokeWeight(10);
@@ -1211,9 +1214,8 @@ void addResources() {
   if(populationOfResource > maxResourceSize) {
     return
   }
-  int totalPopulation = populationPerSpecies.reduce(function(x,y){return x+y});
-  console.log(totalPopulation);
-  int numberOfResources = ((goalPopulation-totalPopulation)*0.3);
+  //int totalPopulation = populationPerSpecies.reduce(function(x,y){return x+y});
+  int numberOfResources = int(cos(timer.lookup()*(PI/25))*2);
   Gene g;
   if(predator_prey_mode){g=Gene.fromWholeGene(plant1);}
   else {g=new Gene(0, 0, 0);}
