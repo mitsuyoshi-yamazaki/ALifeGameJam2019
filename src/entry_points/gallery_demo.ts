@@ -2,9 +2,11 @@ import * as p5 from "p5"
 
 const main = (p: p5) => {
   p.setup = () => {
-    const canvas = p.createCanvas(1600, 1000)
+    const canvas = p.createCanvas(p.windowWidth, 800)
     canvas.id("canvas")
     canvas.parent("canvas-parent")
+
+    console.log(`window size: (${p.windowWidth}, ${p.windowHeight})`)
   }
 
   p.draw = () => {
