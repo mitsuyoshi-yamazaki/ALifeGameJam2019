@@ -1,5 +1,4 @@
-import { CSSProperties } from "@material-ui/core/styles/withStyles"
-import React from "react"
+import React, { CSSProperties } from "react"
 
 interface Props {
   title: string
@@ -9,25 +8,25 @@ interface Props {
 
 export function CaptionCard({ title, subtitle, body }: Props) {
   const cardStyle: CSSProperties = {
-    "width": "40rem",
-    "margin-top": "80%",
-    "margin-bottom": "20%",
+    width: "40rem",
+    marginTop: "80%",
+    marginBottom: "20%",
   }
   const cardBodyStyle: CSSProperties = {
-    "margin-left": "5%",
-    "padding-right": "0px",
+    marginLeft: "5%",
+    paddingRight: "0px",
   }
   const borderStyle: CSSProperties = {
-    "background-color": "#000000",
-    "width": "100%",
-    "height": "1px",
-    "border": "none",
+    backgroundColor: "#000000",
+    width: "100%",
+    height: "1px",
+    border: "none",
   }
   const subtitleStyle: CSSProperties = {
-    "margin-bottom": "2rem",
+    marginBottom: "2rem",
   }
   const bodyStyle: CSSProperties = {
-    "padding-right": "5%",
+    paddingRight: "5%",
   }
 
   return (
