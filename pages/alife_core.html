@@ -22,12 +22,15 @@
   <script src="../processingjs/screenshot.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <meta http-equiv="content-type" charset="utf-8">
 </head>
 
 <body onload="setupScreenshotLink()">
-  <canvas id="canvas" data-processing-sources="../processingjs/main.pde ../processingjs/droppings.pde"></canvas>
+  <div style="position:fixed;">
+    <canvas id="canvas" data-processing-sources="../processingjs/main.pde ../processingjs/droppings.pde"></canvas>
+    <button type="button" class="btn btn-primary active" onclick="saveScreenshot();" style="position:relative">Save Screenshot</button>
+  </div>
   <br>
-  <button type="button" class="btn btn-primary active" onclick="saveScreenshot();">Save Screenshot</button>
   <a id="link"></a> <!-- used for saving screenshots -->
 </body>
 
