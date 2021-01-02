@@ -17,7 +17,6 @@ import { SelectionParameterRadioButton } from "../tsx/selectoin_parameter_radio_
 import { TextParameterInput } from "../tsx/text_parameter_input"
 import { Color, random, URLParameter } from "../utilities"
 
-// tslint:disable-next-line:variable-name
 const App = () => {
 
   const modes = [

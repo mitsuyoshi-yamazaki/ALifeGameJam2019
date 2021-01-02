@@ -59,7 +59,8 @@
       "options": [
         "ban-keywords",
         "check-format",
-        "allow-leading-underscore"
+        "allow-leading-underscore",
+        "allow-pascal-case"
       ]
     },
     "unified-signatures": true,
@@ -189,15 +190,15 @@
       "check-type",
       "check-typecast",
       "check-type-operator",
-      "check-preblock",
-      "check-postbrace"
+      "check-preblock"
     ],
     "no-console": false,
     "no-bitwise": false,
     "no-empty": [
       true,
       "allow-empty-functions"
-    ]
+    ],
+    "object-literal-sort-keys": false
   },
   "rulesDirectory": []
 }
