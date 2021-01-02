@@ -133,7 +133,7 @@
     "no-unnecessary-initializer": true,
     "object-literal-key-quotes": [
       true,
-      "always"
+      "as-needed"
     ],
     "one-variable-per-declaration": [
       true,
