@@ -1,15 +1,9 @@
-import { CSSProperties } from "@material-ui/core/styles/withStyles"
 import * as p5 from "p5"
 import React from "react"
 import ReactDOM from "react-dom"
-import { CaptionCard } from "../tsx/caption_card"
-import { ScreenShotButton } from "../tsx/screen_shot_button"
+import { CanvasWithCaption } from "../tsx/canvas_with_caption"
 
-// --- レイアウト --- //
-// TODO: レイアウトを別ファイルに分離する
 const App = () => {
-  const fixedPositionStyle: CSSProperties = { "position": "fixed" }
-  const relativePositionStyle: CSSProperties = { "position": "relative" }
   const subtitle = (
     <p>
       2019 ALife Game Jam<br />ProcessingJS, Genetic Algorithm, Artificial Life
@@ -22,22 +16,13 @@ const App = () => {
   )
 
   return (
-    <div>
-      <div style={fixedPositionStyle}>
-        <div id="canvas-parent"></div>
-        <div style={relativePositionStyle}>
-          <ScreenShotButton />
-        </div>
-      </div>
-      <br />
-      <CaptionCard title="BlindPainter" subtitle={subtitle} body={body} />
-    </div>
+    <CanvasWithCaption title="BlindPainter" subtitle={subtitle} body={body} />
   )
 }
 
 ReactDOM.render(<App />, document.getElementById("root"))
 
-// --- 描画 --- //
+// -------- //
 
 const main = (p: p5) => {
   p.setup = () => {
