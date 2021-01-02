@@ -15,7 +15,6 @@ import { NumberParameterInput } from "../tsx/number_parameter_input"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { random, URLParameter } from "../utilities"
 
-// tslint:disable-next-line:variable-name
 const App = () => {
   const [dataRowTick1, setDataRowTick1] = useState([] as DataRowTick[])
   const [dataRowTick2, setDataRowTick2] = useState([] as DataRowTick[])
