@@ -1,5 +1,4 @@
-import { CSSProperties } from "@material-ui/core/styles/withStyles"
-import React from "react"
+import React, { CSSProperties } from "react"
 import { CaptionCard } from "../tsx/caption_card"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 

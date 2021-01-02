@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   mode: 'development',
   entry: {
+    index: './src/entry_points/index.tsx',
     main: './src/entry_points/main.ts',
     gravitational_field: './src/entry_points/gravitational_field.ts',
     orbital_motion: './src/entry_points/orbital_motion.ts',
