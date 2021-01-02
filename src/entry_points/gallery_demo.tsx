@@ -15,3 +15,5 @@ const main = (p: p5) => {
 }
 
 const sketch = new p5(main)
+
+// --- レイアウト --- //

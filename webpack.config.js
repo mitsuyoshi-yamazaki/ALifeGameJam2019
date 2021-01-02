@@ -15,7 +15,7 @@ module.exports = {
     bracketed_ol_system: './src/entry_points/bracketed_ol_system.ts',
     react_example: './src/entry_points/react_example.tsx',
     react_main: './src/entry_points/react_main.tsx',
-    gallery_demo: './src/entry_points/gallery_demo.ts'
+    gallery_demo: './src/entry_points/gallery_demo.tsx'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

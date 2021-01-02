@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/entry_points/gallery_demo.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/entry_points/gallery_demo.tsx");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -108,15 +108,15 @@ eval("var g;\n\n// This works in non-strict mode\ng = (function() {\n\treturn th
 
 /***/ }),
 
-/***/ "./src/entry_points/gallery_demo.ts":
-/*!******************************************!*\
-  !*** ./src/entry_points/gallery_demo.ts ***!
-  \******************************************/
+/***/ "./src/entry_points/gallery_demo.tsx":
+/*!*******************************************!*\
+  !*** ./src/entry_points/gallery_demo.tsx ***!
+  \*******************************************/
 /*! no exports provided */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p5 */ \"./node_modules/p5/lib/p5.js\");\n/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_0__);\n\nconst main = (p) => {\n    p.setup = () => {\n        const canvas = p.createCanvas(p.windowWidth, 800);\n        canvas.id(\"canvas\");\n        canvas.parent(\"canvas-parent\");\n        console.log(`window size: (${p.windowWidth}, ${p.windowHeight})`);\n    };\n    p.draw = () => {\n        p.background(0xEF, 0xCC, 0xCC);\n    };\n};\nconst sketch = new p5__WEBPACK_IMPORTED_MODULE_0__(main);\n\n\n//# sourceURL=webpack:///./src/entry_points/gallery_demo.ts?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p5 */ \"./node_modules/p5/lib/p5.js\");\n/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_0__);\n\nconst main = (p) => {\n    p.setup = () => {\n        const canvas = p.createCanvas(p.windowWidth, 800);\n        canvas.id(\"canvas\");\n        canvas.parent(\"canvas-parent\");\n        console.log(`window size: (${p.windowWidth}, ${p.windowHeight})`);\n    };\n    p.draw = () => {\n        p.background(0xEF, 0xCC, 0xCC);\n    };\n};\nconst sketch = new p5__WEBPACK_IMPORTED_MODULE_0__(main);\n// --- レイアウト --- //\n\n\n//# sourceURL=webpack:///./src/entry_points/gallery_demo.tsx?");
 
 /***/ })
 
