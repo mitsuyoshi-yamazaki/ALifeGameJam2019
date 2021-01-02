@@ -19,45 +19,14 @@
     gtag('config', 'UA-154586552-1');
   </script>
   <script src="../p5.min.js"></script>
-  <script src="../dist/gallery_demo.js"></script>
-  <script src="../processingjs/screenshot.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <meta http-equiv="content-type" charset="utf-8">
-  <style>
-    .custom-card-text {
-      padding-right: 5%;
-    }
-  </style>
 </head>
 
 <body onload="setupScreenshotLink()" style="background-color:#FAFAFA">
-  <div style="position:fixed;">
-    <div id="canvas-parent"></div>
-    <button type="button" class="btn btn-primary active" onclick="saveScreenshot();" style="position:relative">Save
-      Screenshot</button>
-  </div>
-  <br>
-  <a id="link"></a> <!-- used for saving screenshots -->
-
-  <div class="card shadow mx-auto" style="width:40rem; margin-top:80%; margin-bottom:20%;">
-    <div class="card-body" style="margin-left:5%; padding-right:0px;">
-      <h5 class="card-title custom-card-text">BlindPainter</h5>
-      <hr noshade width="100%" style="background-color:#000000; height:1px;">
-      <div class=".card-subtitle" style="margin-bottom: 2rem;">
-        <p>
-          2019 ALife Game Jam<br>
-          ProcessingJS, Genetic Algorithm, Artificial Life
-        </p>
-      </div>
-      <div class="card-text custom-card-text">
-        <p>
-          本作は生態系の変化し続ける様を表現したアート作品です。各ドットで生命の位置を、色で生命の遺伝子（種族）を表しており、人工生命の趨勢を観察できます。
-        </p>
-      </div>
-    </div>
-  </div>
+  <div id="root"></div>
+  <script src="../dist/gallery_demo.js"></script>
 </body>
-
 
 </html>
