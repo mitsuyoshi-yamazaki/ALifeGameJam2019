@@ -3,10 +3,10 @@ import * as p5 from "p5"
 import React, { useState } from "react"
 import ReactDOM from "react-dom"
 import { isFunctionScopeBoundary } from "tslint/lib/utils"
+import { Screenshot } from "../classes/downloader"
 import { Life } from "../classes/life"
 import { WorldObject } from "../classes/object"
 import { calculateOrbitalVelocity, Force, Vector } from "../classes/physics"
-import { Screenshot } from "../classes/screenshot"
 import { FrictedTerrain, Terrain, VanillaTerrain } from "../classes/terrain"
 import { PredPreyWorld, World } from "../classes/world"
 import { VanillaWorld } from "../classes/world"
@@ -20,11 +20,11 @@ import { Color, random, URLParameter } from "../utilities"
 const App = () => {
 
   const modes = [
-    {"name": "default", "value": "default"},
-    {"name": "attracted", "value": "attracted"},
-    {"name": "equidistant", "value": "equidistant"},
-    {"name": "scroll", "value": "scroll"},
-    {"name": "family", "value": "family"},
+    {name: "default", value: "default"},
+    {name: "attracted", value: "attracted"},
+    {name: "equidistant", value: "equidistant"},
+    {name: "scroll", value: "scroll"},
+    {name: "family", value: "family"},
   ]
   const page = "react_example"
 
@@ -119,6 +119,7 @@ function log(message: string): void {
 
 let t = 0
 let world: MachineWorld
+const launchTime = Math.floor((new Date()).getTime() / 1000)
 const genes: number[] = []
 
 function backgroundTransparency() {
@@ -224,7 +225,7 @@ const main = (p: p5) => {
     world.draw(p)
     const currentTime = (new Date()).getTime()
     if (currentTime % 1000 === 0) {
-      t = Math.floor(currentTime / 1000) - Screenshot.launchTime
+      t = Math.floor(currentTime / 1000) - launchTime
       if ((t % statisticsInterval) === 0) {
         showStatistics()
       }

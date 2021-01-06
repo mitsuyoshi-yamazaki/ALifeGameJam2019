@@ -19,3 +19,5 @@ function saveScreenshot() {	// called on link click
   link.click();
   console.log('Saved: ' + filename);
 }
+
+var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ "hoge": "fuga" }));var dlAnchorElem = document.getElementById('link');dlAnchorElem.setAttribute("href", dataStr);dlAnchorElem.setAttribute("download", "scene.json");dlAnchorElem.click();
