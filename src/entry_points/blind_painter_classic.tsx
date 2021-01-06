@@ -4,8 +4,8 @@ import { CaptionCard } from "../tsx/caption_card"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 
 const App = () => {
-  const fixedPositionStyle: CSSProperties = { "position": "fixed" }
-  const relativePositionStyle: CSSProperties = { "position": "relative" }
+  const fixedPositionStyle: CSSProperties = { position: "fixed" }
+  const relativePositionStyle: CSSProperties = { position: "relative" }
   const subtitle = (
     <p>
       2019 ALife Game Jam<br />ProcessingJS, Genetic Algorithm, Artificial Life

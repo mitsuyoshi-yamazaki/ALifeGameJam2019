@@ -21,6 +21,6 @@ export class Screenshot {
     Screenshot.link = document.getElementById("link")!
     // tslint:disable-next-line:no-non-null-assertion
     Screenshot.canvas = document.getElementById("canvas") as HTMLCanvasElement
-    console.log(`screenshot set ${Screenshot.canvas}`)
+    console.log(`screenshot set ${String(Screenshot.canvas)}`)
   }
 }

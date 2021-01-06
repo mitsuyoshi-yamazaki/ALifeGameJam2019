@@ -1,6 +1,6 @@
 import { Button } from "@material-ui/core"
 import React from "react"
-import { Screenshot } from "../classes/screenshot"
+import { Screenshot } from "../classes/downloader"
 
 export class ScreenShotButton extends React.Component {
   public render() {
