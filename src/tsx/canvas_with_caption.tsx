@@ -6,18 +6,21 @@ interface Props {
   title: string
   subtitle: JSX.Element
   body: JSX.Element
+  additionalButton: JSX.Element | undefined
+  getTimestamp(): number
 }
 
-export function CanvasWithCaption({ title, subtitle, body }: Props) {
-  const fixedPositionStyle: CSSProperties = { "position": "fixed" }
-  const relativePositionStyle: CSSProperties = { "position": "relative" }
+export function CanvasWithCaption({ title, subtitle, body, additionalButton, getTimestamp }: Props) {
+  const fixedPositionStyle: CSSProperties = { position: "fixed" }
+  const relativePositionStyle: CSSProperties = { position: "relative" }
 
   return (
     <div>
       <div style={fixedPositionStyle}>
         <div id="canvas-parent"></div>
         <div style={relativePositionStyle}>
-          <ScreenShotButton />
+          <ScreenShotButton getTimestamp={getTimestamp} />
+          {additionalButton}
         </div>
       </div>
       <br />

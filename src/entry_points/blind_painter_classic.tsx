@@ -1,11 +1,12 @@
 import React, { CSSProperties } from "react"
 import ReactDOM from "react-dom"
 import { CaptionCard } from "../tsx/caption_card"
+import { JSONDownloadButton } from "../tsx/json_download_button"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 
 const App = () => {
-  const fixedPositionStyle: CSSProperties = { "position": "fixed" }
-  const relativePositionStyle: CSSProperties = { "position": "relative" }
+  const fixedPositionStyle: CSSProperties = { position: "fixed" }
+  const relativePositionStyle: CSSProperties = { position: "relative" }
   const subtitle = (
     <p>
       2019 ALife Game Jam<br />ProcessingJS, Genetic Algorithm, Artificial Life
@@ -22,7 +23,9 @@ const App = () => {
       <div style={fixedPositionStyle}>
         <canvas id="canvas" data-processing-sources="../processingjs/classic_main.pde" ></canvas >
         <div style={relativePositionStyle}>
-          <ScreenShotButton />
+          <ScreenShotButton getTimestamp={() => getTimestamp()} />
+          <JSONDownloadButton title="Download Current State" filenamePrefix="live_data" getJSON={() => getLives()}
+            getTimestamp={() => getTimestamp()} />
         </div>
       </div>
       <br />

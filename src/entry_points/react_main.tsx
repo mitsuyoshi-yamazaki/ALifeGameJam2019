@@ -15,12 +15,14 @@ import { NumberParameterInput } from "../tsx/number_parameter_input"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 import { random, URLParameter } from "../utilities"
 
+let t = 0
+
 const App = () => {
   const [dataRowTick1, setDataRowTick1] = useState([] as DataRowTick[])
   const [dataRowTick2, setDataRowTick2] = useState([] as DataRowTick[])
 
   updateChart = (_world: World) => {
-    const newRow = { "tick": world.t, "count": world.lives.length}
+    const newRow = { tick: world.t, count: world.lives.length}
     if (_world.t % 100 === 1) {
       setDataRowTick1([...dataRowTick1, newRow])
       if (dataRowTick1.length > 20) {
@@ -40,7 +42,7 @@ const App = () => {
   return (
     <div className="App">
       <div id="canvas-parent"/>
-      <ScreenShotButton/>
+      <ScreenShotButton getTimestamp={ () => t }/>
       <br/>
       <Button variant="contained" onClick={ reset}>Restart</Button>
       <br/>
@@ -96,8 +98,8 @@ interface DataRowTick {
   count: number
 }
 
-const columns = [{ "name": "tick", "title": "tick"},
-                 { "name": "count", "title": "Count"}]
+const columns = [{ name: "tick", title: "tick"},
+                 { name: "count", title: "Count"}]
 
 const parameters = new URLParameter()
 let artMode = parameters.boolean("art_mode", false, "a")  // アートモードで描画
@@ -202,6 +204,8 @@ const main = (p: p5) => {
     world.next()
     world.draw(p)
     updateChart(world)
+
+    t += 1
   }
 
 }

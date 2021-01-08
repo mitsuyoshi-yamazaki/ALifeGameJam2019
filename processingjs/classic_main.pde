@@ -471,3 +471,25 @@ void keyReleased (){
     loop();
   }
 }
+
+Object getLives() {
+  Object[] lifeObjects = [];
+
+  for (int i = 0; i < lifes.length; i++) {
+    Life life = lifes[i];
+    if (life.alive() == false) {
+      continue;
+    }
+
+    lifeObjects[lifeObjects.length] = {
+      x: Math.floor(life.position.x),
+      y: Math.floor(life.position.y),
+      gene: life.gene.getWholeGene()
+    };
+  }
+
+  Object result = {lives: lifeObjects};
+  return result;  // do not return object literal or it causes syntax error
+}
+
+setLivesGetter(getLives);
