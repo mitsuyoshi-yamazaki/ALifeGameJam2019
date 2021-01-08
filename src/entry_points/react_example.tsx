@@ -17,6 +17,8 @@ import { SelectionParameterRadioButton } from "../tsx/selectoin_parameter_radio_
 import { TextParameterInput } from "../tsx/text_parameter_input"
 import { Color, random, URLParameter } from "../utilities"
 
+let timestamp = 0
+
 const App = () => {
 
   const modes = [
@@ -31,7 +33,7 @@ const App = () => {
   return (
     <div className="App">
       <div id="canvas-parent"/>
-      <ScreenShotButton/>
+      <ScreenShotButton getTimestamp={() => timestamp} />
       <br/>
       <Button variant="contained" onClick={reset}>Restart</Button>
       <br/>
@@ -231,6 +233,7 @@ const main = (p: p5) => {
       }
     }
 
+    timestamp += 1
   }
 }
 

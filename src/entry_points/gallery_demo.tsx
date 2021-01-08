@@ -3,6 +3,8 @@ import React from "react"
 import ReactDOM from "react-dom"
 import { CanvasWithCaption } from "../tsx/canvas_with_caption"
 
+let t = 0
+
 const App = () => {
   const subtitle = (
     <p>
@@ -16,7 +18,7 @@ const App = () => {
   )
 
   return (
-    <CanvasWithCaption title="BlindPainter" subtitle={subtitle} body={body} />
+    <CanvasWithCaption title="BlindPainter" subtitle={subtitle} body={body} getTimestamp={() => t} />
   )
 }
 
@@ -35,6 +37,7 @@ const main = (p: p5) => {
 
   p.draw = () => {
     p.background(0xEF, 0xCC, 0xCC)
+    t += 1
   }
 }
 
