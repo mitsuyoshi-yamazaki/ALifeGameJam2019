@@ -36,7 +36,7 @@ export class Screenshot {
 }
 
 export class JSONDownloader {
-  public static download(json: object, filenamePrefix: string) {
+  public static download(json: object, filenamePrefix: string, timestamp: number) {
     const link = getLink()
     if (link == undefined) {
       console.log(`link not found`)
@@ -44,7 +44,7 @@ export class JSONDownloader {
       return
     }
     const data = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(json))}`
-    const filename = `${filenamePrefix}.json` // TODO:
+    const filename = createFilename(filenamePrefix, timestamp, "json")
     link.setAttribute("href", data)
     link.setAttribute("download", filename)
     link.click()

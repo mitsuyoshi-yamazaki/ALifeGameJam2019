@@ -1,6 +1,7 @@
 import React, { CSSProperties } from "react"
 import ReactDOM from "react-dom"
 import { CaptionCard } from "../tsx/caption_card"
+import { JSONDownloadButton } from "../tsx/json_download_button"
 import { ScreenShotButton } from "../tsx/screen_shot_button"
 
 const App = () => {
@@ -23,6 +24,8 @@ const App = () => {
         <canvas id="canvas" data-processing-sources="../processingjs/classic_main.pde" ></canvas >
         <div style={relativePositionStyle}>
           <ScreenShotButton getTimestamp={() => getTimestamp()} />
+          <JSONDownloadButton title="Download Current State" filenamePrefix="live_data" getJSON={() => getLives()}
+            getTimestamp={() => getTimestamp()} />
         </div>
       </div>
       <br />
