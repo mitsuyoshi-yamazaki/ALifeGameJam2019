@@ -11,6 +11,10 @@ function setTimestamp(_t) {	// called from main.pde
   t = _t;
 }
 
+function getTimestamp() {
+  return t;
+}
+
 function saveScreenshot() {	// called on link click
   var num = ('00000000' + t).slice(-8);
   var filename = '' + launchTime + '__' + num + '.png';

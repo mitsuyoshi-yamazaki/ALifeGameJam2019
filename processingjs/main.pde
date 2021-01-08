@@ -1116,10 +1116,6 @@ void defaultDraw(){
 		t += 1;
 }
 
-int getTimestamp() {
-  return t;
-}
-
 void drawGraph(){
   strokeWeight(2);
   var t;

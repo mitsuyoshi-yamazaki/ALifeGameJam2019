@@ -22,7 +22,7 @@ const App = () => {
       <div style={fixedPositionStyle}>
         <canvas id="canvas" data-processing-sources="../processingjs/classic_main.pde" ></canvas >
         <div style={relativePositionStyle}>
-          <ScreenShotButton getTimestamp={getTimestamp} />
+          <ScreenShotButton getTimestamp={() => getTimestamp()} />
         </div>
       </div>
       <br />

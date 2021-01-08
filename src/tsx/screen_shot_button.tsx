@@ -10,7 +10,7 @@ export class ScreenShotButton extends React.Component<Props> {
   public render() {
     return (
       <div>
-        <Button variant="contained" onClick={this.saveScreenshot}>Save Screenshot</Button>
+        <Button variant="contained" onClick={() => this.saveScreenshot()}>Save Screenshot</Button>
         <a id="link"/>
       </div>
     )
