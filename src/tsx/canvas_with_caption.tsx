@@ -24,7 +24,9 @@ export function CanvasWithCaption({ title, subtitle, body, additionalButton, get
         </div>
       </div>
       <br />
-      <CaptionCard title="BlindPainter" subtitle={subtitle} body={body} />
+      <CaptionCard title="BlindPainter" subtitle={subtitle}>
+        {body}
+      </CaptionCard>
     </div>
   )
 }
