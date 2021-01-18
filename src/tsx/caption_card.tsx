@@ -2,11 +2,10 @@ import React, { CSSProperties } from "react"
 
 interface Props {
   title: string
-  subtitle: JSX.Element
-  body: JSX.Element
+  subtitle: React.ReactNode
 }
 
-export function CaptionCard({ title, subtitle, body }: Props) {
+export const CaptionCard: React.FunctionComponent<Props> = props => {
   const cardStyle: CSSProperties = {
     width: "40rem",
     marginTop: "80%",
@@ -32,13 +31,13 @@ export function CaptionCard({ title, subtitle, body }: Props) {
   return (
     <div className="card shadow mx-auto" style={cardStyle}>
       <div className="card-body" style={cardBodyStyle}>
-        <h5 className="card-title custom-card-text">{title}</h5>
+        <h5 className="card-title custom-card-text">{props.title}</h5>
         <hr style={borderStyle} />
-        <div className=".card-subtitle" style={subtitleStyle}>
-          {subtitle}
+        <div className="card-subtitle" style={subtitleStyle}>
+          {props.subtitle}
         </div>
         <div className="card-text" style={bodyStyle}>
-          {body}
+          {props.children}
         </div>
       </div>
     </div>
