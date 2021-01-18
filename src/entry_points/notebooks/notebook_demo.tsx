@@ -18,19 +18,21 @@ const Section: React.FunctionComponent<{}> = props => {
 
 interface TextSectionProps {
   title: string
-  description: string
+  description?: string
 }
 
 const TextSection: React.FunctionComponent<TextSectionProps> = props => {
   const style: CSSProperties = {
     padding: "1rem",
   }
+  const description: React.ReactNode = props.description == undefined ? undefined : (<p>{props.description}</p>)
 
   return (
     <div style={style}>
       <h2>{props.title}</h2>
       <div>
-        <p>{props.description}</p>
+        {description}
+        {props.children}
       </div>
     </div>
   )
@@ -91,11 +93,22 @@ const App = () => {
         <CanvasSection src="https://cdn.jsdelivr.net/gh/mitsuyoshi-yamazaki/ALifeGameJam2019@0e7f4c5f63cdd010599f0c1c6fc09cd2ff05c68f/dist/machine.js"/>
       </Section>
       <Section>
-        <TextSection title="はじめに" description="BlindPainterはALife Game Jam 2019で作成した人工生命系/ジェネラティブアートです。作品のコンセプトを 収束しない進化 と設定し、常に移り変わって寡占にならない人工生命系を実装しました。" />
+        <TextSection title="はじめに" description="このページはBlindPainter他、人工生命系の観察結果を記録するために設けたものです。" />
       </Section>
       <Section>
-        <TextSection title="コンセプト" description="イベントの  ever changing -変わり続ける- というテーマと 人工生命 というワードから、作品のコンセプトを 収束しない進化 と設定しました。
-人工生命系の製作においては、自己複製の最適解におちいって変化しなくなってしまう問題がよく発生します。収束しない進化 というコンセプトはこの問題を回避して変化し続ける = 観察していて飽きない人工生命系を目指すものとして設定しました。" />
+        <TextSection title="コンセプト" description="Jupyter Notebookのように、ある程度の実行環境と説明、動画や画像による視覚情報を統合的に扱える場として扱えることが理想です。" />
+      </Section>
+      <Section>
+        <TextSection title="課題, TODO">
+          <ul>
+            <li>
+              MVPとしてはコミットIDが明示されていればソースコードを取得できるため、実行環境を用意する必要性は薄い。外部記事にリンクするのでも要は足りる。
+            </li>
+            <li>
+              <a href="https://github.com/mitsuyoshi-yamazaki/ALifeGameJam2019/issues/133">元issue</a>
+            </li>
+          </ul>
+        </TextSection>
       </Section>
     </div>
   )
