@@ -43,7 +43,7 @@ const main = (p: p5) => {
   }
 
   p.draw = () => {
-    p.background(0xEF, 0xCC, 0xCC)
+    p.background(0xFF, 0x00, 0x00)
     t += 1
   }
 }
