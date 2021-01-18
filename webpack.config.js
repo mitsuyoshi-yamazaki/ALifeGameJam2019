@@ -17,7 +17,8 @@ module.exports = {
     react_example: './src/entry_points/react_example.tsx',
     react_main: './src/entry_points/react_main.tsx',
     gallery_demo: './src/entry_points/gallery_demo.tsx',
-    blind_painter_classic: './src/entry_points/blind_painter_classic.tsx'
+    blind_painter_classic: './src/entry_points/blind_painter_classic.tsx',
+    notebook_demo: './src/entry_points/notebooks/notebook_demo.tsx'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

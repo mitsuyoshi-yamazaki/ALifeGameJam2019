@@ -56,6 +56,9 @@ const App = () => {
         <ArtworkCard imagePath={undefined} title="CSS Test Page"
           description=""
           link="pages/gallery_demo.html" />
+        <ArtworkCard imagePath={undefined} title="Notebook Demo Page"
+          description=""
+          link="pages/notebooks/notebook_demo.html?size=830" />
       </ArtworkRow>
     </div>
   )
