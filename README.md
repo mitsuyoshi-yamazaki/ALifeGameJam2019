@@ -1,58 +1,23 @@
-# ALifeGameJam2019
-
-This is an artificial life ecosystem created at ALife Game Jam 2019.
-
-https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019
-
-## Gallery
-
 ![](resources/docs/image001.png)
-![](resources/docs/image002.gif)
-![](resources/docs/image003.gif)
+
+- [2020-07-19] Art in the Science Award at ALife2020 Montreal
+- [2019-08-19] Created at ALife Game Jam in Nagoya University
+
+# BlindPainter
+
+BlindPainter is an oil painting like generative art based on ALife ecosystem.
+
+Run in your browser:  
+https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/pages/blind_painter_classic.html
+
+More detail: [Blind Painter](https://note.com/_mitsuyoshi/n/nc96d3f0a8565) *(Japanese)*
 
 ## Run Locally
 
 ```shell
-# Clone the repository
 $ git@github.com:mitsuyoshi-yamazaki/ALifeGameJam2019.git
-
 $ cd ALifeGameJam2019
-
-# Install dependencies
 $ yarn install
-
-# Compile & build sources
 $ yarn build
-
-# Run local web brownser
 $ yarn start
 ```
-
-
-## Parameters
-
-Parameters for `main.html`
-
-- `art_mode`
-  - 1(enable) or 0(disable)
-  - Enables artistic drawing mode
-- `population_size`
-  - number(1\~)
-  - Initial population size
-- `single_gene`
-  - 1(enable) or 0(disable)
-  - Starts with only one species
-- `mutation_rate`
-  - number(0\~1), 0.001\~0.03 recommended
-  - The mutation rate
-- `field_size`
-  - number(1\~), around 1000 recommended
-  - The simulation field size
-- `screenshot_interval`
-  - number(1\~), 200 recommended
-  - The interval between taking screenshots
-  - Disables screenshot by removing this parameter
-- [Experimental] `mode`
-  - string. Options are either "default", "linear", "torus", "circum" or "rotate"
-  - Changes the simulation algorithm
-
