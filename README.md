@@ -10,7 +10,7 @@ BlindPainter is an oil painting like generative art based on ALife ecosystem.
 Run in your browser:  
 https://mitsuyoshi-yamazaki.github.io/ALifeGameJam2019/pages/blind_painter_classic.html
 
-More detail: [Blind Painter](https://note.com/hogera/n/nc96d3f0a8565) *(Japanese)*
+More detail: [Blind Painter](https://note.com/_mitsuyoshi/n/nc96d3f0a8565) *(Japanese)*
 
 ## Run Locally
 
