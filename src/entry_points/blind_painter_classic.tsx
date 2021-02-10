@@ -27,7 +27,7 @@ const App = () => {
       <CaptionCard title="BlindPainter" subtitle={subtitle}>
         <p>
           本作は生態系の変化し続ける様を表現したアート作品です。動きまわるドットが生命を、色が遺伝子（種族）を表しており、人工生命の趨勢を観察できます。
-          <br /><a href="https://note.com/hogera/n/nc96d3f0a8565">説明記事</a>
+          <br /><a href="https://note.com/_mitsuyoshi/n/nc96d3f0a8565">説明記事</a>
         </p>
       </CaptionCard>
     </div>
