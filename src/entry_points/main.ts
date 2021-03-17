@@ -1,20 +1,24 @@
 import p5 from "p5"
 import { Vector } from "../classes/physics"
-import { random } from "../utilities"
+import { random, URLParameter } from "../utilities"
 
-// System
-const DEBUG = false
-const artMode = true
+const parameters = new URLParameter()
+
+const DEBUG = parameters.boolean("debug", true, "d")
+const artMode = parameters.boolean("art_mode", true, "a")
+const populationSize = parameters.int("population_size", 1000, "p")
+const fieldWidth = parameters.int("field_size", 1200, "s")
+const mutationRate = parameters.float("mutation_rate", 0.005, "mr")
+
 let t = 0
 
 // Population
 let lives: Life[] = []
-const populationSize = 1000
 const initialResourceSize = 600
-const resourceGrowth = 4
+const defaultResourceGrouwth = 4
+const resourceGrowth = defaultResourceGrouwth
 
 // Field
-const fieldWidth = 1200
 const fieldHeight = (fieldWidth / 16) * 9
 const initialPopulationFieldSize = 600 // 起動時に生まれるLifeの置かれる場所の大きさ
 
@@ -32,7 +36,6 @@ const defaultMoveDistance = lifeRadius / 2
 
 // Fight
 const eatProbability = 0.5
-const mutationRate = 0.01
 
 if (artMode) {
   backgroundTransparency = 0
@@ -165,7 +168,6 @@ const main = (p: p5) => {
 
     addResources()
 
-    // setTimestamp(t)	// see screenshot.js
     t += 1
   }
 }
