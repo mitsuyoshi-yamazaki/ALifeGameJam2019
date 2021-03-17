@@ -560,6 +560,8 @@ class MachineWorld extends VanillaWorld {
       }
 
       // FixMe: 衝突判定が漏れる
+      // MEMO: 漏れる理由1: iはthis.livesのindexであるため
+      // MEMO: 漏れる理由2: maxX,minXはlife.sizeをradiusとして計算しているが、isCollidingはdiameterとして計算しているため
       // for (let k = xIndex + 1; k < sortedX.length; k += 1) {
       //   if (sortedX[k].position.x > maxX) {
       //     break
