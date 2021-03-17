@@ -4,12 +4,15 @@ import { random, URLParameter } from "../utilities"
 
 const parameters = new URLParameter()
 
+const defaultResourceGrouwth = 4
+
 const DEBUG = parameters.boolean("debug", true, "d")
 const artMode = parameters.boolean("art_mode", true, "a")
 const populationSize = parameters.int("population_size", 1000, "p")
 let fieldWidth = parameters.int("field_size", 1200, "s")
 const mutationRate = parameters.float("mutation_rate", 0.005, "mr")
 const fullscreenEnabled = parameters.boolean("fullscreen", false)
+const resourceGrowth = parameters.float("resource_growth", defaultResourceGrouwth, "r")
 
 let t = 0
 const canvasId = "canvas"
@@ -17,8 +20,6 @@ const canvasId = "canvas"
 // Population
 let lives: Life[] = []
 const initialResourceSize = 600
-const defaultResourceGrouwth = 4
-const resourceGrowth = defaultResourceGrouwth
 
 // Field
 let fieldHeight = (fieldWidth / 16) * 9
