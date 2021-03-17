@@ -4,7 +4,7 @@ module.exports = {
   mode: 'development',
   entry: {
     index: './src/entry_points/index.tsx',
-    main: './src/entry_points/main.ts',
+    main: './src/entry_points/main.tsx',
     gravitational_field: './src/entry_points/gravitational_field.ts',
     orbital_motion: './src/entry_points/orbital_motion.ts',
     cellular_atmosphere: './src/entry_points/cellular_atmosphere.ts',
