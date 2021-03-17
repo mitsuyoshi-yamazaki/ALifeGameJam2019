@@ -1,22 +1,34 @@
-import * as p5 from "p5"
+import p5 from "p5"
 import { Vector } from "../classes/physics"
-import { random } from "../utilities"
+import { random, URLParameter } from "../utilities"
 
-// System
-const DEBUG = false
-const artMode = true
+const parameters = new URLParameter()
+
+const defaultResourceGrouwth = 4
+
+const DEBUG = parameters.boolean("debug", true, "d")
+const artMode = parameters.boolean("art_mode", true, "a")
+const populationSize = parameters.int("population_size", 1000, "p")
+let fieldWidth = parameters.int("field_size", 1200, "s")
+const mutationRate = parameters.float("mutation_rate", 0.005, "mr")
+const fullscreenEnabled = parameters.boolean("fullscreen", false)
+const resourceGrowth = parameters.float("resource_growth", defaultResourceGrouwth, "r")
+
 let t = 0
+const canvasId = "canvas"
 
 // Population
-let lifes: Life[] = []
-const populationSize = 1000
+let lives: Life[] = []
 const initialResourceSize = 600
-const resourceGrowth = 4
 
 // Field
-const fieldWidth = 1200
-const fieldHeight = (fieldWidth / 16) * 9
+let fieldHeight = (fieldWidth / 16) * 9
 const initialPopulationFieldSize = 600 // 起動時に生まれるLifeの置かれる場所の大きさ
+
+if (fullscreenEnabled) {
+  fieldWidth = window.screen.width
+  fieldHeight = window.screen.height
+}
 
 // Color
 let backgroundTransparency = 0xFF
@@ -30,15 +42,8 @@ const defaultEnergy = 50
 const energyConsumptionRate = 1 / (lifeRadius * lifeRadius * 40)
 const defaultMoveDistance = lifeRadius / 2
 
-// Gene Parameter
-const geneLength = 4
-const geneMaxValue = 0xF + 1
-const wholeLength = geneLength * 2
-const wholeMax = Math.pow(2, wholeLength) - 1
-
 // Fight
 const eatProbability = 0.5
-const mutationRate = 0.01
 
 if (artMode) {
   backgroundTransparency = 0
@@ -54,7 +59,7 @@ function log(data: string) {
 const main = (p: p5) => {
   p.setup = () => {
     const canvas = p.createCanvas(fieldWidth, fieldHeight)
-    canvas.id("canvas")
+    canvas.id(canvasId)
     canvas.parent("canvas-parent")
 
     p.background(0xFF)
@@ -73,7 +78,7 @@ const main = (p: p5) => {
       const index = Math.floor(i / (populationSize / numberOfGenes))
       const gene = initialGenes[index]
       const position = new Vector(random(width) + (width * index), random(paddingHeight, fieldHeight - paddingHeight))
-      lifes[i] = new Life(
+      lives[i] = new Life(
         position,
         lifeRadius,
         defaultEnergy,
@@ -82,7 +87,7 @@ const main = (p: p5) => {
     }
     for (let i = 0; i < initialResourceSize; i += 1) {
       const position = new Vector(random(fieldWidth), random(paddingHeight, fieldHeight - paddingHeight))
-      lifes[lifes.length] = Life.makeResource(position, resourceSize, Gene.randomGene())
+      lives[lives.length] = Life.makeResource(position, resourceSize, Gene.randomGene())
     }
   }
 
@@ -93,21 +98,21 @@ const main = (p: p5) => {
     const killed: Life[] = []
     const born: Life[] = []
 
-    const sortedX = lifes.slice(0, lifes.length)
+    const sortedX = lives.slice(0, lives.length)
     sortedX.sort((lhs, rhs) => {
       return lhs.position.x - rhs.position.x
     })
 
-    const sortedY = lifes.slice(0, lifes.length)
+    const sortedY = lives.slice(0, lives.length)
     sortedY.sort((lhs, rhs) => {
       return lhs.position.y - rhs.position.y
     })
 
-    for (let i = 0; i < lifes.length; i += 1) {
-      if (lifes[i].alive()) {
-        born.push(...lifes[i].update())
+    for (let i = 0; i < lives.length; i += 1) {
+      const life = lives[i]
+      if (life.alive()) {
+        born.push(...life.update())
 
-        const life = lifes[i]
         const compareTo: Life[] = []
 
         const xIndex = sortedX.indexOf(life)
@@ -148,10 +153,10 @@ const main = (p: p5) => {
 
         for (let j = 0; j < compareTo.length; j += 1) {
           if (i === j) { continue }
-          if (isCollision(lifes[i], compareTo[j])) {
+          if (life.isCollided(compareTo[j])) {
             const threshold = random(eatProbability, 1)
-            if (lifes[i].gene.canEat(compareTo[j].gene) > threshold) {
-              const predator = lifes[i]
+            if (life.gene.canEat(compareTo[j].gene) > threshold) {
+              const predator = life
               const prey = compareTo[j]
               predator.eat(prey)
               killed[killed.length] = prey
@@ -160,19 +165,51 @@ const main = (p: p5) => {
           }
         }
       }
-      lifes[i].draw(p)
+      life.draw(p)
     }
 
-    lifes = lifes.filter((l: Life) => {
+    lives = lives.filter((l: Life) => {
       return killed.indexOf(l) < 0
     })
 
-    lifes = lifes.concat(born)
+    lives = lives.concat(born)
 
     addResources()
 
-    // setTimestamp(t)	// see screenshot.js
     t += 1
+  }
+
+  p.mousePressed = () => {
+    if (fullscreenEnabled !== true) {
+      return
+    }
+    if (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    ) {
+      if (document.exitFullscreen != undefined) {
+        document.exitFullscreen()
+      } else if (document.mozCancelFullScreen != undefined) {
+        document.mozCancelFullScreen()
+      } else if (document.webkitExitFullscreen != undefined) {
+        document.webkitExitFullscreen()
+      } else if (document.msExitFullscreen != undefined) {
+        document.msExitFullscreen()
+      }
+    } else {
+      const canvas = document.getElementById(canvasId)
+      if (canvas?.requestFullscreen !== undefined) {
+        canvas.requestFullscreen()
+      } else if (canvas?.mozRequestFullScreen !== undefined) {
+        canvas.mozRequestFullScreen()
+      } else if (canvas?.webkitRequestFullscreen !== undefined) {
+        canvas.webkitRequestFullscreen() // (Element.ALLOW_KEYBOARD_INPUT)
+      } else if (canvas?.msRequestFullscreen !== undefined) {
+        canvas.msRequestFullscreen()
+      }
+    }
   }
 }
 
@@ -191,6 +228,9 @@ class Color {
 }
 
 class Gene {
+  public static geneLength = 4
+  public static geneMaxValue = Math.pow(2, Gene.geneLength) - 1
+  public static binaryLength = Gene.geneLength * 2
   public geneColor: Color
 
   public constructor(public readonly predatorGene: number, public readonly preyGene: number) {
@@ -198,18 +238,18 @@ class Gene {
   }
 
   public static randomGene(): Gene {
-    return new Gene(random(0, geneMaxValue), random(0, geneMaxValue))
+    return new Gene(Math.floor(random(0, Gene.geneMaxValue)), Math.floor(random(0, Gene.geneMaxValue)))
   }
 
-  public static fromWholeGene(w: number): Gene {
-    return new Gene(w >> geneLength, w & (wholeMax >> geneLength))
+  public static fromBinary(b: number): Gene {
+    return new Gene(b >> Gene.geneLength, b & Gene.geneMaxValue)
   }
 
   public mutantGene(): Gene {
-    const mutation = (1 << (random(0, wholeLength)))
-    const childwholegene = (this.getWholeGene()) ^ mutation
+    const mutation = (1 << (random(0, Gene.binaryLength)))
+    const childwholegene = this.binary ^ mutation
 
-    return Gene.fromWholeGene(childwholegene)
+    return Gene.fromBinary(childwholegene)
   }
 
   public childGene(): Gene {
@@ -220,30 +260,20 @@ class Gene {
     }
   }
 
-  public showBinary(): string {
-    let str = ""
-    for (let i = 0; i < wholeLength; i += 1) {
-      console.log(((this.getWholeGene() >> i) & 0x01))
-      str += ((this.getWholeGene() >> i) & 0x01)
-    }
-
-    return str
-  }
-
-  public getWholeGene(): number {
-    return ((this.predatorGene << geneLength) | (this.preyGene))
+  public get binary(): number {
+    return ((this.predatorGene << Gene.geneLength) | (this.preyGene))
   }
 
   public canEat(other: Gene): number {
     let diff = 0
 
-    for (let i = 0; i < geneLength; i += 1) {
+    for (let i = 0; i < Gene.geneLength; i += 1) {
       if (((this.predatorGene >> i) & 0x01) === ((other.preyGene >> i) & 0x01)) {
         diff += 1
       }
     }
 
-    return diff / geneLength
+    return diff / Gene.geneLength
   }
 
   public description(): string {
@@ -271,7 +301,7 @@ class Life {
   }
 
   public show(): string {
-    return `size: ${this.size}.\nenergy: ${this.energy}.\nposition: ${String(this.position)}.\ngene: ${this.gene.description()} (${this.gene.showBinary()}).`
+    return `size: ${this.size}.\nenergy: ${this.energy}.\nposition: ${String(this.position)}.\ngene: ${this.gene.description()} (${this.gene.binary.toString(16)}).`
   }
 
   public alive() {
@@ -287,6 +317,12 @@ class Life {
 
   public eaten() {
     this.isEaten = true
+  }
+
+  public isCollided(another: Life): boolean {
+    const distance = this.position.dist(another.position)
+
+    return distance <= (this.size + another.size) / 2
   }
 
   public draw(p: p5) {
@@ -361,17 +397,11 @@ class Life {
   }
 }
 
-function isCollision(l1: Life, l2: Life): boolean {
-  const distance = l1.position.dist(l2.position)
-
-  return (distance <= (l1.size + l2.size) / 2)
-}
-
 function addResources() {
   const numberOfResources = Math.floor(random(0, resourceGrowth))
 
   for (let i = 0; i < numberOfResources; i += 1) {
     const position = new Vector(random(10, fieldWidth - 10), random(10, fieldHeight - 10))
-    lifes[lifes.length] = Life.makeResource(position, resourceSize, Gene.randomGene())
+    lives[lives.length] = Life.makeResource(position, resourceSize, Gene.randomGene())
   }
 }
