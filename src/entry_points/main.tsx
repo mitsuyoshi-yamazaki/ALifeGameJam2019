@@ -7,10 +7,12 @@ const parameters = new URLParameter()
 const DEBUG = parameters.boolean("debug", true, "d")
 const artMode = parameters.boolean("art_mode", true, "a")
 const populationSize = parameters.int("population_size", 1000, "p")
-const fieldWidth = parameters.int("field_size", 1200, "s")
+let fieldWidth = parameters.int("field_size", 1200, "s")
 const mutationRate = parameters.float("mutation_rate", 0.005, "mr")
+const fullscreenEnabled = parameters.boolean("fullscreen", false)
 
 let t = 0
+const canvasId = "canvas"
 
 // Population
 let lives: Life[] = []
@@ -19,8 +21,13 @@ const defaultResourceGrouwth = 4
 const resourceGrowth = defaultResourceGrouwth
 
 // Field
-const fieldHeight = (fieldWidth / 16) * 9
+let fieldHeight = (fieldWidth / 16) * 9
 const initialPopulationFieldSize = 600 // 起動時に生まれるLifeの置かれる場所の大きさ
+
+if (fullscreenEnabled) {
+  fieldWidth = window.screen.width
+  fieldHeight = window.screen.height
+}
 
 // Color
 let backgroundTransparency = 0xFF
@@ -51,7 +58,7 @@ function log(data: string) {
 const main = (p: p5) => {
   p.setup = () => {
     const canvas = p.createCanvas(fieldWidth, fieldHeight)
-    canvas.id("canvas")
+    canvas.id(canvasId)
     canvas.parent("canvas-parent")
 
     p.background(0xFF)
@@ -169,6 +176,39 @@ const main = (p: p5) => {
     addResources()
 
     t += 1
+  }
+
+  p.mousePressed = () => {
+    if (fullscreenEnabled !== true) {
+      return
+    }
+    if (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    ) {
+      if (document.exitFullscreen != undefined) {
+        document.exitFullscreen()
+      } else if (document.mozCancelFullScreen != undefined) {
+        document.mozCancelFullScreen()
+      } else if (document.webkitExitFullscreen != undefined) {
+        document.webkitExitFullscreen()
+      } else if (document.msExitFullscreen != undefined) {
+        document.msExitFullscreen()
+      }
+    } else {
+      const canvas = document.getElementById(canvasId)
+      if (canvas?.requestFullscreen !== undefined) {
+        canvas.requestFullscreen()
+      } else if (canvas?.mozRequestFullScreen !== undefined) {
+        canvas.mozRequestFullScreen()
+      } else if (canvas?.webkitRequestFullscreen !== undefined) {
+        canvas.webkitRequestFullscreen() // (Element.ALLOW_KEYBOARD_INPUT)
+      } else if (canvas?.msRequestFullscreen !== undefined) {
+        canvas.msRequestFullscreen()
+      }
+    }
   }
 }
 
