@@ -9,7 +9,9 @@ const App = () => {
   const relativePositionStyle: CSSProperties = { position: "relative" }
   const subtitle = (
     <p>
-      2019 ALife Game Jam<br />ProcessingJS, Genetic Algorithm, Artificial Life
+      Mitsuyoshi Yamazaki, ayu-mushi<br />
+      2019 ALife Game Jam<br />
+      ProcessingJS, Genetic Algorithm, Artificial Life
     </p>
   )
 
