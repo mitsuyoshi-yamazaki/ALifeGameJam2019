@@ -7,7 +7,7 @@ const App = () => {
   return (
     <div className="container">
       <ArtworkRow className="justify-content-start" title="Simulation">
-        <ArtworkCard imagePath="resources/docs/image003.gif" title="ALife Core"
+        <ArtworkCard imagePath="resources/docs/image003.gif" title="BlindPainter Backend"
           description="Artificial life ecosystem."
           link="pages/alife_core.html?art_mode=0&population_size=2000&mutation_rate=0.01&single_gene=1&mode=default&field_size=1600&landscape=1&graph=0" />
         <ArtworkCard imagePath="resources/docs/image009.png" title="ALife Core v2"

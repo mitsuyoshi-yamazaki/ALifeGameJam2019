@@ -26,12 +26,8 @@
 </head>
 
 <body onload="setupScreenshotLink()">
-  <div style="position:fixed;">
-    <canvas id="canvas" data-processing-sources="../processingjs/main.pde ../processingjs/droppings.pde"></canvas>
-    <button type="button" class="btn btn-primary active" onclick="saveScreenshot();" style="position:relative">Save Screenshot</button>
-  </div>
-  <br>
-  <a id="link"></a> <!-- used for saving screenshots -->
+  <div id="root"></div>
+  <script src="../dist/alife_core.js"></script>
 </body>
 
 </html>
