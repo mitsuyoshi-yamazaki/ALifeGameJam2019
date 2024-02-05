@@ -18,6 +18,7 @@ module.exports = {
     react_main: './src/entry_points/react_main.tsx',
     gallery_demo: './src/entry_points/gallery_demo.tsx',
     blind_painter_classic: './src/entry_points/blind_painter_classic.tsx',
+    alife_core: './src/entry_points/alife_core.tsx',
     notebook_demo: './src/entry_points/notebooks/notebook_demo.tsx'
   },
   output: {

@@ -1,8 +1,8 @@
 <html>
 
 <head prefix="og: http://ogp.me/ns#">
-  <title>ALife Core</title>
-  <meta property="og:title" content="ALife Core" />
+  <title>BlindPainter Backend</title>
+  <meta property="og:title" content="BlindPainter Backend" />
   <meta property="og:description" content="Artificial life ecosystem." />
   <meta property="og:type" content="article" />
   <meta property="og:image"
@@ -26,12 +26,8 @@
 </head>
 
 <body onload="setupScreenshotLink()">
-  <div style="position:fixed;">
-    <canvas id="canvas" data-processing-sources="../processingjs/main.pde ../processingjs/droppings.pde"></canvas>
-    <button type="button" class="btn btn-primary active" onclick="saveScreenshot();" style="position:relative">Save Screenshot</button>
-  </div>
-  <br>
-  <a id="link"></a> <!-- used for saving screenshots -->
+  <div id="root"></div>
+  <script src="../dist/alife_core.js"></script>
 </body>
 
 </html>
