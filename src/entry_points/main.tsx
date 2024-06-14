@@ -4,15 +4,15 @@ import { random, URLParameter } from "../utilities"
 
 const parameters = new URLParameter()
 
-const defaultResourceGrouwth = 4
-
 const DEBUG = parameters.boolean("debug", true, "d")
 const artMode = parameters.boolean("art_mode", true, "a")
-const populationSize = parameters.int("population_size", 1000, "p")
+const fullscreenEnabled = parameters.boolean("fullscreen", false, "f")
 let fieldWidth = parameters.int("field_size", 1200, "s")
+const populationSize = parameters.int("population_size", 1000, "p")
 const mutationRate = parameters.float("mutation_rate", 0.005, "mr")
-const fullscreenEnabled = parameters.boolean("fullscreen", false)
-const resourceGrowth = parameters.float("resource_growth", defaultResourceGrouwth, "r")
+const resourceGrowth = parameters.float("resource_growth", 4, "r")
+const geneBitLength = parameters.int("gene_bit_length", 4, "bl")
+const eatProbability = parameters.float("eat_probability", 0.5, "e")
 
 let t = 0
 const canvasId = "canvas"
@@ -41,9 +41,6 @@ const resourceSize = lifeRadius * 0.3
 const defaultEnergy = 50
 const energyConsumptionRate = 1 / (lifeRadius * lifeRadius * 40)
 const defaultMoveDistance = lifeRadius / 2
-
-// Fight
-const eatProbability = 0.5
 
 if (artMode) {
   backgroundTransparency = 0
@@ -228,13 +225,15 @@ class Color {
 }
 
 class Gene {
-  public static geneLength = 4
+  public static geneLength = geneBitLength
   public static geneMaxValue = Math.pow(2, Gene.geneLength) - 1
   public static binaryLength = Gene.geneLength * 2
   public geneColor: Color
 
   public constructor(public readonly predatorGene: number, public readonly preyGene: number) {
-    this.geneColor = new Color(predatorGene << 4, preyGene << 4, 0xFF)
+    const r = (predatorGene / Gene.geneMaxValue) * 0xF0 + 0xF
+    const g = (preyGene / Gene.geneMaxValue) * 0xF0 + 0xF
+    this.geneColor = new Color(r, g, 0xFF)
   }
 
   public static randomGene(): Gene {
